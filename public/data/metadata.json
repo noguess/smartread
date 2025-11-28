@@ -1,0 +1,9 @@
+{
+  "generated_at": 1764303466,
+  "total_videos": 2,
+  "total_words": 666,
+  "total_entries": 1006,
+  "sharding_type": "alphabet",
+  "version": "1.2",
+  "shard_count": 24
+}

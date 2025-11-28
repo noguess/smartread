@@ -1,0 +1,75 @@
+// Video occurrence in index
+export interface VideoOccurrence {
+    videoPath: string
+    startTime: number
+    endTime: number
+    context: string
+}
+
+class VideoIndexService {
+    private videoMap: Record<string, string> | null = null
+    private indexCache: Record<string, any> = {}
+
+    async loadVideoMap(): Promise<Record<string, string>> {
+        if (this.videoMap) return this.videoMap
+
+        try {
+            const response = await fetch('/data/video_map.json')
+            if (!response.ok) throw new Error('Video map not found')
+            this.videoMap = await response.json()
+            return this.videoMap
+        } catch (error) {
+            console.warn('Failed to load video map:', error)
+            return {}
+        }
+    }
+
+    async searchWord(word: string): Promise<VideoOccurrence[]> {
+        const lemma = word.toLowerCase().trim()
+        if (!lemma) return []
+
+        // Get first letter for shard lookup
+        const firstChar = lemma[0]
+        const shardKey = /[a-z]/.test(firstChar) ? firstChar : 'others'
+        const indexFile = `/data/index_${shardKey}.json`
+
+        try {
+            // Load index shard (with caching)
+            if (!this.indexCache[shardKey]) {
+                const response = await fetch(indexFile)
+                if (!response.ok) throw new Error(`Index shard ${shardKey} not found`)
+                this.indexCache[shardKey] = await response.json()
+            }
+
+            const index = this.indexCache[shardKey]
+            const entries = index[lemma]
+
+            if (!entries || entries.length === 0) {
+                return []
+            }
+
+            // Load video map
+            const videoMap = await this.loadVideoMap()
+
+            // Transform entries to VideoOccurrence format
+            const occurrences: VideoOccurrence[] = entries.map((entry: any) => ({
+                videoPath: videoMap[entry.v] || '',
+                startTime: entry.t[0],
+                endTime: entry.t[1],
+                context: entry.c
+            }))
+
+            return occurrences.filter(o => o.videoPath) // Filter out invalid mappings
+        } catch (error) {
+            console.warn(`Failed to search word "${word}":`, error)
+            return []
+        }
+    }
+
+    clearCache() {
+        this.indexCache = {}
+        this.videoMap = null
+    }
+}
+
+export const videoIndexService = new VideoIndexService()
