@@ -12,6 +12,52 @@ import { seedDatabase } from './services/db'
 import { ThemeProvider as CustomThemeProvider, useThemeMode } from './theme/ThemeContext'
 import { themes } from './theme'
 
+import { useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
+import PageTransition from './components/common/PageTransition'
+
+function AnimatedRoutes() {
+    const location = useLocation()
+
+    return (
+        <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+                <Route path="/" element={
+                    <PageTransition>
+                        <HomePage />
+                    </PageTransition>
+                } />
+                <Route path="/reading" element={
+                    <PageTransition>
+                        <ReadingPage />
+                    </PageTransition>
+                } />
+                <Route path="/history" element={
+                    <PageTransition>
+                        <HistoryPage />
+                    </PageTransition>
+                } />
+                <Route path="/vocabulary" element={
+                    <PageTransition>
+                        <VocabularyPage />
+                    </PageTransition>
+                } />
+                <Route path="/statistics" element={
+                    <PageTransition>
+                        <StatisticsPage />
+                    </PageTransition>
+                } />
+                <Route path="/settings" element={
+                    <PageTransition>
+                        <SettingsPage />
+                    </PageTransition>
+                } />
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </AnimatePresence>
+    )
+}
+
 function AppContent() {
     const { themeMode } = useThemeMode()
 
@@ -25,15 +71,7 @@ function AppContent() {
     return (
         <MuiThemeProvider theme={themes[themeMode]}>
             <Layout>
-                <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/reading" element={<ReadingPage />} />
-                    <Route path="/history" element={<HistoryPage />} />
-                    <Route path="/vocabulary" element={<VocabularyPage />} />
-                    <Route path="/statistics" element={<StatisticsPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
+                <AnimatedRoutes />
             </Layout>
         </MuiThemeProvider>
     )

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Container, Box, CircularProgress, Typography, Button, Grid, Paper, Chip } from '@mui/material'
+import { Container, Box, Typography, Button, Grid, Paper, Chip, Skeleton } from '@mui/material'
+
 import { Word, History } from '../services/db'
 import { mockLLMService, GeneratedContent } from '../services/mockLLMService'
 import { llmService } from '../services/llmService'
@@ -159,15 +160,31 @@ export default function ReadingPage() {
 
     if (step === 'generating') {
         return (
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
-                <CircularProgress size={60} thickness={4} sx={{ mb: 4 }} />
-                <Typography variant="h5" color="text.secondary">
-                    {t('reading:generating.title')}
-                </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-                    {t('reading:generating.subtitle', { count: targetWords.length })}
-                </Typography>
-            </Box>
+            <Container maxWidth="md" sx={{ py: 8 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {/* Title Skeleton */}
+                    <Skeleton variant="text" height={60} width="60%" sx={{ mx: 'auto' }} />
+
+                    {/* Content Skeletons */}
+                    <Box sx={{ mt: 4 }}>
+                        <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 4, mb: 2 }} />
+                        <Skeleton variant="text" height={30} />
+                        <Skeleton variant="text" height={30} />
+                        <Skeleton variant="text" height={30} width="80%" />
+                    </Box>
+
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                        <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant="h6" color="text.secondary" gutterBottom>
+                                {t('reading:generating.title')}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {t('reading:generating.subtitle', { count: targetWords.length })}
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Box>
+            </Container>
         )
     }
 

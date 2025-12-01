@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Paper, Typography, Box, Rating, Button } from '@mui/material'
 import { CheckCircle, Cancel } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
+import ConfettiEffect from '../common/ConfettiEffect'
 
 interface ScoreFeedbackProps {
     score: number
@@ -16,6 +17,7 @@ export default function ScoreFeedback({ score, totalQuestions, onComplete }: Sco
 
     return (
         <Paper elevation={0} sx={{ p: 6, borderRadius: 4, textAlign: 'center', maxWidth: 600, mx: 'auto' }}>
+            <ConfettiEffect trigger={percentage >= 90} />
             <Box sx={{ mb: 3 }}>
                 {percentage >= 60 ? (
                     <CheckCircle sx={{ fontSize: 80, color: 'success.main' }} />

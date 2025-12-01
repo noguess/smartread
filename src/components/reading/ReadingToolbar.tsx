@@ -53,6 +53,7 @@ export default function ReadingToolbar({ onFontSizeChange, currentFontSize }: Re
                         size="small"
                         onClick={handleIncrease}
                         disabled={currentIndex === fontSizes.length - 1}
+                        aria-label="Increase font size"
                         sx={{
                             fontSize: '1.3rem',
                             transition: 'all 0.2s ease',
@@ -65,6 +66,7 @@ export default function ReadingToolbar({ onFontSizeChange, currentFontSize }: Re
                     <IconButton
                         size="small"
                         onClick={handleReset}
+                        aria-label="Reset font size"
                         sx={{
                             fontSize: '1.1rem',
                             color: currentFontSize === 'medium' ? 'primary.main' : 'text.secondary',
@@ -79,6 +81,7 @@ export default function ReadingToolbar({ onFontSizeChange, currentFontSize }: Re
                         size="small"
                         onClick={handleDecrease}
                         disabled={currentIndex === 0}
+                        aria-label="Decrease font size"
                         sx={{
                             fontSize: '0.9rem',
                             transition: 'all 0.2s ease',

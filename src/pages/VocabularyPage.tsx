@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import {
     Box,
     Typography,
@@ -15,6 +15,29 @@ import { Word } from '../services/db'
 import { wordService } from '../services/wordService'
 import WordDetailModal from '../components/WordDetailModal'
 import { EmptyState, StyledCard, StatusBadge } from '../components/common'
+
+const WordCard = memo(({ word, onClick }: { word: Word; onClick: (spelling: string) => void }) => (
+    <Grid item xs={12} sm={6} md={4} lg={3}>
+        <StyledCard hoverable>
+            <CardActionArea onClick={() => onClick(word.spelling)} sx={{ height: '100%', p: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
+                    <Typography variant="h6" fontWeight="bold">
+                        {word.spelling}
+                    </Typography>
+                    <StatusBadge status={word.status} size="small" />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                }}>
+                    {word.meaning}
+                </Typography>
+            </CardActionArea>
+        </StyledCard>
+    </Grid>
+))
 
 export default function VocabularyPage() {
     const { t } = useTranslation(['vocabulary', 'common'])
@@ -109,26 +132,7 @@ export default function VocabularyPage() {
             {filteredWords.length > 0 ? (
                 <Grid container spacing={2}>
                     {filteredWords.map((word) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} key={word.id}>
-                            <StyledCard hoverable>
-                                <CardActionArea onClick={() => handleWordClick(word.spelling)} sx={{ height: '100%', p: 2 }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
-                                        <Typography variant="h6" fontWeight="bold">
-                                            {word.spelling}
-                                        </Typography>
-                                        <StatusBadge status={word.status} size="small" />
-                                    </Box>
-                                    <Typography variant="body2" color="text.secondary" sx={{
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: 2,
-                                        WebkitBoxOrient: 'vertical',
-                                        overflow: 'hidden',
-                                    }}>
-                                        {word.meaning}
-                                    </Typography>
-                                </CardActionArea>
-                            </StyledCard>
-                        </Grid>
+                        <WordCard key={word.id} word={word} onClick={handleWordClick} />
                     ))}
                 </Grid>
             ) : (
