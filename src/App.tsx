@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
+import { AnimatePresence } from 'framer-motion'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ReadingPage from './pages/ReadingPage'
@@ -8,12 +9,8 @@ import HistoryPage from './pages/HistoryPage'
 import VocabularyPage from './pages/VocabularyPage'
 import StatisticsPage from './pages/StatisticsPage'
 import SettingsPage from './pages/SettingsPage'
-import { seedDatabase } from './services/db'
 import { ThemeProvider as CustomThemeProvider, useThemeMode } from './theme/ThemeContext'
 import { themes } from './theme'
-
-import { useLocation } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
 import PageTransition from './components/common/PageTransition'
 
 function AnimatedRoutes() {
@@ -62,10 +59,7 @@ function AppContent() {
     const { themeMode } = useThemeMode()
 
     useEffect(() => {
-        const initDB = async () => {
-            await seedDatabase()
-        }
-        initDB()
+        // Database initialization logic if needed in future
     }, [])
 
     return (

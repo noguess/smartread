@@ -47,4 +47,36 @@ export const wordService = {
     async deleteWord(id: number) {
         return await db.words.delete(id)
     },
+
+    async importWords(words: Word[]): Promise<{ added: number, skipped: number }> {
+        let added = 0
+        let skipped = 0
+
+        await db.transaction('rw', db.words, async () => {
+            for (const word of words) {
+                // Case-insensitive check
+                const existing = await db.words
+                    .where('spelling')
+                    .equalsIgnoreCase(word.spelling)
+                    .first()
+
+                if (existing) {
+                    skipped++
+                } else {
+                    await db.words.add({
+                        ...word,
+                        status: 'New',
+                        // Ensure defaults if not present
+                        nextReviewAt: word.nextReviewAt || 0,
+                        interval: word.interval || 0,
+                        repetitionCount: word.repetitionCount || 0,
+                        lastSeenAt: word.lastSeenAt || 0
+                    })
+                    added++
+                }
+            }
+        })
+
+        return { added, skipped }
+    },
 }

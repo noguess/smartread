@@ -21,6 +21,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { settingsService } from '../services/settingsService'
 import { db, Setting } from '../services/db'
+import { wordService } from '../services/wordService'
 import ThemeSwitcher from '../components/ThemeSwitcher'
 
 export default function SettingsPage() {
@@ -33,6 +34,8 @@ export default function SettingsPage() {
     const [snackbarMsg, setSnackbarMsg] = useState('')
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
     const [resetPassword, setResetPassword] = useState('')
+    const [importResultOpen, setImportResultOpen] = useState(false)
+    const [importResult, setImportResult] = useState<{ added: number; skipped: number } | null>(null)
 
     useEffect(() => {
         loadSettings()
@@ -97,6 +100,54 @@ export default function SettingsPage() {
         } catch (error) {
             console.error('Failed to reset progress:', error)
             showToast(t('settings:messages.resetError'))
+        }
+    }
+
+    const [importing, setImporting] = useState(false)
+
+    const handleImportWords = async () => {
+        setImporting(true)
+        try {
+            const response = await fetch('/cihuibiao/zkgaopinci666.csv')
+            if (!response.ok) throw new Error('Failed to fetch vocabulary')
+
+            const csvText = await response.text()
+            const lines = csvText.split('\n').filter(line => line.trim() !== '')
+            const words: any[] = []
+
+            // Start from index 1 to skip header
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i]
+                const parts = line.split(',')
+                if (parts.length >= 4) {
+                    const spelling = parts[1].trim()
+                    const phonetic = parts[2].trim()
+                    const meaning = parts.slice(3).join(',').trim()
+                    if (spelling) {
+                        words.push({
+                            spelling,
+                            phonetic,
+                            meaning,
+                            status: 'New',
+                            nextReviewAt: 0,
+                            interval: 0,
+                            repetitionCount: 0,
+                            lastSeenAt: 0
+                        })
+                    }
+                }
+            }
+
+            if (words.length > 0) {
+                const result = await wordService.importWords(words)
+                setImportResult(result)
+                setImportResultOpen(true)
+            }
+        } catch (error) {
+            console.error('Import failed:', error)
+            showToast(t('settings:messages.importError'))
+        } finally {
+            setImporting(false)
         }
     }
 
@@ -169,9 +220,42 @@ export default function SettingsPage() {
                     {t('settings:data.title')}
                 </Typography>
                 <Divider sx={{ my: 2 }} />
-                <Button variant="outlined" color="error" onClick={handleResetClick}>
-                    {t('settings:data.reset')}
-                </Button>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                            <Typography variant="subtitle1" fontWeight="bold">
+                                {t('settings:data.importTitle')}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {t('settings:data.importDesc')}
+                            </Typography>
+                        </Box>
+                        <Button
+                            variant="contained"
+                            onClick={handleImportWords}
+                            disabled={importing}
+                        >
+                            {importing ? t('common:loading') : t('settings:data.importButton')}
+                        </Button>
+                    </Box>
+
+                    <Divider />
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                            <Typography variant="subtitle1" fontWeight="bold" color="error">
+                                {t('settings:data.resetTitle')}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {t('settings:data.resetDesc')}
+                            </Typography>
+                        </Box>
+                        <Button variant="outlined" color="error" onClick={handleResetClick}>
+                            {t('settings:data.reset')}
+                        </Button>
+                    </Box>
+                </Box>
             </Paper>
 
             <Box sx={{ mt: 3, textAlign: 'right' }}>
@@ -213,6 +297,35 @@ export default function SettingsPage() {
                     <Button onClick={handleCancelReset}>{t('common:button.cancel')}</Button>
                     <Button onClick={handleConfirmReset} color="error" variant="contained">
                         {t('settings:resetDialog.confirmButton')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={importResultOpen}
+                onClose={() => setImportResultOpen(false)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>{t('settings:importDialog.title')}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText sx={{ mb: 2 }}>
+                        {t('settings:importDialog.description')}
+                    </DialogContentText>
+                    {importResult && (
+                        <Box sx={{ mt: 2, p: 3, bgcolor: 'background.default', borderRadius: 2 }}>
+                            <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                ✅ {t('settings:importDialog.added')}: <Box component="span" sx={{ color: 'success.main', fontWeight: 'bold' }}>{importResult.added}</Box>
+                            </Typography>
+                            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                ⏭️ {t('settings:importDialog.skipped')}: <Box component="span" sx={{ color: 'text.secondary', fontWeight: 'bold' }}>{importResult.skipped}</Box>
+                            </Typography>
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={() => setImportResultOpen(false)} variant="contained" size="large">
+                        {t('settings:importDialog.confirmButton')}
                     </Button>
                 </DialogActions>
             </Dialog>

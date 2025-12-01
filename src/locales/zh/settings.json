@@ -24,6 +24,11 @@
     },
     "data": {
         "title": "数据管理",
+        "importTitle": "导入核心词库",
+        "importDesc": "导入 666 个中考高频词。已存在的单词将被跳过。",
+        "importButton": "导入",
+        "resetTitle": "重置进度",
+        "resetDesc": "清除所有学习进度和历史记录。此操作无法撤销。",
         "reset": "重置进度"
     },
     "saveSettings": "保存设置",
@@ -31,9 +36,16 @@
         "title": "确认重置进度",
         "description": "此操作将清除所有学习进度和历史记录，但保留单词数据和用户设置。",
         "warning": "⚠️ 此操作无法撤销！",
-        "passwordLabel": "请输入密码以确认",
-        "passwordHint": "提示：密码为 admin",
+        "passwordLabel": "输入密码以确认",
+        "passwordHint": "提示：密码是 admin",
         "confirmButton": "确认重置"
+    },
+    "importDialog": {
+        "title": "导入完成",
+        "description": "词库导入已成功完成。",
+        "added": "新增单词",
+        "skipped": "跳过重复",
+        "confirmButton": "知道了"
     },
     "messages": {
         "saveSuccess": "设置保存成功",

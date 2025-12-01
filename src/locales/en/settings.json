@@ -24,6 +24,11 @@
     },
     "data": {
         "title": "Data Management",
+        "importTitle": "Import Core Vocabulary",
+        "importDesc": "Import 666 high-frequency words. Duplicates will be skipped.",
+        "importButton": "Import",
+        "resetTitle": "Reset Progress",
+        "resetDesc": "Clear all learning progress and history. This cannot be undone.",
         "reset": "Reset Progress"
     },
     "saveSettings": "Save Settings",
@@ -34,6 +39,13 @@
         "passwordLabel": "Enter password to confirm",
         "passwordHint": "Hint: password is admin",
         "confirmButton": "Confirm Reset"
+    },
+    "importDialog": {
+        "title": "Import Complete",
+        "description": "Vocabulary import has completed successfully.",
+        "added": "New words added",
+        "skipped": "Duplicates skipped",
+        "confirmButton": "Got it"
     },
     "messages": {
         "saveSuccess": "Settings saved successfully",
