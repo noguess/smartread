@@ -16,8 +16,10 @@ import {
 } from 'recharts'
 import { historyService } from '../services/historyService'
 import { wordService } from '../services/wordService'
+import { useTranslation } from 'react-i18next'
 
 export default function StatisticsPage() {
+    const { t } = useTranslation(['statistics'])
     const [trendData, setTrendData] = useState<any[]>([])
     const [scoreData, setScoreData] = useState<any[]>([])
     const [statusData, setStatusData] = useState<any[]>([])
@@ -75,7 +77,7 @@ export default function StatisticsPage() {
     return (
         <Box>
             <Typography variant="h4" gutterBottom fontWeight="bold">
-                学习统计
+                {t('statistics:title')}
             </Typography>
 
             <Grid container spacing={3}>
@@ -83,7 +85,7 @@ export default function StatisticsPage() {
                 <Grid item xs={12} md={8}>
                     <Paper sx={{ p: 3, height: 300 }}>
                         <Typography variant="h6" gutterBottom>
-                            近7天阅读量
+                            {t('statistics:charts.trend')}
                         </Typography>
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={trendData}>
@@ -101,7 +103,7 @@ export default function StatisticsPage() {
                 <Grid item xs={12} md={4}>
                     <Paper sx={{ p: 3, height: 300 }}>
                         <Typography variant="h6" gutterBottom>
-                            单词掌握情况
+                            {t('statistics:charts.status')}
                         </Typography>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -115,7 +117,7 @@ export default function StatisticsPage() {
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
-                                    {statusData.map((entry, index) => (
+                                    {statusData.map((_, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
@@ -136,7 +138,7 @@ export default function StatisticsPage() {
                 <Grid item xs={12}>
                     <Paper sx={{ p: 3, height: 300 }}>
                         <Typography variant="h6" gutterBottom>
-                            近期考试成绩
+                            {t('statistics:charts.scores')}
                         </Typography>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={scoreData}>

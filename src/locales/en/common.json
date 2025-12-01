@@ -1,0 +1,38 @@
+{
+    "appName": "Smart Reader",
+    "nav": {
+        "home": "Home",
+        "history": "Learning History",
+        "vocabulary": "Vocabulary",
+        "statistics": "Statistics",
+        "settings": "Settings"
+    },
+    "button": {
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit",
+        "close": "Close",
+        "back": "Back",
+        "next": "Next",
+        "submit": "Submit",
+        "search": "Search",
+        "reset": "Reset"
+    },
+    "status": {
+        "new": "New",
+        "learning": "Learning",
+        "review": "Review",
+        "mastered": "Mastered"
+    },
+    "common": {
+        "loading": "Loading...",
+        "noData": "No Data",
+        "error": "Error",
+        "success": "Success",
+        "warning": "Warning",
+        "total": "Total",
+        "score": "Score"
+    }
+}

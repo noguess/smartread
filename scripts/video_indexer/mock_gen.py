@@ -34,11 +34,10 @@ def read_words_from_csv(csv_path):
 def generate_mock_entry(word, video_id):
     """
     Generate a mock video entry for a word.
-    Returns a V1.2 compliant entry: {"v": video_id, "t": [start, end], "c": "context"}
+    Returns a V2.0 compliant entry: {"v": video_id, "t": start_time, "c": "context"}
     """
     # Generate random timestamp between 0-300 seconds
     start_time = round(random.uniform(0, 290), 1)
-    end_time = round(start_time + random.uniform(0.3, 1.5), 1)
     
     # Generate simple context sentence with the word
     contexts = [
@@ -52,7 +51,7 @@ def generate_mock_entry(word, video_id):
     
     return {
         "v": video_id,
-        "t": [start_time, end_time],
+        "t": start_time,  # V2.0: Single timestamp (seconds)
         "c": context
     }
 
@@ -62,7 +61,7 @@ def main():
     Creates alphabet-sharded index files.
     """
     print("=" * 60)
-    print("Mock Video Index Generator V1.2")
+    print("Mock Video Index Generator V2.0 (Bilibili Edition)")
     print("=" * 60)
     
     # Ensure output directory exists
@@ -74,14 +73,24 @@ def main():
         print("Error: No words found. Exiting.")
         return
     
-    # Generate video map
+    # Generate video map (V2.0: BVIDs)
+    # Using some real TED talk BVIDs for realism, though they might not match the words.
     video_map = {
-        str(i): f"videos/mock_lesson_{i+1:02d}.mp4" 
-        for i in range(NUM_MOCK_VIDEOS)
+        "0": {
+            "bvid": "BV1Nb411v7XU",
+            "p": 1,
+            "title": "TED演讲：如何通过练习学习英语"
+        },
+        "1": {
+            "bvid": "BV1Nb411v7XU",  # Same video, different page
+            "p": 2,
+            "title": "TED演讲：词汇量拓展训练"
+        }
     }
+    
     with open(os.path.join(OUTPUT_DIR, "video_map.json"), "w") as f:
         json.dump(video_map, f, indent=2)
-    print(f"✓ Generated video_map.json with {NUM_MOCK_VIDEOS} mock videos")
+    print(f"✓ Generated video_map.json with {len(video_map)} mock videos")
     
     # Generate indexes grouped by first letter
     print("\n" + "=" * 60)
@@ -101,7 +110,7 @@ def main():
         entries = []
         
         for _ in range(num_entries):
-            video_id = random.randint(0, NUM_MOCK_VIDEOS - 1)
+            video_id = str(random.randint(0, NUM_MOCK_VIDEOS - 1))
             entry = generate_mock_entry(word, video_id)
             entries.append(entry)
             total_entries += 1
@@ -128,7 +137,7 @@ def main():
         "total_words": len(words),
         "total_entries": total_entries,
         "sharding_type": "alphabet",
-        "version": "1.2",
+        "version": "2.0",
         "shard_count": len(sharded_index)
     }
     

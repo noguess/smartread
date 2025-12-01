@@ -1,22 +1,31 @@
+// Video metadata from video_map.json
+interface VideoMapItem {
+    bvid: string
+    p: number
+    title: string
+}
+
 // Video occurrence in index
 export interface VideoOccurrence {
-    videoPath: string
+    bvid: string
+    page: number
+    title: string
     startTime: number
-    endTime: number
     context: string
 }
 
 class VideoIndexService {
-    private videoMap: Record<string, string> | null = null
+    private videoMap: Record<string, VideoMapItem> | null = null
     private indexCache: Record<string, any> = {}
 
-    async loadVideoMap(): Promise<Record<string, string>> {
+    async loadVideoMap(): Promise<Record<string, VideoMapItem>> {
         if (this.videoMap) return this.videoMap
 
         try {
             const response = await fetch('/data/video_map.json')
             if (!response.ok) throw new Error('Video map not found')
-            this.videoMap = await response.json()
+            const data = await response.json()
+            this.videoMap = data as Record<string, VideoMapItem>
             return this.videoMap
         } catch (error) {
             console.warn('Failed to load video map:', error)
@@ -52,14 +61,22 @@ class VideoIndexService {
             const videoMap = await this.loadVideoMap()
 
             // Transform entries to VideoOccurrence format
-            const occurrences: VideoOccurrence[] = entries.map((entry: any) => ({
-                videoPath: videoMap[entry.v] || '',
-                startTime: entry.t[0],
-                endTime: entry.t[1],
-                context: entry.c
-            }))
+            const occurrences: VideoOccurrence[] = []
 
-            return occurrences.filter(o => o.videoPath) // Filter out invalid mappings
+            for (const entry of entries) {
+                const videoInfo = videoMap[entry.v]
+                if (videoInfo) {
+                    occurrences.push({
+                        bvid: videoInfo.bvid,
+                        page: videoInfo.p,
+                        title: videoInfo.title,
+                        startTime: entry.t, // V2.0: t is a single number (seconds)
+                        context: entry.c
+                    })
+                }
+            }
+
+            return occurrences
         } catch (error) {
             console.warn(`Failed to search word "${word}":`, error)
             return []

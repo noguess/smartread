@@ -15,6 +15,7 @@ import {
     Paper,
 } from '@mui/material'
 import { Add, Refresh } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 import { Word } from '../../services/db'
 import { WordSelector } from '../../utils/WordSelector'
 import { wordService } from '../../services/wordService'
@@ -32,6 +33,7 @@ export default function ManualGenerationDialog({
     onGenerate,
     allWords = [],
 }: ManualGenerationDialogProps) {
+    const { t } = useTranslation(['home', 'common'])
     const [wordCount, setWordCount] = useState<number>(15)
     const [selectedWords, setSelectedWords] = useState<Word[]>([])
     const [searchQuery, setSearchQuery] = useState('')
@@ -91,10 +93,10 @@ export default function ManualGenerationDialog({
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle>Customize Your Reading</DialogTitle>
+            <DialogTitle>{t('home:manual.title')}</DialogTitle>
             <DialogContent>
                 <Box sx={{ mb: 4, mt: 2 }}>
-                    <Typography gutterBottom>Word Count: {wordCount}</Typography>
+                    <Typography gutterBottom>{t('home:manual.wordCount')}: {wordCount}</Typography>
                     <Slider
                         value={wordCount}
                         onChange={handleSliderChange}
@@ -108,7 +110,7 @@ export default function ManualGenerationDialog({
                 <Box sx={{ mb: 3 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="subtitle2" color="text.secondary">
-                            Selected Words ({selectedWords.length})
+                            {t('home:manual.selectedWords')} ({selectedWords.length})
                         </Typography>
                         <Button
                             startIcon={<Refresh />}
@@ -119,7 +121,7 @@ export default function ManualGenerationDialog({
                                 setSelectedWords(newPicks)
                             }}
                         >
-                            Auto Fill / Refresh
+                            {t('home:manual.autoFill')}
                         </Button>
                     </Box>
                     <Paper
@@ -144,7 +146,7 @@ export default function ManualGenerationDialog({
                         ))}
                         {selectedWords.length === 0 && (
                             <Typography color="text.secondary" sx={{ width: '100%', textAlign: 'center', py: 2 }}>
-                                No words selected. Adjust slider or add words manually.
+                                {t('home:manual.noWords')}
                             </Typography>
                         )}
                     </Paper>
@@ -154,7 +156,7 @@ export default function ManualGenerationDialog({
                     <TextField
                         fullWidth
                         size="small"
-                        placeholder="Search and add specific word..."
+                        placeholder={t('home:manual.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleAddWord()}
@@ -172,7 +174,7 @@ export default function ManualGenerationDialog({
             </DialogContent>
             <DialogActions sx={{ p: 3 }}>
                 <Button onClick={onClose} color="inherit">
-                    Cancel
+                    {t('common:button.cancel')}
                 </Button>
                 <Button
                     onClick={() => onGenerate(selectedWords)}
@@ -180,7 +182,7 @@ export default function ManualGenerationDialog({
                     size="large"
                     disabled={selectedWords.length === 0}
                 >
-                    Generate Now
+                    {t('home:manual.generate')}
                 </Button>
             </DialogActions>
         </Dialog>

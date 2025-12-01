@@ -1,0 +1,23 @@
+{
+    "title": "单词本",
+    "tabs": {
+        "all": "全部 ({{count}})",
+        "new": "新词 ({{count}})",
+        "learning": "学习中 ({{count}})",
+        "review": "复习 ({{count}})",
+        "mastered": "已掌握 ({{count}})"
+    },
+    "searchPlaceholder": "搜索单词...",
+    "emptyState": {
+        "noWords": "这里还没有单词",
+        "noWordsDesc": "开始学习后，单词会自动出现在这里",
+        "noResults": "没有找到匹配的单词",
+        "noResultsDesc": "尝试搜索其他关键词，或切换不同的分类查看"
+    },
+    "modal": {
+        "videoExplanation": "视频讲解",
+        "source": "来源",
+        "noVideo": "暂无该单词的视频讲解",
+        "otherOccurrences": "其他出现位置"
+    }
+}

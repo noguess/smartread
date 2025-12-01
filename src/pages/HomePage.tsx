@@ -9,8 +9,10 @@ import DashboardHero from '../components/dashboard/DashboardHero'
 import DashboardStats from '../components/dashboard/DashboardStats'
 import RecentActivityList from '../components/dashboard/RecentActivityList'
 import ManualGenerationDialog from '../components/dashboard/ManualGenerationDialog'
+import { useTranslation } from 'react-i18next'
 
 export default function HomePage() {
+    const { t } = useTranslation(['home'])
     const navigate = useNavigate()
     const [allWords, setAllWords] = useState<Word[]>([])
     const [history, setHistory] = useState<History[]>([])
@@ -59,7 +61,7 @@ export default function HomePage() {
         <Container maxWidth="xl">
             <Box sx={{ py: 2 }}>
                 <Typography variant="h4" gutterBottom fontWeight="bold" sx={{ mb: 4 }}>
-                    Dashboard
+                    {t('home:title')}
                 </Typography>
 
                 <Grid container spacing={3}>

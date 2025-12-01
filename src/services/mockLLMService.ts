@@ -15,7 +15,7 @@ export interface GeneratedContent {
 }
 
 export const mockLLMService = {
-    async generateArticle(words: Word[], length: string = 'medium'): Promise<GeneratedContent> {
+    async generateArticle(words: Word[], _length: string = 'medium'): Promise<GeneratedContent> {
         // Simulate API delay
         await new Promise((resolve) => setTimeout(resolve, 1500))
 

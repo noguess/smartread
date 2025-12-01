@@ -18,10 +18,13 @@ import {
     DialogContentText,
     DialogTitle,
 } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { settingsService } from '../services/settingsService'
 import { db, Setting } from '../services/db'
+import ThemeSwitcher from '../components/ThemeSwitcher'
 
 export default function SettingsPage() {
+    const { t } = useTranslation(['settings', 'common'])
     const [settings, setSettings] = useState<Setting | null>(null)
     const [apiKey, setApiKey] = useState('')
     const [articleLen, setArticleLen] = useState<'short' | 'medium' | 'long'>('medium')
@@ -54,7 +57,7 @@ export default function SettingsPage() {
         }
         await settingsService.saveSettings(newSettings)
         setSettings(newSettings)
-        showToast('Settings saved successfully')
+        showToast(t('settings:messages.saveSuccess'))
     }
 
     const handleResetClick = () => {
@@ -65,7 +68,7 @@ export default function SettingsPage() {
     const handleConfirmReset = async () => {
         // Validate password
         if (resetPassword !== 'admin') {
-            showToast('密码错误，请重试')
+            showToast(t('settings:messages.wrongPassword'))
             return
         }
 
@@ -87,13 +90,13 @@ export default function SettingsPage() {
                 await db.history.clear()
             })
 
-            showToast('学习进度已重置，页面即将刷新...')
+            showToast(t('settings:messages.resetSuccess'))
             setTimeout(() => {
                 window.location.reload()
             }, 1500)
         } catch (error) {
             console.error('Failed to reset progress:', error)
-            showToast('重置失败，请重试')
+            showToast(t('settings:messages.resetError'))
         }
     }
 
@@ -110,67 +113,70 @@ export default function SettingsPage() {
     return (
         <Box>
             <Typography variant="h4" gutterBottom fontWeight="bold">
-                设置
+                {t('settings:title')}
             </Typography>
 
             <Paper sx={{ p: 3, mb: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                    API 配置
+                    {t('settings:api.title')}
                 </Typography>
                 <TextField
                     fullWidth
-                    label="Deepseek API Key"
+                    label={t('settings:api.apiKey')}
                     type="password"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder="sk-..."
-                    helperText="请输入您的 Deepseek API Key (本地存储，不会上传)"
+                    helperText={t('settings:api.apiKeyHelper')}
                     sx={{ mt: 2 }}
                 />
             </Paper>
 
             <Paper sx={{ p: 3, mb: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                    学习偏好
+                    {t('settings:preferences.title')}
                 </Typography>
 
                 <FormControl fullWidth sx={{ mt: 2 }}>
-                    <InputLabel>文章长度</InputLabel>
+                    <InputLabel>{t('settings:preferences.articleLength')}</InputLabel>
                     <Select
                         value={articleLen}
-                        label="文章长度"
+                        label={t('settings:preferences.articleLength')}
                         onChange={(e) => setArticleLen(e.target.value as any)}
                     >
-                        <MenuItem value="short">短篇 (~150词)</MenuItem>
-                        <MenuItem value="medium">中篇 (~250词)</MenuItem>
-                        <MenuItem value="long">长篇 (~350+词)</MenuItem>
+                        <MenuItem value="short">{t('settings:preferences.short')}</MenuItem>
+                        <MenuItem value="medium">{t('settings:preferences.medium')}</MenuItem>
+                        <MenuItem value="long">{t('settings:preferences.long')}</MenuItem>
                     </Select>
                 </FormControl>
 
                 <TextField
                     fullWidth
-                    label="每日新词上限"
+                    label={t('settings:preferences.dailyLimit')}
                     type="number"
                     value={dailyLimit}
                     onChange={(e) => setDailyLimit(Number(e.target.value))}
-                    helperText="限制每天引入新词的最大数量"
+                    helperText={t('settings:preferences.dailyLimitHelper')}
                     sx={{ mt: 2 }}
                 />
             </Paper>
 
-            <Paper sx={{ p: 3 }}>
+            {/* V2.0: 主题模式切换 */}
+            <ThemeSwitcher />
+
+            <Paper sx={{ p: 3, mt: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                    数据管理
+                    {t('settings:data.title')}
                 </Typography>
                 <Divider sx={{ my: 2 }} />
                 <Button variant="outlined" color="error" onClick={handleResetClick}>
-                    重置进度
+                    {t('settings:data.reset')}
                 </Button>
             </Paper>
 
             <Box sx={{ mt: 3, textAlign: 'right' }}>
                 <Button variant="contained" size="large" onClick={handleSave}>
-                    保存设置
+                    {t('settings:saveSettings')}
                 </Button>
             </Box>
 
@@ -178,24 +184,24 @@ export default function SettingsPage() {
                 open={confirmDialogOpen}
                 onClose={handleCancelReset}
             >
-                <DialogTitle>确认重置进度</DialogTitle>
+                <DialogTitle>{t('settings:resetDialog.title')}</DialogTitle>
                 <DialogContent>
                     <DialogContentText sx={{ mb: 2 }}>
-                        此操作将清除所有学习进度和历史记录，但保留单词数据和用户设置。
+                        {t('settings:resetDialog.description')}
                     </DialogContentText>
                     <DialogContentText sx={{ mb: 2, color: 'error.main', fontWeight: 'bold' }}>
-                        ⚠️ 此操作无法撤销！
+                        {t('settings:resetDialog.warning')}
                     </DialogContentText>
                     <TextField
                         autoFocus
                         margin="dense"
-                        label="请输入密码以确认"
+                        label={t('settings:resetDialog.passwordLabel')}
                         type="password"
                         fullWidth
                         variant="outlined"
                         value={resetPassword}
                         onChange={(e) => setResetPassword(e.target.value)}
-                        helperText="提示：密码为 admin"
+                        helperText={t('settings:resetDialog.passwordHint')}
                         onKeyPress={(e) => {
                             if (e.key === 'Enter') {
                                 handleConfirmReset()
@@ -204,9 +210,9 @@ export default function SettingsPage() {
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCancelReset}>取消</Button>
+                    <Button onClick={handleCancelReset}>{t('common:button.cancel')}</Button>
                     <Button onClick={handleConfirmReset} color="error" variant="contained">
-                        确认重置
+                        {t('settings:resetDialog.confirmButton')}
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -1,0 +1,44 @@
+{
+    "title": "Settings",
+    "theme": {
+        "title": "Theme Mode",
+        "description": "Choose a comfortable reading theme",
+        "light": "Light Mode",
+        "lightDesc": "Fresh and bright, recommended for daytime",
+        "eyeCare": "Eye Care Mode",
+        "eyeCareDesc": "Warm colors, more comfortable for long reading"
+    },
+    "api": {
+        "title": "API Configuration",
+        "apiKey": "Deepseek API Key",
+        "apiKeyHelper": "Enter your Deepseek API Key (stored locally, not uploaded)"
+    },
+    "preferences": {
+        "title": "Learning Preferences",
+        "articleLength": "Article Length",
+        "short": "Short (~150 words)",
+        "medium": "Medium (~250 words)",
+        "long": "Long (~350+ words)",
+        "dailyLimit": "Daily New Words Limit",
+        "dailyLimitHelper": "Limit the maximum number of new words per day"
+    },
+    "data": {
+        "title": "Data Management",
+        "reset": "Reset Progress"
+    },
+    "saveSettings": "Save Settings",
+    "resetDialog": {
+        "title": "Confirm Reset Progress",
+        "description": "This will clear all learning progress and history, but keep word data and user settings.",
+        "warning": "⚠️ This action cannot be undone!",
+        "passwordLabel": "Enter password to confirm",
+        "passwordHint": "Hint: password is admin",
+        "confirmButton": "Confirm Reset"
+    },
+    "messages": {
+        "saveSuccess": "Settings saved successfully",
+        "wrongPassword": "Wrong password, please try again",
+        "resetSuccess": "Progress reset successfully, reloading...",
+        "resetError": "Reset failed, please try again"
+    }
+}

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { ThemeProvider, createTheme } from '@mui/material/styles'
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ReadingPage from './pages/ReadingPage'
@@ -9,42 +9,12 @@ import VocabularyPage from './pages/VocabularyPage'
 import StatisticsPage from './pages/StatisticsPage'
 import SettingsPage from './pages/SettingsPage'
 import { seedDatabase } from './services/db'
+import { ThemeProvider as CustomThemeProvider, useThemeMode } from './theme/ThemeContext'
+import { themes } from './theme'
 
-// Material Design 3 theme with Deep Blue/Teal
-const theme = createTheme({
-    palette: {
-        mode: 'light',
-        primary: {
-            main: '#006064', // Deep Teal
-        },
-        secondary: {
-            main: '#0277BD', // Deep Blue
-        },
-        background: {
-            default: '#FAFAFA',
-            paper: '#FFFEF7', // Cream/Off-white for reading
-        },
-        error: {
-            main: '#D32F2F', // Red for errors/urgent reviews
-        },
-    },
-    typography: {
-        fontFamily: [
-            '-apple-system',
-            'BlinkMacSystemFont',
-            '"Segoe UI"',
-            'Roboto',
-            '"Helvetica Neue"',
-            'Arial',
-            'sans-serif',
-            '"Apple Color Emoji"',
-            '"Segoe UI Emoji"',
-            '"Segoe UI Symbol"',
-        ].join(','),
-    },
-})
+function AppContent() {
+    const { themeMode } = useThemeMode()
 
-function App() {
     useEffect(() => {
         const initDB = async () => {
             await seedDatabase()
@@ -53,7 +23,7 @@ function App() {
     }, [])
 
     return (
-        <ThemeProvider theme={theme}>
+        <MuiThemeProvider theme={themes[themeMode]}>
             <Layout>
                 <Routes>
                     <Route path="/" element={<HomePage />} />
@@ -65,7 +35,15 @@ function App() {
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </Layout>
-        </ThemeProvider>
+        </MuiThemeProvider>
+    )
+}
+
+function App() {
+    return (
+        <CustomThemeProvider>
+            <AppContent />
+        </CustomThemeProvider>
     )
 }
 

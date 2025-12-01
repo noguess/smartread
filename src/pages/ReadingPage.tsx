@@ -12,10 +12,12 @@ import ArticleView from '../components/reading/ArticleView'
 import QuizView from '../components/reading/QuizView'
 import ScoreFeedback from '../components/reading/ScoreFeedback'
 import WordDetailModal from '../components/WordDetailModal'
+import { useTranslation } from 'react-i18next'
 
 type Step = 'generating' | 'reading' | 'quiz' | 'feedback'
 
 export default function ReadingPage() {
+    const { t } = useTranslation(['reading'])
     const location = useLocation()
     const navigate = useNavigate()
     const [step, setStep] = useState<Step>('generating')
@@ -89,7 +91,7 @@ export default function ReadingPage() {
             setStep('reading')
         } catch (error) {
             console.error('Generation failed', error)
-            alert(`Failed to generate article: ${error instanceof Error ? error.message : 'Unknown error'}`)
+            alert(t('reading:error.generationFailed', { error: error instanceof Error ? error.message : 'Unknown error' }))
             navigate('/')
         }
     }
@@ -148,10 +150,10 @@ export default function ReadingPage() {
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
                 <CircularProgress size={60} thickness={4} sx={{ mb: 4 }} />
                 <Typography variant="h5" color="text.secondary">
-                    Writing your story...
+                    {t('reading:generating.title')}
                 </Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-                    Incorporating {targetWords.length} target words.
+                    {t('reading:generating.subtitle', { count: targetWords.length })}
                 </Typography>
             </Box>
         )
@@ -173,7 +175,7 @@ export default function ReadingPage() {
                             onClick={() => setStep('quiz')}
                             sx={{ px: 6, py: 1.5, borderRadius: 8, fontSize: '1.2rem' }}
                         >
-                            {isReviewMode ? 'Review Quiz' : 'Start Quiz'}
+                            {isReviewMode ? t('reading:buttons.reviewQuiz') : t('reading:buttons.startQuiz')}
                         </Button>
                     </Box>
                 </>

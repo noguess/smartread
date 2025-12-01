@@ -2,8 +2,6 @@ import { Word, WordStatus } from '../services/db'
 
 // Constants for SRS
 const MASTERED_THRESHOLD_DAYS = 60
-const INTERVAL_MULTIPLIER_MIN = 1.8
-const INTERVAL_MULTIPLIER_MAX = 2.5
 
 export const SRSAlgorithm = {
     /**

@@ -1,0 +1,32 @@
+{
+    "title": "首页",
+    "hero": {
+        "title": "开始学习",
+        "todayPlan": "今日计划：{{reviewCount}} 个复习词 + {{newCount}} 个新词",
+        "smartGenerate": "智能生成",
+        "customMode": "自定义模式"
+    },
+    "stats": {
+        "title": "记忆状态",
+        "masteryProgress": "掌握进度",
+        "masteryPercent": "{{percent}}% 已掌握",
+        "reviewNeeded": "需复习",
+        "newWords": "新词",
+        "learning": "学习中",
+        "total": "总计"
+    },
+    "recentActivity": {
+        "title": "最近活动",
+        "noActivity": "还没有学习记录，开始第一篇文章吧！",
+        "points": "分"
+    },
+    "manual": {
+        "title": "自定义学习内容",
+        "wordCount": "单词数量",
+        "selectedWords": "已选单词",
+        "autoFill": "自动填充 / 刷新",
+        "noWords": "未选择单词，请调整滑块或手动添加",
+        "searchPlaceholder": "搜索并添加特定单词...",
+        "generate": "立即生成"
+    }
+}

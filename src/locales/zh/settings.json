@@ -1,0 +1,44 @@
+{
+    "title": "设置",
+    "theme": {
+        "title": "主题模式",
+        "description": "选择一个舒适的阅读主题",
+        "light": "浅色模式",
+        "lightDesc": "清新明亮，推荐日间使用",
+        "eyeCare": "护眼模式",
+        "eyeCareDesc": "暖色调配色，长时间阅读更舒适"
+    },
+    "api": {
+        "title": "API 配置",
+        "apiKey": "Deepseek API Key",
+        "apiKeyHelper": "请输入您的 Deepseek API Key (本地存储，不会上传)"
+    },
+    "preferences": {
+        "title": "学习偏好",
+        "articleLength": "文章长度",
+        "short": "短篇 (~150词)",
+        "medium": "中篇 (~250词)",
+        "long": "长篇 (~350+词)",
+        "dailyLimit": "每日新词上限",
+        "dailyLimitHelper": "限制每天引入新词的最大数量"
+    },
+    "data": {
+        "title": "数据管理",
+        "reset": "重置进度"
+    },
+    "saveSettings": "保存设置",
+    "resetDialog": {
+        "title": "确认重置进度",
+        "description": "此操作将清除所有学习进度和历史记录，但保留单词数据和用户设置。",
+        "warning": "⚠️ 此操作无法撤销！",
+        "passwordLabel": "请输入密码以确认",
+        "passwordHint": "提示：密码为 admin",
+        "confirmButton": "确认重置"
+    },
+    "messages": {
+        "saveSuccess": "设置保存成功",
+        "wrongPassword": "密码错误，请重试",
+        "resetSuccess": "学习进度已重置，页面即将刷新...",
+        "resetError": "重置失败，请重试"
+    }
+}

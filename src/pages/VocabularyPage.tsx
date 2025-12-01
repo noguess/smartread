@@ -2,22 +2,22 @@ import { useState, useEffect } from 'react'
 import {
     Box,
     Typography,
-    Paper,
     TextField,
     InputAdornment,
     Tabs,
     Tab,
     Grid,
-    Card,
-    Chip,
     CardActionArea,
 } from '@mui/material'
-import { Search as SearchIcon } from '@mui/icons-material'
+import { Search as SearchIcon, LibraryBooks as LibraryBooksIcon } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 import { Word } from '../services/db'
 import { wordService } from '../services/wordService'
 import WordDetailModal from '../components/WordDetailModal'
+import { EmptyState, StyledCard, StatusBadge } from '../components/common'
 
 export default function VocabularyPage() {
+    const { t } = useTranslation(['vocabulary', 'common'])
     const [words, setWords] = useState<Word[]>([])
     const [filteredWords, setFilteredWords] = useState<Word[]>([])
     const [searchQuery, setSearchQuery] = useState('')
@@ -63,15 +63,6 @@ export default function VocabularyPage() {
         setModalOpen(true)
     }
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'Mastered': return 'success'
-            case 'Review': return 'warning'
-            case 'Learning': return 'info'
-            default: return 'default'
-        }
-    }
-
     const counts = {
         All: words.length,
         New: words.filter(w => w.status === 'New').length,
@@ -82,23 +73,26 @@ export default function VocabularyPage() {
 
     return (
         <Box>
-            <Typography variant="h4" gutterBottom fontWeight="bold">
-                单词本
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                <LibraryBooksIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+                <Typography variant="h4" fontWeight="bold">
+                    {t('vocabulary:title')}
+                </Typography>
+            </Box>
 
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
                 <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-                    <Tab label={`All (${counts.All})`} />
-                    <Tab label={`New (${counts.New})`} />
-                    <Tab label={`Learning (${counts.Learning})`} />
-                    <Tab label={`Review (${counts.Review})`} />
-                    <Tab label={`Mastered (${counts.Mastered})`} />
+                    <Tab label={t('vocabulary:tabs.all', { count: counts.All })} />
+                    <Tab label={t('vocabulary:tabs.new', { count: counts.New })} />
+                    <Tab label={t('vocabulary:tabs.learning', { count: counts.Learning })} />
+                    <Tab label={t('vocabulary:tabs.review', { count: counts.Review })} />
+                    <Tab label={t('vocabulary:tabs.mastered', { count: counts.Mastered })} />
                 </Tabs>
             </Box>
 
             <TextField
                 fullWidth
-                placeholder="搜索单词..."
+                placeholder={t('vocabulary:searchPlaceholder')}
                 variant="outlined"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -112,37 +106,41 @@ export default function VocabularyPage() {
                 }}
             />
 
-            <Grid container spacing={2}>
-                {filteredWords.map((word) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={word.id}>
-                        <Card variant="outlined" sx={{ height: '100%' }}>
-                            <CardActionArea onClick={() => handleWordClick(word.spelling)} sx={{ height: '100%', p: 2 }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
-                                    <Typography variant="h6" fontWeight="bold">
-                                        {word.spelling}
+            {filteredWords.length > 0 ? (
+                <Grid container spacing={2}>
+                    {filteredWords.map((word) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={word.id}>
+                            <StyledCard hoverable>
+                                <CardActionArea onClick={() => handleWordClick(word.spelling)} sx={{ height: '100%', p: 2 }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
+                                        <Typography variant="h6" fontWeight="bold">
+                                            {word.spelling}
+                                        </Typography>
+                                        <StatusBadge status={word.status} size="small" />
+                                    </Box>
+                                    <Typography variant="body2" color="text.secondary" sx={{
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden',
+                                    }}>
+                                        {word.meaning}
                                     </Typography>
-                                    <Chip
-                                        label={word.status}
-                                        size="small"
-                                        color={getStatusColor(word.status) as any}
-                                        variant="outlined"
-                                    />
-                                </Box>
-                                <Typography variant="body2" color="text.secondary" noWrap>
-                                    {word.meaning}
-                                </Typography>
-                            </CardActionArea>
-                        </Card>
-                    </Grid>
-                ))}
-            </Grid>
-
-            {filteredWords.length === 0 && (
-                <Paper sx={{ p: 4, textAlign: 'center', minHeight: 200, bgcolor: 'transparent' }} elevation={0}>
-                    <Typography variant="body1" color="text.secondary">
-                        没有找到符合条件的单词
-                    </Typography>
-                </Paper>
+                                </CardActionArea>
+                            </StyledCard>
+                        </Grid>
+                    ))}
+                </Grid>
+            ) : (
+                <EmptyState
+                    icon="🔍"
+                    title={searchQuery ? t('vocabulary:emptyState.noResults') : t('vocabulary:emptyState.noWords')}
+                    description={
+                        searchQuery
+                            ? t('vocabulary:emptyState.noResultsDesc')
+                            : t('vocabulary:emptyState.noWordsDesc')
+                    }
+                />
             )}
 
             <WordDetailModal

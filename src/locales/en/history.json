@@ -1,0 +1,9 @@
+{
+    "title": "Learning History",
+    "emptyState": {
+        "title": "No learning records yet",
+        "description": "Records will appear here after you complete your first article"
+    },
+    "points": "pts",
+    "targetWords": "Target Words"
+}

@@ -35,7 +35,14 @@ class ASREngine:
             ], check=True, capture_output=True)
             
             # Perform ASR on temporary audio
-            result = self.model.transcribe(temp_audio_path)
+            # Optimizations for speed:
+            # - language="en": skip auto-detection (saves ~5-10 seconds)
+            # - verbose=False: reduce console output overhead
+            result = self.model.transcribe(
+                temp_audio_path,
+                language="en",  
+                verbose=False
+            )
             
             words = []
             for segment in result.segments:

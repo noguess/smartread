@@ -1,0 +1,23 @@
+{
+    "title": "Vocabulary",
+    "tabs": {
+        "all": "All ({{count}})",
+        "new": "New ({{count}})",
+        "learning": "Learning ({{count}})",
+        "review": "Review ({{count}})",
+        "mastered": "Mastered ({{count}})"
+    },
+    "searchPlaceholder": "Search words...",
+    "emptyState": {
+        "noWords": "No words yet",
+        "noWordsDesc": "Words will appear here after you start learning",
+        "noResults": "No matching words found",
+        "noResultsDesc": "Try different keywords or switch categories"
+    },
+    "modal": {
+        "videoExplanation": "Video Explanation",
+        "source": "Source",
+        "noVideo": "No video explanation available for this word",
+        "otherOccurrences": "Other Occurrences"
+    }
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Paper, Typography, Box, Rating, Button } from '@mui/material'
 import { CheckCircle, Cancel } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 
 interface ScoreFeedbackProps {
     score: number
@@ -9,6 +10,7 @@ interface ScoreFeedbackProps {
 }
 
 export default function ScoreFeedback({ score, totalQuestions, onComplete }: ScoreFeedbackProps) {
+    const { t } = useTranslation(['reading'])
     const [difficulty, setDifficulty] = useState<number | null>(null)
     const percentage = Math.round((score / totalQuestions) * 100)
 
@@ -26,11 +28,11 @@ export default function ScoreFeedback({ score, totalQuestions, onComplete }: Sco
                 {percentage}%
             </Typography>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-                You got {score} out of {totalQuestions} correct!
+                {t('reading:feedback.scoreDesc', { score, total: totalQuestions })}
             </Typography>
 
             <Box sx={{ my: 4, py: 3, borderTop: '1px solid #eee', borderBottom: '1px solid #eee' }}>
-                <Typography gutterBottom>How difficult was this article?</Typography>
+                <Typography gutterBottom>{t('reading:feedback.difficulty')}</Typography>
                 <Rating
                     name="difficulty"
                     value={difficulty}
@@ -46,7 +48,7 @@ export default function ScoreFeedback({ score, totalQuestions, onComplete }: Sco
                 disabled={difficulty === null}
                 onClick={() => onComplete(difficulty!)}
             >
-                Finish Learning
+                {t('reading:feedback.complete')}
             </Button>
         </Paper>
     )

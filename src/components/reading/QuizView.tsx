@@ -9,6 +9,7 @@ import {
     Button,
     Box,
 } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { Question } from '../../services/mockLLMService'
 
 interface QuizViewProps {
@@ -18,6 +19,7 @@ interface QuizViewProps {
 }
 
 export default function QuizView({ questions, onSubmit, onBack }: QuizViewProps) {
+    const { t } = useTranslation(['reading'])
     const [answers, setAnswers] = useState<Record<string, string>>({})
 
     const handleChange = (questionId: string, value: string) => {
@@ -29,7 +31,7 @@ export default function QuizView({ questions, onSubmit, onBack }: QuizViewProps)
     return (
         <Paper elevation={0} sx={{ p: 4, borderRadius: 4 }}>
             <Typography variant="h5" gutterBottom fontWeight="bold">
-                Comprehension Check
+                {t('reading:quiz.title')}
             </Typography>
 
             {questions.map((q, index) => (
@@ -56,7 +58,7 @@ export default function QuizView({ questions, onSubmit, onBack }: QuizViewProps)
                     size="large"
                     onClick={onBack}
                 >
-                    Back to Article
+                    {t('reading:quiz.back')}
                 </Button>
                 <Button
                     variant="contained"
@@ -64,7 +66,7 @@ export default function QuizView({ questions, onSubmit, onBack }: QuizViewProps)
                     disabled={!isComplete}
                     onClick={() => onSubmit(answers)}
                 >
-                    Submit Answers
+                    {t('reading:quiz.submit')}
                 </Button>
             </Box>
         </Paper>

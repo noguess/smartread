@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import {
     Container,
     Typography,
-    Paper,
     List,
     ListItem,
     ListItemText,
@@ -12,10 +11,14 @@ import {
     Box,
     Divider,
 } from '@mui/material'
+import { History as HistoryIcon } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 import { History } from '../services/db'
 import { historyService } from '../services/historyService'
+import { EmptyState, StyledCard } from '../components/common'
 
 export default function HistoryPage() {
+    const { t } = useTranslation(['history', 'common'])
     const navigate = useNavigate()
     const [history, setHistory] = useState<History[]>([])
 
@@ -32,39 +35,65 @@ export default function HistoryPage() {
         navigate('/reading', { state: { historyRecord: record, mode: 'review' } })
     }
 
+    const getScoreEmoji = (score: number) => {
+        if (score >= 90) return '🎉'
+        if (score >= 80) return '⭐'
+        if (score >= 60) return '👍'
+        return '💪'
+    }
+
     return (
         <Container maxWidth="md">
-            <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 'bold' }}>
-                阅读历史
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
+                <HistoryIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+                <Typography variant="h4" fontWeight="bold">
+                    📚 {t('history:title')}
+                </Typography>
+            </Box>
 
             {history.length === 0 ? (
-                <Paper sx={{ p: 4, textAlign: 'center' }}>
-                    <Typography color="text.secondary">
-                        暂无阅读记录，快去生成文章开始学习吧！
-                    </Typography>
-                </Paper>
+                <EmptyState
+                    icon="📖"
+                    title={t('history:emptyState.title')}
+                    description={t('history:emptyState.description')}
+                />
             ) : (
-                <Paper>
+                <StyledCard>
                     <List disablePadding>
                         {history.map((record, index) => (
                             <Box key={record.id || index}>
                                 <ListItem disablePadding>
-                                    <ListItemButton onClick={() => handleItemClick(record)} sx={{ py: 2 }}>
+                                    <ListItemButton
+                                        onClick={() => handleItemClick(record)}
+                                        sx={{
+                                            py: 2.5,
+                                            px: 3,
+                                            '&:hover': {
+                                                bgcolor: 'action.hover',
+                                            },
+                                        }}
+                                    >
                                         <ListItemText
                                             primary={
                                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                                                    <Typography variant="subtitle1" fontWeight="bold">
-                                                        {record.title || 'Untitled Article'}
-                                                        <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 2 }}>
-                                                            {new Date(record.date).toLocaleDateString()} {new Date(record.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                        <Typography component="span" sx={{ fontSize: '1.5rem' }}>
+                                                            {getScoreEmoji(record.userScore)}
                                                         </Typography>
-                                                    </Typography>
+                                                        <Box>
+                                                            <Typography variant="subtitle1" fontWeight="bold">
+                                                                {record.title || 'Untitled Article'}
+                                                            </Typography>
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                🕒 {new Date(record.date).toLocaleDateString('zh-CN')} {new Date(record.date).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                                                            </Typography>
+                                                        </Box>
+                                                    </Box>
                                                     <Chip
-                                                        label={`得分: ${record.userScore}`}
-                                                        color={record.userScore >= 60 ? 'success' : 'error'}
+                                                        label={`${record.userScore} ${t('history:points')}`}
+                                                        color={record.userScore >= 80 ? 'success' : record.userScore >= 60 ? 'warning' : 'error'}
                                                         size="small"
-                                                        variant="outlined"
+                                                        sx={{ fontWeight: 600 }}
                                                     />
                                                 </Box>
                                             }
@@ -78,17 +107,33 @@ export default function HistoryPage() {
                                                             WebkitLineClamp: 2,
                                                             WebkitBoxOrient: 'vertical',
                                                             overflow: 'hidden',
-                                                            mb: 1
+                                                            mb: 1.5,
+                                                            lineHeight: 1.6,
                                                         }}
                                                     >
                                                         {record.articleContent}
                                                     </Typography>
-                                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                                                        <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5 }}>
+                                                            🎯 {t('history:targetWords')}:
+                                                        </Typography>
                                                         {record.targetWords.slice(0, 5).map((word) => (
-                                                            <Chip key={word} label={word} size="small" sx={{ fontSize: '0.75rem' }} />
+                                                            <Chip
+                                                                key={word}
+                                                                label={word}
+                                                                size="small"
+                                                                variant="outlined"
+                                                                sx={{ fontSize: '0.7rem', height: 20 }}
+                                                            />
                                                         ))}
                                                         {record.targetWords.length > 5 && (
-                                                            <Chip label={`+${record.targetWords.length - 5}`} size="small" variant="outlined" sx={{ fontSize: '0.75rem' }} />
+                                                            <Chip
+                                                                label={`+${record.targetWords.length - 5}`}
+                                                                size="small"
+                                                                variant="filled"
+                                                                color="primary"
+                                                                sx={{ fontSize: '0.7rem', height: 20 }}
+                                                            />
                                                         )}
                                                     </Box>
                                                 </Box>
@@ -100,7 +145,7 @@ export default function HistoryPage() {
                             </Box>
                         ))}
                     </List>
-                </Paper>
+                </StyledCard>
             )}
         </Container>
     )

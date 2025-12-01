@@ -1,0 +1,31 @@
+{
+    "generating": {
+        "title": "Writing your story...",
+        "subtitle": "Incorporating {{count}} target words"
+    },
+    "buttons": {
+        "startQuiz": "Start Quiz",
+        "reviewQuiz": "Review Quiz"
+    },
+    "error": {
+        "generationFailed": "Failed to generate article: {{error}}"
+    },
+    "quiz": {
+        "title": "Reading Comprehension Quiz",
+        "submit": "Submit Answers",
+        "back": "Back to Article"
+    },
+    "feedback": {
+        "title": "Quiz Completed!",
+        "score": "Score",
+        "scoreDesc": "You got {{score}} out of {{total}} correct!",
+        "perfect": "Perfect! All correct!",
+        "good": "Good job!",
+        "keepTrying": "Keep trying!",
+        "difficulty": "How difficult was this article?",
+        "easy": "Too Easy",
+        "justRight": "Just Right",
+        "hard": "Too Hard",
+        "complete": "Complete"
+    }
+}

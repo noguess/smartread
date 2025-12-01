@@ -1,9 +1,8 @@
 {
-  "generated_at": 1764303466,
-  "total_videos": 2,
-  "total_words": 666,
-  "total_entries": 1006,
+  "generated_at": 1764488651,
+  "total_videos": 1,
+  "total_words": 9,
   "sharding_type": "alphabet",
-  "version": "1.2",
-  "shard_count": 24
+  "version": "2.0",
+  "indexer": "you-get + WhisperX"
 }

@@ -1,0 +1,31 @@
+{
+    "generating": {
+        "title": "正在生成文章...",
+        "subtitle": "正在融入 {{count}} 个目标单词"
+    },
+    "buttons": {
+        "startQuiz": "开始测验",
+        "reviewQuiz": "复习测验"
+    },
+    "error": {
+        "generationFailed": "生成文章失败: {{error}}"
+    },
+    "quiz": {
+        "title": "阅读理解测验",
+        "submit": "提交答案",
+        "back": "返回文章"
+    },
+    "feedback": {
+        "title": "测验完成！",
+        "score": "得分",
+        "scoreDesc": "你答对了 {{total}} 题中的 {{score}} 题！",
+        "perfect": "太棒了！全对！",
+        "good": "做得不错！",
+        "keepTrying": "继续加油！",
+        "difficulty": "你觉得这篇文章难度如何？",
+        "easy": "太简单",
+        "justRight": "刚刚好",
+        "hard": "太难了",
+        "complete": "完成学习"
+    }
+}

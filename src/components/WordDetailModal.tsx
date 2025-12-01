@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import {
     Dialog,
     DialogTitle,
@@ -14,6 +14,7 @@ import {
     Paper,
 } from '@mui/material'
 import { Close, PlayArrow } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 import { videoIndexService, VideoOccurrence } from '../services/videoIndexService'
 import { wordService } from '../services/wordService'
 
@@ -24,12 +25,11 @@ interface WordDetailModalProps {
 }
 
 export default function WordDetailModal({ word, open, onClose }: WordDetailModalProps) {
+    const { t } = useTranslation(['vocabulary', 'common'])
     const [occurrences, setOccurrences] = useState<VideoOccurrence[]>([])
     const [selectedOccurrence, setSelectedOccurrence] = useState<VideoOccurrence | null>(null)
     const [wordData, setWordData] = useState<any>(null)
     const [loading, setLoading] = useState(false)
-    const [videoError, setVideoError] = useState(false)
-    const videoRef = useRef<HTMLVideoElement>(null)
 
     useEffect(() => {
         if (open && word) {
@@ -39,8 +39,6 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
 
     const loadWordData = async () => {
         setLoading(true)
-        setVideoError(false)
-
         try {
             // Load word from database
             const dbWord = await wordService.getWordBySpelling(word.toLowerCase())
@@ -52,6 +50,8 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
 
             if (results.length > 0) {
                 setSelectedOccurrence(results[0]) // Auto-select first
+            } else {
+                setSelectedOccurrence(null)
             }
         } catch (error) {
             console.error('Failed to load word data:', error)
@@ -62,19 +62,6 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
 
     const handleOccurrenceClick = (occurrence: VideoOccurrence) => {
         setSelectedOccurrence(occurrence)
-        setVideoError(false)
-
-        // Jump to timestamp when video is ready
-        if (videoRef.current) {
-            videoRef.current.currentTime = Math.max(0, occurrence.startTime - 0.5)
-            videoRef.current.play().catch(e => console.log('Autoplay prevented'))
-        }
-    }
-
-    const handleVideoLoadedMetadata = () => {
-        if (videoRef.current && selectedOccurrence) {
-            videoRef.current.currentTime = Math.max(0, selectedOccurrence.startTime - 0.5)
-        }
     }
 
     return (
@@ -115,36 +102,37 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                 {selectedOccurrence ? (
                     <Box sx={{ mb: 3 }}>
                         <Typography variant="subtitle1" gutterBottom fontWeight="bold">
-                            Video Explanation
+                            {t('vocabulary:modal.videoExplanation')}
                         </Typography>
-                        {!videoError ? (
-                            <video
-                                ref={videoRef}
-                                key={selectedOccurrence.videoPath}
-                                controls
-                                style={{ width: '100%', borderRadius: '8px', backgroundColor: '#000' }}
-                                onError={() => setVideoError(true)}
-                                onLoadedMetadata={handleVideoLoadedMetadata}
-                            >
-                                <source src={`/${selectedOccurrence.videoPath}`} type="video/mp4" />
-                            </video>
-                        ) : (
-                            <Paper
-                                variant="outlined"
-                                sx={{
-                                    p: 4,
-                                    textAlign: 'center',
-                                    bgcolor: '#FAFAFA',
-                                    borderRadius: 2,
+                        <Box sx={{
+                            position: 'relative',
+                            paddingBottom: '56.25%', // 16:9 aspect ratio
+                            height: 0,
+                            overflow: 'hidden',
+                            borderRadius: 2,
+                            bgcolor: '#000'
+                        }}>
+                            <iframe
+                                src={`//player.bilibili.com/player.html?bvid=${selectedOccurrence.bvid}&page=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}&high_quality=1&autoplay=1`}
+                                scrolling="no"
+                                frameBorder="0"
+                                allowFullScreen={true}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%'
                                 }}
-                            >
-                                <Typography color="text.secondary">
-                                    Video not available
-                                </Typography>
-                            </Paper>
-                        )}
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                            Context: "{selectedOccurrence.context}"
+                            />
+                        </Box>
+                        <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography variant="caption" color="text.secondary">
+                                {t('vocabulary:modal.source')}: {selectedOccurrence.title} (P{selectedOccurrence.page})
+                            </Typography>
+                        </Box>
+                        <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic', borderLeft: '3px solid #1976d2', pl: 1 }}>
+                            "{selectedOccurrence.context}"
                         </Typography>
                     </Box>
                 ) : (
@@ -159,7 +147,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                         }}
                     >
                         <Typography color="text.secondary">
-                            {loading ? 'Loading...' : 'No video explanation available for this word'}
+                            {loading ? t('common:loading') : t('vocabulary:modal.noVideo')}
                         </Typography>
                     </Paper>
                 )}
@@ -168,9 +156,9 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                 {occurrences.length > 1 && (
                     <Box>
                         <Typography variant="subtitle1" gutterBottom fontWeight="bold">
-                            Other Occurrences ({occurrences.length})
+                            {t('vocabulary:modal.otherOccurrences')} ({occurrences.length})
                         </Typography>
-                        <List dense>
+                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
                             {occurrences.map((occ, index) => (
                                 <ListItem key={index} disablePadding>
                                     <ListItemButton
@@ -179,8 +167,8 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                                     >
                                         <PlayArrow sx={{ mr: 1, fontSize: 20 }} />
                                         <ListItemText
-                                            primary={`Video ${index + 1}`}
-                                            secondary={`${occ.startTime.toFixed(1)}s - "${occ.context.substring(0, 50)}..."`}
+                                            primary={occ.title}
+                                            secondary={`P${occ.page} - ${occ.startTime}s - "${occ.context.substring(0, 40)}..."`}
                                         />
                                     </ListItemButton>
                                 </ListItem>

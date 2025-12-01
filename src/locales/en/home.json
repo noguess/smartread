@@ -1,0 +1,32 @@
+{
+    "title": "Home",
+    "hero": {
+        "title": "Start Learning",
+        "todayPlan": "Today's Plan: {{reviewCount}} review words + {{newCount}} new words",
+        "smartGenerate": "Smart Generate",
+        "customMode": "Custom Mode"
+    },
+    "stats": {
+        "title": "Memory Status",
+        "masteryProgress": "Mastery Progress",
+        "masteryPercent": "{{percent}}% Mastered",
+        "reviewNeeded": "Review Needed",
+        "newWords": "New Words",
+        "learning": "Learning",
+        "total": "Total"
+    },
+    "recentActivity": {
+        "title": "Recent Activity",
+        "noActivity": "No learning records yet. Start your first article!",
+        "points": "pts"
+    },
+    "manual": {
+        "title": "Customize Your Reading",
+        "wordCount": "Word Count",
+        "selectedWords": "Selected Words",
+        "autoFill": "Auto Fill / Refresh",
+        "noWords": "No words selected. Adjust slider or add words manually.",
+        "searchPlaceholder": "Search and add specific word...",
+        "generate": "Generate Now"
+    }
+}

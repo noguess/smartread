@@ -22,8 +22,10 @@ import {
     Search as SearchIcon,
     BarChart as BarChartIcon,
 } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 
 import WordDetailModal from './WordDetailModal'
+import LanguageSwitcher from './LanguageSwitcher'
 
 const drawerWidth = 240
 
@@ -31,20 +33,21 @@ interface LayoutProps {
     children: ReactNode
 }
 
-const menuItems = [
-    { text: '首页', icon: <HomeIcon />, path: '/' },
-    { text: '阅读历史', icon: <HistoryIcon />, path: '/history' },
-    { text: '单词本', icon: <VocabularyIcon />, path: '/vocabulary' },
-    { text: '统计', icon: <BarChartIcon />, path: '/statistics' },
-    { text: '设置', icon: <SettingsIcon />, path: '/settings' },
-]
-
 export default function Layout({ children }: LayoutProps) {
     const navigate = useNavigate()
     const location = useLocation()
+    const { t } = useTranslation(['common'])
     const [searchQuery, setSearchQuery] = useState('')
     const [wordModalOpen, setWordModalOpen] = useState(false)
     const [selectedWord, setSelectedWord] = useState('')
+
+    const menuItems = [
+        { text: t('common:nav.home'), icon: <HomeIcon />, path: '/' },
+        { text: t('common:nav.history'), icon: <HistoryIcon />, path: '/history' },
+        { text: t('common:nav.vocabulary'), icon: <VocabularyIcon />, path: '/vocabulary' },
+        { text: t('common:nav.statistics'), icon: <BarChartIcon />, path: '/statistics' },
+        { text: t('common:nav.settings'), icon: <SettingsIcon />, path: '/settings' },
+    ]
 
     const handleSearch = () => {
         if (searchQuery.trim()) {
@@ -65,13 +68,13 @@ export default function Layout({ children }: LayoutProps) {
                     '& .MuiDrawer-paper': {
                         width: drawerWidth,
                         boxSizing: 'border-box',
-                        backgroundColor: 'primary.main',
+                        background: 'linear-gradient(180deg, #4A90E2 0%, #7B68EE 100%)',
                         color: 'white',
                     },
                 }}
             >
                 <Box sx={{ p: 2, textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>
-                    Smart Reader
+                    📚 {t('common:appName')}
                 </Box>
                 <List>
                     {menuItems.map((item) => (
@@ -108,7 +111,7 @@ export default function Layout({ children }: LayoutProps) {
                 >
                     <Toolbar>
                         <TextField
-                            placeholder="搜索单词..."
+                            placeholder={t('common:button.search') + '...'}
                             variant="outlined"
                             size="small"
                             value={searchQuery}
@@ -134,6 +137,11 @@ export default function Layout({ children }: LayoutProps) {
                                 ),
                             }}
                         />
+
+                        {/* Language Switcher */}
+                        <Box sx={{ ml: 2 }}>
+                            <LanguageSwitcher />
+                        </Box>
                     </Toolbar>
                 </AppBar>
 

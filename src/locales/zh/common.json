@@ -1,0 +1,38 @@
+{
+    "appName": "智能阅读器",
+    "nav": {
+        "home": "首页",
+        "history": "学习记录",
+        "vocabulary": "单词本",
+        "statistics": "统计",
+        "settings": "设置"
+    },
+    "button": {
+        "confirm": "确认",
+        "cancel": "取消",
+        "save": "保存",
+        "delete": "删除",
+        "edit": "编辑",
+        "close": "关闭",
+        "back": "返回",
+        "next": "下一步",
+        "submit": "提交",
+        "search": "搜索",
+        "reset": "重置"
+    },
+    "status": {
+        "new": "新词",
+        "learning": "学习中",
+        "review": "复习",
+        "mastered": "已掌握"
+    },
+    "common": {
+        "loading": "加载中...",
+        "noData": "暂无数据",
+        "error": "出错了",
+        "success": "成功",
+        "warning": "警告",
+        "total": "总计",
+        "score": "得分"
+    }
+}
