@@ -7,6 +7,20 @@
         "startQuiz": "开始测验",
         "reviewQuiz": "复习测验"
     },
+    "sidebar": {
+        "difficulty": "难度",
+        "intermediate": "中等",
+        "targetWords": "目标单词"
+    },
+    "toolbar": {
+        "fontSizeLabel": "调整字号"
+    },
+    "timer": {
+        "label": "阅读时长",
+        "seconds": "{{count}} 秒",
+        "minutes": "{{count}} 分钟",
+        "minutesAndSeconds": "{{minutes}} 分 {{seconds}} 秒"
+    },
     "error": {
         "generationFailed": "生成文章失败: {{error}}"
     },

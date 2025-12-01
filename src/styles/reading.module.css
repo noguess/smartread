@@ -1,0 +1,45 @@
+.articleContainer {
+  position: relative;
+}
+
+.articleContent {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.targetWord {
+  display: inline-block;
+  position: relative;
+}
+
+.targetWord::after {
+  content: '•';
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  font-size: 10px;
+  color: #FF6B6B;
+}
+
+.targetWord:hover {
+  background: linear-gradient(180deg, transparent 55%, #BBDEFB 55%) !important;
+  transform: translateY(-1px);
+}
+
+.targetWord:active {
+  transform: translateY(0);
+}
+
+.readingHint {
+  backdrop-filter: blur(10px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .articleContent {
+    font-size: 16px !important;
+  }
+  
+  .articleContent p:first-of-type::first-letter {
+    font-size: 2.5em !important;
+  }
+}

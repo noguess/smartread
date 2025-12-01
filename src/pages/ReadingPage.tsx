@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Container, Box, CircularProgress, Typography, Button } from '@mui/material'
+import { Container, Box, CircularProgress, Typography, Button, Grid, Paper, Chip } from '@mui/material'
 import { Word, History } from '../services/db'
 import { mockLLMService, GeneratedContent } from '../services/mockLLMService'
 import { llmService } from '../services/llmService'
@@ -8,19 +8,26 @@ import { settingsService } from '../services/settingsService'
 import { SRSAlgorithm } from '../utils/SRSAlgorithm'
 import { wordService } from '../services/wordService'
 import { historyService } from '../services/historyService'
-import ArticleView from '../components/reading/ArticleView'
+import ArticleContent from '../components/reading/ArticleContent'
 import QuizView from '../components/reading/QuizView'
 import ScoreFeedback from '../components/reading/ScoreFeedback'
 import WordDetailModal from '../components/WordDetailModal'
+import ReadingProgressBar from '../components/reading/ReadingProgressBar'
+import ReadingToolbar from '../components/reading/ReadingToolbar'
+import ReadingTimer from '../components/reading/ReadingTimer'
 import { useTranslation } from 'react-i18next'
 
 type Step = 'generating' | 'reading' | 'quiz' | 'feedback'
+type FontSize = 'small' | 'medium' | 'large'
 
 export default function ReadingPage() {
     const { t } = useTranslation(['reading'])
     const location = useLocation()
     const navigate = useNavigate()
     const [step, setStep] = useState<Step>('generating')
+    const [fontSize, setFontSize] = useState<FontSize>(() => {
+        return (localStorage.getItem('reading_font_size') as FontSize) || 'medium'
+    })
     const [articleData, setArticleData] = useState<GeneratedContent | null>(null)
     const [targetWords, setTargetWords] = useState<Word[]>([])
     const [score, setScore] = useState(0)
@@ -145,6 +152,11 @@ export default function ReadingPage() {
         setIsWordModalOpen(true)
     }
 
+    const handleFontSizeChange = (newSize: FontSize) => {
+        setFontSize(newSize)
+        localStorage.setItem('reading_font_size', newSize)
+    }
+
     if (step === 'generating') {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
@@ -160,48 +172,123 @@ export default function ReadingPage() {
     }
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-            {step === 'reading' && articleData && (
-                <>
-                    <ArticleView
-                        title={articleData.title}
-                        content={articleData.content}
-                        onWordClick={handleWordClick}
+        <>
+            {step === 'reading' && <ReadingProgressBar />}
+
+            <Container maxWidth="xl" sx={{ py: 4 }}>
+                {step === 'reading' && articleData && (
+                    <Grid container spacing={3}>
+                        {/* Left Sidebar - Info Panel (Desktop only) */}
+                        <Grid item xs={12} lg={2} sx={{ display: { xs: 'none', lg: 'block' } }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                {/* Reading Timer */}
+                                <ReadingTimer />
+
+                                {/* Info Panel */}
+                                <Paper
+                                    elevation={2}
+                                    sx={{
+                                        p: 2.5,
+                                        borderRadius: 3,
+                                        position: 'sticky',
+                                        top: 80
+                                    }}
+                                >
+                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                        {t('reading:sidebar.difficulty')}
+                                    </Typography>
+                                    <Chip
+                                        label={t('reading:sidebar.intermediate')}
+                                        size="small"
+                                        color="primary"
+                                        sx={{ mb: 2 }}
+                                    />
+
+                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
+                                        {t('reading:sidebar.targetWords')}
+                                    </Typography>
+                                    <Typography variant="h6" color="primary.main" fontWeight="bold">
+                                        {targetWords.length}
+                                    </Typography>
+                                </Paper>
+                            </Box>
+                        </Grid>
+
+                        {/* Center - Article Content */}
+                        <Grid item xs={12} lg={8}>
+                            <ArticleContent
+                                title={articleData.title}
+                                content={articleData.content}
+                                onWordClick={handleWordClick}
+                                fontSize={fontSize}
+                            />
+
+                            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                                <Button
+                                    variant="contained"
+                                    size="large"
+                                    onClick={() => setStep('quiz')}
+                                    sx={{
+                                        px: 6,
+                                        py: 1.5,
+                                        borderRadius: 8,
+                                        fontSize: '1.2rem',
+                                        background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
+                                        boxShadow: '0 4px 20px rgba(74, 144, 226, 0.3)',
+                                        transition: 'all 0.2s ease',
+                                        '&:hover': {
+                                            transform: 'scale(1.02)',
+                                            boxShadow: '0 6px 24px rgba(74, 144, 226, 0.4)'
+                                        }
+                                    }}
+                                >
+                                    {isReviewMode ? t('reading:buttons.reviewQuiz') : t('reading:buttons.startQuiz')}
+                                </Button>
+                            </Box>
+                        </Grid>
+
+                        {/* Right Toolbar */}
+                        <Grid item xs={12} lg={2} sx={{ display: { xs: 'none', lg: 'block' } }}>
+                            <ReadingToolbar
+                                onFontSizeChange={handleFontSizeChange}
+                                currentFontSize={fontSize}
+                            />
+                        </Grid>
+
+                        {/* Mobile Font Size Control */}
+                        <Grid item xs={12} sx={{ display: { xs: 'block', lg: 'none' } }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                                <ReadingToolbar
+                                    onFontSizeChange={handleFontSizeChange}
+                                    currentFontSize={fontSize}
+                                />
+                            </Box>
+                        </Grid>
+                    </Grid>
+                )}
+
+                {step === 'quiz' && articleData && (
+                    <QuizView
+                        questions={articleData.questions}
+                        onSubmit={handleQuizSubmit}
+                        onBack={() => setStep('reading')}
                     />
-                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                        <Button
-                            variant="contained"
-                            size="large"
-                            onClick={() => setStep('quiz')}
-                            sx={{ px: 6, py: 1.5, borderRadius: 8, fontSize: '1.2rem' }}
-                        >
-                            {isReviewMode ? t('reading:buttons.reviewQuiz') : t('reading:buttons.startQuiz')}
-                        </Button>
-                    </Box>
-                </>
-            )}
+                )}
 
-            {step === 'quiz' && articleData && (
-                <QuizView
-                    questions={articleData.questions}
-                    onSubmit={handleQuizSubmit}
-                    onBack={() => setStep('reading')}
+                {step === 'feedback' && articleData && (
+                    <ScoreFeedback
+                        score={score}
+                        totalQuestions={articleData.questions.length}
+                        onComplete={handleFinish}
+                    />
+                )}
+
+                <WordDetailModal
+                    word={selectedWord}
+                    open={isWordModalOpen}
+                    onClose={() => setIsWordModalOpen(false)}
                 />
-            )}
-
-            {step === 'feedback' && articleData && (
-                <ScoreFeedback
-                    score={score}
-                    totalQuestions={articleData.questions.length}
-                    onComplete={handleFinish}
-                />
-            )}
-
-            <WordDetailModal
-                word={selectedWord}
-                open={isWordModalOpen}
-                onClose={() => setIsWordModalOpen(false)}
-            />
-        </Container>
+            </Container>
+        </>
     )
 }

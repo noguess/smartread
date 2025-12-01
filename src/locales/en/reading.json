@@ -7,6 +7,20 @@
         "startQuiz": "Start Quiz",
         "reviewQuiz": "Review Quiz"
     },
+    "sidebar": {
+        "difficulty": "Difficulty",
+        "intermediate": "Intermediate",
+        "targetWords": "Target Words"
+    },
+    "toolbar": {
+        "fontSizeLabel": "Adjust Font Size"
+    },
+    "timer": {
+        "label": "Reading Time",
+        "seconds": "{{count}} sec",
+        "minutes": "{{count}} min",
+        "minutesAndSeconds": "{{minutes}} min {{seconds}} sec"
+    },
     "error": {
         "generationFailed": "Failed to generate article: {{error}}"
     },
