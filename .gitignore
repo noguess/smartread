@@ -25,3 +25,12 @@ dist-ssr
 
 # Local config
 config.json
+
+# Video Indexer
+temp_downloads/
+scripts/video_indexer/temp_downloads/
+*.mp4
+*.mkv
+*.flv
+*.mov
+*.wav

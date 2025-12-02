@@ -12,8 +12,9 @@ import {
     ListItemText,
     Chip,
     Paper,
+    Tooltip,
 } from '@mui/material'
-import { Close, PlayArrow } from '@mui/icons-material'
+import { Close, PlayArrow, Recommend } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import { videoIndexService, VideoOccurrence } from '../services/videoIndexService'
 import { wordService } from '../services/wordService'
@@ -45,7 +46,27 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
             setWordData(dbWord)
 
             // Search for video occurrences
+            // Search for video occurrences
             const results = await videoIndexService.searchWord(word)
+
+            // Sort results: Score DESC, then Page ASC, then Time ASC
+            results.sort((a, b) => {
+                // 1. Score DESC (Higher score first)
+                const scoreA = a.score || 0
+                const scoreB = b.score || 0
+                if (scoreA !== scoreB) {
+                    return scoreB - scoreA
+                }
+
+                // 2. Page ASC
+                if (a.page !== b.page) {
+                    return a.page - b.page
+                }
+
+                // 3. Time ASC
+                return a.startTime - b.startTime
+            })
+
             setOccurrences(results)
 
             if (results.length > 0) {
@@ -170,6 +191,12 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                                             primary={occ.title}
                                             secondary={`P${occ.page} - ${occ.startTime}s - "${occ.context.substring(0, 40)}..."`}
                                         />
+                                        {/* Show Recommended Icon for high scores */}
+                                        {occ.score && occ.score >= 5 && (
+                                            <Tooltip title={t('vocabulary:modal.recommended') || "Recommended"}>
+                                                <Recommend color="primary" sx={{ ml: 1, fontSize: 20 }} />
+                                            </Tooltip>
+                                        )}
                                     </ListItemButton>
                                 </ListItem>
                             ))}

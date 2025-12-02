@@ -256,50 +256,97 @@ def deduplicate_occurrences(occurrences, time_threshold=60):
     
     return result
 
-def filter_by_frequency_density(word_index, time_window=120, density_threshold=5):
+
+
+def smart_filter_taught_words(word_index, time_window=120, min_score=10):
     """
-    Filter words based on frequency density in sliding time windows.
-    Only keep words that appear frequently in a short time window (likely being taught).
+    Smartly filter taught words based on multi-dimensional scoring.
+    Also assigns a score 's' to each occurrence for frontend sorting.
+    
+    Scoring Rules:
+    1. Base Score: +1 per occurrence
+    2. Density Score: +2 per occurrence in high-density window
+    3. Context Score: +5 if context contains intro patterns ("这个单词", "意思是"...)
+    4. Isolation Score: +2 if context contains Chinese characters (mixed language)
     
     Args:
         word_index: Dict of {word: [occurrences]}
-        time_window: Size of sliding window in seconds (default: 120s = 2 minutes)
-        density_threshold: Minimum occurrences in a window to be considered "taught" (default: 5)
+        time_window: Sliding window size (seconds)
+        min_score: Minimum total score to keep the word
         
     Returns:
-        Filtered dict with only "taught" words
+        Filtered dict with only "taught" words, each occurrence having an 's' field
     """
     filtered_index = {}
     
+    # Intro patterns that strongly suggest a word is being taught
+    INTRO_PATTERNS = [
+        "这个单词", "单词叫做", "单词是", "意思是", "叫", "翻译成", "什么意思",
+        "怎么来记", "看这个词", "读一下", "再读一遍", "什么鬼", "怎么讲"
+    ]
+    
     for word, occurrences in word_index.items():
-        if len(occurrences) < density_threshold:
-            # Quick check: if total occurrences < threshold, can't possibly pass
-            continue
-        
-        # Extract timestamps and sort
+        # 1. Calculate Density Map (which occurrences are in dense regions)
         timestamps = sorted([occ['t'] for occ in occurrences])
+        dense_timestamps = set()
         
-        # Check if any sliding window has >= density_threshold occurrences
-        is_taught_word = False
-        
+        max_density = 0
         for i in range(len(timestamps)):
-            # Count how many timestamps fall within [timestamps[i], timestamps[i] + time_window]
             window_end = timestamps[i] + time_window
-            count = 0
-            
+            current_window_timestamps = []
             for t in timestamps[i:]:
                 if t <= window_end:
-                    count += 1
+                    current_window_timestamps.append(t)
                 else:
                     break
             
-            if count >= density_threshold:
-                is_taught_word = True
-                break
+            count = len(current_window_timestamps)
+            max_density = max(max_density, count)
+            
+            # If this window is dense, mark all timestamps in it
+            if count >= 3:
+                for t in current_window_timestamps:
+                    dense_timestamps.add(t)
         
-        if is_taught_word:
+        # 2. Calculate Individual Scores & Total Score
+        total_word_score = 0
+        
+        # Base Score for the word (based on total count)
+        base_word_score = len(occurrences)
+        total_word_score += base_word_score
+        
+        # Density Bonus for the word
+        if max_density >= 3:
+            total_word_score += max_density * 2
+            
+        # Calculate score for each occurrence
+        for occ in occurrences:
+            occ_score = 1 # Base score for this occurrence
+            
+            # Context Score
+            context = occ['c']
+            if any(p in context for p in INTRO_PATTERNS):
+                occ_score += 5
+                total_word_score += 5 # Add to word total
+            
+            # Isolation Score (Chinese characters)
+            if any('\u4e00' <= char <= '\u9fff' for char in context):
+                occ_score += 2
+                total_word_score += 2 # Add to word total
+                
+            # Density Score (is this specific occurrence in a dense region?)
+            if occ['t'] in dense_timestamps:
+                occ_score += 2
+                
+            # Save score to occurrence
+            occ['s'] = occ_score
+            
+        # Cap total context/isolation score contributions to avoid spam
+        # (Simplified logic: we trust the sum of individual scores roughly reflects importance)
+            
+        if total_word_score >= min_score:
             filtered_index[word] = occurrences
-    
+            
     return filtered_index
 
 def load_bvid_list_from_file(filepath):
@@ -613,13 +660,15 @@ Examples:
     
     # Step 1: Filter by frequency density (identify taught words)
     print("Filtering by frequency density (taught words only)...")
-    print(f"  Parameters: time_window=120s, density_threshold=3")
+    print("  Using Smart Filter Algorithm (Context + Density + Isolation)")
+    
     original_word_count = len(global_index)
     
-    taught_words_index = filter_by_frequency_density(
-        global_index, 
-        time_window=120, 
-        density_threshold=3
+    # Use Smart Algorithm
+    taught_words_index = smart_filter_taught_words(
+        global_index,
+        time_window=120,
+        min_score=15
     )
     
     taught_word_count = len(taught_words_index)

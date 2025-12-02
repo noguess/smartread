@@ -13,6 +13,7 @@ export interface VideoOccurrence {
     title: string
     startTime: number
     context: string
+    score?: number
 }
 
 class VideoIndexService {
@@ -72,7 +73,8 @@ class VideoIndexService {
                         page: videoInfo.page,  // ✅ 修复：使用正确的字段名 "page"
                         title: videoInfo.title,
                         startTime: entry.t, // V2.0: t is a single number (seconds)
-                        context: entry.c
+                        context: entry.c,
+                        score: entry.s // Map score from index
                     })
                 }
             }
