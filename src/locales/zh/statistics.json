@@ -3,6 +3,8 @@
     "charts": {
         "trend": "近7天阅读量",
         "status": "单词掌握情况",
-        "scores": "近期考试成绩"
+        "scores": "近期考试成绩",
+        "studyTime": "学习时长趋势 (分钟)",
+        "minutes": "分钟"
     }
 }

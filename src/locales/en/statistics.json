@@ -3,6 +3,8 @@
     "charts": {
         "trend": "Reading Trend (Last 7 Days)",
         "status": "Word Mastery Status",
-        "scores": "Recent Quiz Scores"
+        "scores": "Recent Quiz Scores",
+        "studyTime": "Study Time Trend (Minutes)",
+        "minutes": "Minutes"
     }
 }

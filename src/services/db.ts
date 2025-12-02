@@ -23,6 +23,7 @@ export interface History {
     questionsJson: any
     userScore: number
     difficultyFeedback: number
+    timeSpent?: number // Time spent in seconds
 }
 
 export interface Setting {

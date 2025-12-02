@@ -18,6 +18,10 @@
         "videoExplanation": "Video Explanation",
         "source": "Source",
         "noVideo": "No video explanation available for this word",
-        "otherOccurrences": "Other Occurrences"
+        "otherOccurrences": "Other Occurrences",
+        "dictionaryDefinition": "Dictionary Definition",
+        "checkDictionary": "Check Dictionary",
+        "noDictionaryData": "No dictionary data found",
+        "recommended": "Recommended"
     }
 }

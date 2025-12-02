@@ -18,6 +18,9 @@ import { Close, PlayArrow, Recommend } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import { videoIndexService, VideoOccurrence } from '../services/videoIndexService'
 import { wordService } from '../services/wordService'
+import { dictionaryService, DictionaryEntry } from '../services/dictionaryService'
+import { VolumeUp, MenuBook } from '@mui/icons-material'
+import { Button, CircularProgress } from '@mui/material'
 
 interface WordDetailModalProps {
     word: string
@@ -32,6 +35,11 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
     const [wordData, setWordData] = useState<any>(null)
     const [loading, setLoading] = useState(false)
 
+    // Dictionary & TTS states
+    const [dictionaryData, setDictionaryData] = useState<DictionaryEntry[] | null>(null)
+    const [loadingDictionary, setLoadingDictionary] = useState(false)
+    const [showDictionary, setShowDictionary] = useState(false)
+
     useEffect(() => {
         if (open && word) {
             loadWordData()
@@ -40,30 +48,24 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
 
     const loadWordData = async () => {
         setLoading(true)
+        // Reset states
+        setDictionaryData(null)
+        setShowDictionary(false)
+
         try {
             // Load word from database
             const dbWord = await wordService.getWordBySpelling(word.toLowerCase())
             setWordData(dbWord)
 
             // Search for video occurrences
-            // Search for video occurrences
             const results = await videoIndexService.searchWord(word)
 
             // Sort results: Score DESC, then Page ASC, then Time ASC
             results.sort((a, b) => {
-                // 1. Score DESC (Higher score first)
                 const scoreA = a.score || 0
                 const scoreB = b.score || 0
-                if (scoreA !== scoreB) {
-                    return scoreB - scoreA
-                }
-
-                // 2. Page ASC
-                if (a.page !== b.page) {
-                    return a.page - b.page
-                }
-
-                // 3. Time ASC
+                if (scoreA !== scoreB) return scoreB - scoreA
+                if (a.page !== b.page) return a.page - b.page
                 return a.startTime - b.startTime
             })
 
@@ -73,11 +75,36 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                 setSelectedOccurrence(results[0]) // Auto-select first
             } else {
                 setSelectedOccurrence(null)
+                // Auto-load dictionary if no video found
+                handleCheckDictionary()
             }
         } catch (error) {
             console.error('Failed to load word data:', error)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleCheckDictionary = async () => {
+        setShowDictionary(true)
+        if (!dictionaryData && !loadingDictionary) {
+            setLoadingDictionary(true)
+            try {
+                const data = await dictionaryService.getDefinition(word)
+                setDictionaryData(data)
+            } catch (error) {
+                console.error('Failed to load dictionary data', error)
+            } finally {
+                setLoadingDictionary(false)
+            }
+        }
+    }
+
+    const handleSpeak = () => {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(word)
+            utterance.lang = 'en-US'
+            window.speechSynthesis.speak(utterance)
         }
     }
 
@@ -92,6 +119,14 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                     <Typography variant="h5" fontWeight="bold">
                         {word}
                     </Typography>
+                    {wordData && wordData.phonetic && (
+                        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: '"Arial Unicode MS", sans-serif' }}>
+                            {wordData.phonetic}
+                        </Typography>
+                    )}
+                    <IconButton onClick={handleSpeak} size="small" title="Speak">
+                        <VolumeUp />
+                    </IconButton>
                     {wordData && (
                         <Chip
                             label={wordData.status}
@@ -171,6 +206,68 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                             {loading ? t('common:loading') : t('vocabulary:modal.noVideo')}
                         </Typography>
                     </Paper>
+                )}
+
+                {/* Dictionary Section */}
+                {showDictionary ? (
+                    <Box sx={{ mt: 3, mb: 3 }}>
+                        <Typography variant="subtitle1" gutterBottom fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <MenuBook fontSize="small" /> {t('vocabulary:modal.dictionaryDefinition')}
+                        </Typography>
+                        {loadingDictionary ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                                <CircularProgress size={24} />
+                            </Box>
+                        ) : dictionaryData ? (
+                            <Box>
+                                {dictionaryData.map((entry, idx) => (
+                                    <Box key={idx} sx={{ mb: 2 }}>
+                                        {entry.phonetic && (
+                                            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: '"Arial Unicode MS", sans-serif', mb: 1 }}>
+                                                {entry.phonetic}
+                                            </Typography>
+                                        )}
+                                        {entry.meanings.map((meaning, mIdx) => (
+                                            <Box key={mIdx} sx={{ mb: 1 }}>
+                                                <Typography variant="subtitle2" sx={{ fontStyle: 'italic', color: 'primary.main' }}>
+                                                    {meaning.partOfSpeech}
+                                                </Typography>
+                                                <List dense disablePadding>
+                                                    {meaning.definitions.slice(0, 3).map((def, dIdx) => (
+                                                        <ListItem key={dIdx} disablePadding sx={{ display: 'block', mb: 1 }}>
+                                                            <Typography variant="body2">
+                                                                • {def.definition}
+                                                            </Typography>
+                                                            {def.example && (
+                                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', ml: 2, fontStyle: 'italic' }}>
+                                                                    "{def.example}"
+                                                                </Typography>
+                                                            )}
+                                                        </ListItem>
+                                                    ))}
+                                                </List>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                ))}
+                            </Box>
+                        ) : (
+                            <Typography variant="body2" color="text.secondary">
+                                {t('vocabulary:modal.noDictionaryData')}
+                            </Typography>
+                        )}
+                    </Box>
+                ) : (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                        <Button
+                            startIcon={<MenuBook />}
+                            onClick={handleCheckDictionary}
+                            variant="outlined"
+                            size="small"
+                        >
+                            {t('vocabulary:modal.checkDictionary')}
+                        </Button>
+                    </Box>
                 )}
 
                 {/* Occurrence List */}

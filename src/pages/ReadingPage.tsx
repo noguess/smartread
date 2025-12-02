@@ -17,6 +17,7 @@ import ReadingProgressBar from '../components/reading/ReadingProgressBar'
 import ReadingToolbar from '../components/reading/ReadingToolbar'
 import ReadingTimer from '../components/reading/ReadingTimer'
 import { useTranslation } from 'react-i18next'
+import { useStudyTimer } from '../hooks/useStudyTimer'
 
 type Step = 'generating' | 'reading' | 'quiz' | 'feedback'
 type FontSize = 'small' | 'medium' | 'large'
@@ -36,6 +37,17 @@ export default function ReadingPage() {
     const [isWordModalOpen, setIsWordModalOpen] = useState(false)
 
     const [isReviewMode, setIsReviewMode] = useState(false)
+
+    // Study Timer
+    const { timeSpent, start: startTimer, pause: pauseTimer } = useStudyTimer(false)
+
+    useEffect(() => {
+        if (step === 'reading' || step === 'quiz') {
+            startTimer()
+        } else {
+            pauseTimer()
+        }
+    }, [step, startTimer, pauseTimer])
 
     useEffect(() => {
         const state = location.state as any
@@ -141,7 +153,8 @@ export default function ReadingPage() {
             targetWords: targetWords.map(w => w.spelling),
             questionsJson: articleData.questions,
             userScore: Math.round((score / articleData.questions.length) * 100),
-            difficultyFeedback: difficulty
+            difficultyFeedback: difficulty,
+            timeSpent: timeSpent // Save time spent
         }
 
         await historyService.saveArticleRecord(historyRecord)

@@ -21,9 +21,21 @@ const WordCard = memo(({ word, onClick }: { word: Word; onClick: (spelling: stri
         <StyledCard hoverable>
             <CardActionArea onClick={() => onClick(word.spelling)} sx={{ height: '100%', p: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
-                    <Typography variant="h6" fontWeight="bold">
-                        {word.spelling}
-                    </Typography>
+                    <Box>
+                        <Typography variant="h6" fontWeight="bold" component="span">
+                            {word.spelling}
+                        </Typography>
+                        {word.phonetic && (
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                component="span"
+                                sx={{ ml: 1, fontFamily: '"Arial Unicode MS", sans-serif' }}
+                            >
+                                {word.phonetic}
+                            </Typography>
+                        )}
+                    </Box>
                     <StatusBadge status={word.status} size="small" />
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{

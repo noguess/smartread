@@ -23,6 +23,7 @@ export default function StatisticsPage() {
     const [trendData, setTrendData] = useState<any[]>([])
     const [scoreData, setScoreData] = useState<any[]>([])
     const [statusData, setStatusData] = useState<any[]>([])
+    const [timeData, setTimeData] = useState<any[]>([])
 
     useEffect(() => {
         loadData()
@@ -46,6 +47,14 @@ export default function StatisticsPage() {
             return { date, articles: count }
         })
         setTrendData(trend)
+
+        // Process Study Time (Last 7 days)
+        const timeStats = last7Days.map(date => {
+            const dayRecords = history.filter(h => new Date(h.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === date)
+            const totalSeconds = dayRecords.reduce((sum, h) => sum + (h.timeSpent || 0), 0)
+            return { date, minutes: Math.round(totalSeconds / 60) }
+        })
+        setTimeData(timeStats)
 
         // Process Scores
         const scores = history.map(h => ({
@@ -147,6 +156,24 @@ export default function StatisticsPage() {
                                 <YAxis domain={[0, 100]} />
                                 <Tooltip />
                                 <Bar dataKey="score" fill="#82ca9d" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </Paper>
+                </Grid>
+
+                {/* Study Time Trend */}
+                <Grid item xs={12}>
+                    <Paper sx={{ p: 3, height: 300 }}>
+                        <Typography variant="h6" gutterBottom>
+                            {t('statistics:charts.studyTime')}
+                        </Typography>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={timeData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="date" />
+                                <YAxis />
+                                <Tooltip />
+                                <Bar dataKey="minutes" fill="#8884d8" name={t('statistics:charts.minutes')} />
                             </BarChart>
                         </ResponsiveContainer>
                     </Paper>
