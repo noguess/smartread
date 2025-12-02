@@ -1,8 +1,9 @@
 // Video metadata from video_map.json
 interface VideoMapItem {
     bvid: string
-    p: number
+    page: number  // ✅ 修复：匹配 video_map.json 中的 "page" 字段
     title: string
+    filename: string  // 添加 filename 字段
 }
 
 // Video occurrence in index
@@ -68,7 +69,7 @@ class VideoIndexService {
                 if (videoInfo) {
                     occurrences.push({
                         bvid: videoInfo.bvid,
-                        page: videoInfo.p,
+                        page: videoInfo.page,  // ✅ 修复：使用正确的字段名 "page"
                         title: videoInfo.title,
                         startTime: entry.t, // V2.0: t is a single number (seconds)
                         context: entry.c

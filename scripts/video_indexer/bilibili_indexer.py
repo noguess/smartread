@@ -3,8 +3,17 @@ import json
 import shutil
 import subprocess
 import re
+import time
+import argparse
 from collections import defaultdict
 from fast_asr_engine import ASREngine  # Use fast engine with improved estimation
+
+try:
+    from tqdm import tqdm
+    HAS_TQDM = True
+except ImportError:
+    HAS_TQDM = False
+    print("Tip: Install tqdm for progress bars: pip install tqdm")
 
 # Configuration
 # Get the project root directory (two levels up from this script)
@@ -40,44 +49,90 @@ class TextProcessor:
         # Lowercase and strip punctuation
         return word.lower().strip('.,!?()[]{}"\'')
 
-def download_audio(bvid, output_dir):
+def download_audio(bvid, output_dir, max_retries=3):
     """
-    Download Bilibili video using you-get.
-    Downloads to output_dir with you-get's default naming.
-    No return value - use scan_video_files() to find downloaded files.
+    Download Bilibili video using you-get with retry logic.
+    
+    Args:
+        bvid: Bilibili video ID (e.g., "BV1234567890")
+        output_dir: Directory to save downloaded videos
+        max_retries: Maximum number of download attempts (default: 3)
+        
+    Returns:
+        dict: {"success": bool, "error": str or None, "title": str}
     """
     url = f"https://www.bilibili.com/video/{bvid}"
-    print(f"Downloading video for {bvid}...")
+    print(f"\n📥 Downloading video for {bvid}...")
     
     # 1. Get video info first
+    title = "Unknown Title"
     try:
         info_cmd = ['you-get', '--json', url]
-        result = subprocess.run(info_cmd, capture_output=True, text=True, check=True, timeout=15)
+        result = subprocess.run(info_cmd, capture_output=True, text=True, check=True, timeout=30)
         info = json.loads(result.stdout)
         title = info.get('title', 'Unknown Title')
-        print(f"  Title: {title}")
+        print(f"  📺 Title: {title}")
+    except subprocess.TimeoutExpired:
+        error_msg = "Timeout getting video info"
+        print(f"  ❌ {error_msg}")
+        return {"success": False, "error": error_msg, "title": title}
     except Exception as e:
-        print(f"  Warning: Could not get video info: {e}")
-        title = "Unknown Title"
+        print(f"  ⚠️  Warning: Could not get video info: {e}")
+        # Continue anyway, title is not critical
     
-    # 2. Download video using you-get
-    print(f"  Downloading video(s) to {output_dir}...")
+    # 2. Download video with retry logic
+    print(f"  ⏬ Starting download (this may take several minutes for multi-part videos)...")
+    print(f"  💡 Tip: You can see you-get's progress below")
     
-    try:
-        download_cmd = [
-            'you-get',
-            '--playlist',  # Support multi-page videos
-            '-o', output_dir,
-            url
-        ]
-        
-        # Don't check=True because you-get returns non-zero if files exist
-        result = subprocess.run(download_cmd, capture_output=True, text=True)
-        if result.returncode != 0 and "Skip" not in result.stdout:
-            print(f"  Warning: you-get exited with code {result.returncode}")
-        
-    except Exception as e:
-        print(f"  Warning during download: {e}")
+    for attempt in range(1, max_retries + 1):
+        try:
+            if attempt > 1:
+                print(f"\n  🔄 Retry attempt {attempt}/{max_retries}...")
+                time.sleep(5)  # Wait before retry
+            
+            download_cmd = [
+                'you-get',
+                '--playlist',  # Support multi-page videos
+                '-o', output_dir,
+                url
+            ]
+            
+            # Don't capture output - let you-get show progress in real-time
+            print()  # Add blank line before you-get output
+            result = subprocess.run(
+                download_cmd,
+                timeout=1800  # 30 minute timeout for large playlists
+            )
+            print()  # Add blank line after you-get output
+            
+            # Check if download succeeded (returncode 0 or 1 both can be success)
+            # you-get returns 1 when files already exist
+            if result.returncode in [0, 1]:
+                print(f"  ✅ Download complete")
+                return {"success": True, "error": None, "title": title}
+            else:
+                error_msg = f"you-get exited with code {result.returncode}"
+                if attempt == max_retries:
+                    print(f"  ❌ {error_msg}")
+                    return {"success": False, "error": error_msg, "title": title}
+                print(f"  ⚠️  {error_msg}, retrying...")
+                
+        except subprocess.TimeoutExpired:
+            error_msg = "Download timeout (>30 minutes)"
+            if attempt == max_retries:
+                print(f"  ❌ {error_msg}")
+                return {"success": False, "error": error_msg, "title": title}
+            print(f"  ⚠️  {error_msg}, retrying...")
+            
+        except Exception as e:
+            error_msg = f"Download error: {str(e)}"
+            if attempt == max_retries:
+                print(f"  ❌ {error_msg}")
+                return {"success": False, "error": error_msg, "title": title}
+            print(f"  ⚠️  {error_msg}, retrying...")
+    
+    # Should not reach here, but just in case
+    return {"success": False, "error": "Unknown download failure", "title": title}
 
 def extract_audio(video_path):
     """Extract audio from video file to .wav"""
@@ -142,16 +197,30 @@ def load_transcription_cache(cache_path):
             return None
     return None
 
+def extract_page_number(filename):
+    """Extract page number from filename like '(P10. [10]--10).mp4'"""
+    match = re.search(r'\(P(\d+)\.', filename)
+    if match:
+        return int(match.group(1))
+    return None
+
 def scan_video_files(directory):
-    """Scan for video files in directory"""
+    """Scan for video files in directory and sort by page number"""
     video_extensions = {'.mp4', '.flv', '.mkv', '.mov'}
     files = []
     for f in os.listdir(directory):
         ext = os.path.splitext(f)[1].lower()
         if ext in video_extensions:
             files.append(os.path.join(directory, f))
-    # Sort to ensure P1, P2, P3 order
-    files.sort()
+    
+    # Sort by page number extracted from filename, not alphabetically
+    # This ensures P1, P2, P3, ..., P10 order instead of P1, P10, P11, ..., P2
+    def get_page_number(filepath):
+        filename = os.path.basename(filepath)
+        page_num = extract_page_number(filename)
+        return page_num if page_num is not None else 9999  # Put files without page numbers at end
+    
+    files.sort(key=get_page_number)
     return files
 
 def get_context(all_words, current_index, window=5):
@@ -233,13 +302,69 @@ def filter_by_frequency_density(word_index, time_window=120, density_threshold=5
     
     return filtered_index
 
+def load_bvid_list_from_file(filepath):
+    """Load BVID list from a text file (one BVID per line)"""
+    bvids = []
+    with open(filepath, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            # Skip empty lines and comments
+            if line and not line.startswith('#'):
+                # Extract BVID if it's a full URL
+                if 'bilibili.com' in line:
+                    match = re.search(r'(BV[a-zA-Z0-9]+)', line)
+                    if match:
+                        bvids.append(match.group(1))
+                else:
+                    # Assume it's already a BVID
+                    bvids.append(line)
+    return bvids
+
 def main():
-    import argparse
-    
-    parser = argparse.ArgumentParser(description='Bilibili Video Indexer V3.0 (Robust Edition)')
+    parser = argparse.ArgumentParser(
+        description='Bilibili Video Indexer V3.1 (Enhanced Robust Edition)',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Use hardcoded BVID_LIST in script
+  python bilibili_indexer.py
+  
+  # Specify BVIDs via command line
+  python bilibili_indexer.py --bvids BV1234567890 BV0987654321
+  
+  # Load BVIDs from file (one per line)
+  python bilibili_indexer.py --bvid-file videos.txt
+  
+  # Retry only failed videos from previous run
+  python bilibili_indexer.py --retry-failed
+        """
+    )
+    parser.add_argument('--bvids', nargs='+', metavar='BVID',
+                       help='List of Bilibili video IDs to process')
+    parser.add_argument('--bvid-file', type=str, metavar='FILE',
+                       help='File containing BVIDs (one per line, supports URLs and comments with #)')
     parser.add_argument('--retry-failed', action='store_true', 
                        help='Only retry videos that failed in the previous run')
+    parser.add_argument('--skip-download', action='store_true',
+                       help='Skip download phase and only process existing videos')
     args = parser.parse_args()
+    
+    # Determine BVID list source
+    bvid_list = None
+    if args.bvids:
+        bvid_list = args.bvids
+        print(f"Using BVIDs from command line: {bvid_list}")
+    elif args.bvid_file:
+        bvid_list = load_bvid_list_from_file(args.bvid_file)
+        print(f"Loaded {len(bvid_list)} BVIDs from {args.bvid_file}")
+    else:
+        # Use hardcoded BVID_LIST
+        bvid_list = BVID_LIST
+        if not bvid_list:
+            print("❌ Error: No BVIDs specified!")
+            print("   Use --bvids, --bvid-file, or edit BVID_LIST in the script.")
+            return
+        print(f"Using hardcoded BVID_LIST: {bvid_list}")
     
     print("=" * 60)
     print("Bilibili Video Indexer V3.0 (Robust Edition)")
@@ -249,16 +374,50 @@ def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     os.makedirs(TEMP_DIR, exist_ok=True)
 
-    # 1. Download Phase (skip if retry-failed mode)
-    if not args.retry_failed:
-        print("\n[Phase 1] Checking/Downloading Videos...")
-        for bvid in BVID_LIST:
-            download_audio(bvid, TEMP_DIR) # This now handles playlists
-    else:
+    # 1. Download Phase
+    download_failures = []
+    
+    # Create a mapping from title keywords to BVID for later use
+    # Since you-get doesn't include BVID in filename, we need to track it
+    bvid_download_map = {}  # Maps BVID to download order/index
+    
+    if args.skip_download:
+        print("\n[Phase 1] Skipping download phase (--skip-download)...")
+    elif args.retry_failed:
         print("\n[Retry Mode] Skipping download phase...")
+    else:
+        print("\n" + "=" * 60)
+        print(f"[Phase 1] Downloading {len(bvid_list)} Video(s)...")
+        print("=" * 60)
+        print(f"💡 Note: you-get will show its own download progress\n")
+        
+        # Don't use tqdm here - it conflicts with you-get's own progress display
+        for idx, bvid in enumerate(bvid_list, 1):
+            print(f"\n[{idx}/{len(bvid_list)}] Processing {bvid}")
+            bvid_download_map[bvid] = idx
+            
+            result = download_audio(bvid, TEMP_DIR, max_retries=3)
+            
+            if not result["success"]:
+                download_failures.append({
+                    "bvid": bvid,
+                    "title": result["title"],
+                    "error": result["error"]
+                })
+        
+        # Report download results
+        if download_failures:
+            print(f"\n⚠️  Download Summary: {len(bvid_list) - len(download_failures)}/{len(bvid_list)} successful")
+            print(f"❌ Failed downloads:")
+            for fail in download_failures:
+                print(f"   - {fail['bvid']}: {fail['error']}")
+        else:
+            print(f"\n✅ All {len(bvid_list)} videos downloaded successfully!")
 
     # 2. Processing Phase (Scanning files)
-    print("\n[Phase 2] Processing Videos (Resume Capable)...")
+    print("\n" + "=" * 60)
+    print("[Phase 2] Processing Videos (Resume Capable)...")
+    print("=" * 60)
     
     # Initialize engines only if needed
     processor = TextProcessor()
@@ -294,7 +453,11 @@ def main():
     failed_videos = []  # Track failed videos
     successful_videos = 0
     
-    for idx, video_path in enumerate(video_files):
+    # Use progress bar for processing if available
+    processing_iterator = tqdm(enumerate(video_files), total=len(video_files), 
+                              desc="Processing", unit="video") if HAS_TQDM else enumerate(video_files)
+    
+    for idx, video_path in processing_iterator:
         try:
             video_filename = os.path.basename(video_path)
             video_id = str(idx) # Simple numeric ID for frontend
@@ -302,18 +465,24 @@ def main():
             # Generate a title based on filename
             title = os.path.splitext(video_filename)[0]
             
-            # Try to extract BVID from filename (you-get usually includes it)
-            import re as regex_module
-            bvid_match = regex_module.search(r'(BV[a-zA-Z0-9]+)', video_filename)
-            bvid = bvid_match.group(1) if bvid_match else None
+            # Extract page number from filename
+            page_number = extract_page_number(video_filename)
+            
+            # Use the first BVID from bvid_list as the source
+            # (assuming all downloaded videos are from the same or related series)
+            source_bvid = bvid_list[0] if len(bvid_list) > 0 else None
             
             video_map[video_id] = {
                 "filename": video_filename,
                 "title": title,
-                "bvid": bvid  # May be None if not in filename
+                "bvid": source_bvid,
+                "page": page_number
             }
             
-            print(f"\nProcessing [{idx+1}/{len(video_files)}] {video_filename}...")
+            if not HAS_TQDM:
+                print(f"\n📹 Processing [{idx+1}/{len(video_files)}] {video_filename}...")
+            else:
+                processing_iterator.set_postfix_str(video_filename[:40])
             
             # Check Cache First
             cache_path = get_transcription_cache_path(video_path)
@@ -322,32 +491,40 @@ def main():
             words = []
             
             if cached_data:
-                print(f"  ✓ Found cached transcription, skipping Whisper!")
+                if not HAS_TQDM:
+                    print(f"  ✅ Found cached transcription, skipping Whisper!")
                 words = cached_data['words']
             else:
                 # No cache, perform heavy lifting
                 if asr is None:
-                    print("  Loading Whisper model (medium)...")
+                    if not HAS_TQDM:
+                        print("  🤖 Loading Whisper model (medium)...")
                     asr = ASREngine(model_size="medium")
                 
                 # Extract Audio
+                if not HAS_TQDM:
+                    print(f"  🎵 Extracting audio...")
                 audio_path = extract_audio(video_path)
                 if not audio_path:
                     raise Exception("Audio extraction failed")
                     
                 # Transcribe
+                if not HAS_TQDM:
+                    print(f"  🗣️  Transcribing (this may take a while)...")
                 words = asr.transcribe(audio_path)
                 
                 # Save Cache immediately
                 save_transcription_cache(cache_path, words, {"title": title})
-                print(f"  ✓ Saved transcription cache")
+                if not HAS_TQDM:
+                    print(f"  💾 Saved transcription cache")
                 
                 # Optional: Cleanup audio to save space
                 if os.path.exists(audio_path):
                     os.remove(audio_path)
 
             # 3. Indexing (Always runs, fast)
-            print(f"  Indexing {len(words)} words...")
+            if not HAS_TQDM:
+                print(f"  📚 Indexing {len(words)} words...")
             indexed_count = 0
             for i, word_obj in enumerate(words):
                 raw_text = word_obj['word']
@@ -385,14 +562,20 @@ def main():
                         indexed_count += 1
                         total_words_count += 1
             
-            print(f"  ✓ Indexed {indexed_count} word occurrences")
+            if not HAS_TQDM:
+                print(f"  ✅ Indexed {indexed_count} word occurrences")
             successful_videos += 1
             
         except Exception as e:
             error_msg = str(e)
-            print(f"  ❌ Error processing {video_filename}: {error_msg}")
-            import traceback
-            traceback.print_exc()
+            if HAS_TQDM:
+                processing_iterator.write(f"  ❌ Error: {video_filename}: {error_msg}")
+            else:
+                print(f"  ❌ Error processing {video_filename}: {error_msg}")
+            
+            if not HAS_TQDM:
+                import traceback
+                traceback.print_exc()
             
             # Record failure
             failed_videos.append({
@@ -401,7 +584,8 @@ def main():
                 "index": idx
             })
             
-            print(f"  Continuing with next video...")
+            if not HAS_TQDM:
+                print(f"  ⏭️  Continuing with next video...")
             continue
     # 5. Save Data
     print("\n" + "=" * 60)

@@ -1,0 +1,13 @@
+# Bilibili Video List
+# Lines starting with # are treated as comments
+# You can provide BVIDs directly or full Bilibili URLs
+
+# Example: Direct BVID
+BV1XksdztEvb
+
+# Example: Full URL (BVID will be automatically extracted)
+# https://www.bilibili.com/video/BV1234567890
+
+# Add more videos below:
+# BV0987654321
+# https://www.bilibili.com/video/BV1111111111
