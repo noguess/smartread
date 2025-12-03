@@ -69,6 +69,7 @@
 interface GeneratedContent {
   title: string;
   content: string;
+  
   // Part 1: 阅读理解 (Reading Comprehension) - 考察文章大意
   readingQuestions: {
     id: string;
@@ -77,29 +78,120 @@ interface GeneratedContent {
     options: string[];
     answer: string;
   }[];
+  
   // Part 2: 词汇专项 (Vocabulary Mastery) - 考察核心单词
   vocabularyQuestions: {
     id: string;
     targetWord: string; // 关联的核心单词
-    type: 'cloze' | 'definition'; // 完形填空 或 释义选择
-    stem: string; // 题干 (若是 cloze，则为挖空的句子)
-    options: string[];
-    answer: string;
+    // 支持多种题型，根据难度等级动态生成
+    type: 'cloze' | 'definition' | 'spelling' | 'contextual' | 'audio' | 'wordForm' | 'synonym' | 'matching';
+    stem: string; // 题干 (若是 cloze，则为挖空的句子；若是 matching，则为配对说明)
+    options?: string[]; // 选择题型有options，输入题型无options
+    answer: string | string[]; // 单个答案或多个答案（matching题型）
+    audioUrl?: string; // 音频题型专用
+    pairs?: { word: string; definition: string }[]; // 匹配题型专用
   }[];
 }
 ```
 
-#### 2.5 词汇专项题型设计
-针对本次生成的文章中包含的 **Target Words**（核心单词），生成对应的测试题。
+> [!NOTE]
+> `vocabularyQuestions` 中的 `type` 字段决定了题目的展示形式：
+> - **选择类**: `cloze`, `definition`, `contextual`, `synonym` - 需要 `options` 数组
+> - **输入类**: `spelling`, `wordForm` - 不需要 `options`，用户直接输入
+> - **匹配类**: `matching` - 需要 `pairs` 数组
+> - **音频类**: `audio` - 需要 `audioUrl`，可能还需要 `options`（听音选择）或无（听音输入）
 
-*   **题型 A：完形填空 (Cloze)**
-    *   **逻辑**：选取文章中包含该单词的原句，将该单词挖空。
-    *   **选项**：正确单词 + 3 个干扰项（词性相同、拼写相近或语义相关的词）。
-    *   **Prompt**：`Create a cloze question for word "${word}" using the sentence from the text: "${sentence}".`
+#### 2.5 词汇专项题型设计 (Adaptive Question Types)
 
-*   **题型 B：词义辨析 (Definition)**
-    *   **逻辑**：给出单词，要求选出正确的英文释义或中文含义（视 Prompt 设定，建议英文释义以培养语感）。
-    *   **Prompt**：`Select the correct definition for "${word}".`
+> [!IMPORTANT]
+> V4.0 词汇测试采用**难度自适应题型系统**，根据用户当前的 `difficultyLevel` 动态生成不同类型和数量的题目，确保各等级都有适度挑战和多样化体验。
+
+##### 2.5.1 题型设计理念
+- **L1 (基础/初一)**: 侧重"多角度认知强化"，全部为选择/匹配题，通过多种题型反复考察同一批单词
+- **L2 (进阶/初二)**: 侧重"情境迁移与主动回忆"，引入拼写输入，强化在不同场景下正确使用单词的能力
+- **L3 (挑战/中考)**: 侧重"综合能力与实战模拟"，增加输入题占比，模拟真实中考场景
+
+##### 2.5.2 分级题型配置表
+
+**L1 (基础) - 10题**
+
+| 题型 | 数量 | 占比 | 难度 | 详细说明 |
+|------|------|------|------|----------|
+| 完形填空 (原文挖空) | 3题 | 30% | ⭐⭐ | 直接来源于文章原句，降低难度 |
+| 词义辨析 (中英双语释义) | 3题 | 30% | ⭐ | 选择题，提供中文释义辅助 |
+| 音频跟读选择 (听音选词) | 2题 | 20% | ⭐⭐ | 播放发音，从4个选项中选出正确拼写 |
+| 英英释义匹配 | 1组(3对) | 20% | ⭐⭐ | 连线匹配，批量复习 |
+
+**L2 (进阶) - 10题**
+
+| 题型 | 数量 | 占比 | 难度 | 详细说明 |
+|------|------|------|------|----------|
+| 情境应用题 (新场景选择) | 4题 | 40% | ⭐⭐⭐ | 非原文语境，考察迁移应用 |
+| 拼写输入题 (释义→拼写) | 2题 | 20% | ⭐⭐⭐⭐ | 给英文释义+音标，输入拼写 |
+| 完形填空 (原文挖空) | 2题 | 20% | ⭐⭐ | 保留基础题，稳固信心 |
+| 同义词/反义词选择 | 1题 | 10% | ⭐⭐⭐ | 扩展语义网络 |
+| 音频听写选择 (听音选词) | 1题 | 10% | ⭐⭐⭐ | 听音从选项中选出，非完全输入 |
+
+**L3 (挑战) - 12题**
+
+| 题型 | 数量 | 占比 | 难度 | 详细说明 |
+|------|------|------|------|----------|
+| 拼写输入题 (释义→拼写) | 3题 | 25% | ⭐⭐⭐⭐⭐ | 纯英文释义，无中文提示 |
+| 情境应用题 (复杂语境) | 3题 | 25% | ⭐⭐⭐⭐ | 长句子，需深度理解 |
+| 词形变换题 (语法结合) | 2题 | 17% | ⭐⭐⭐⭐ | 根据语境填写正确词形 |
+| 音频完整听写 (输入拼写) | 2题 | 17% | ⭐⭐⭐⭐⭐ | 听音后完全输入，无选项 |
+| 同义词/反义词选择 | 1题 | 8% | ⭐⭐⭐ | 语义网络 |
+| 英英释义匹配 | 1组(3对) | 8% | ⭐⭐⭐ | 批量快速复习 |
+
+##### 2.5.3 题型详细定义
+
+**① 完形填空 (Cloze) - 原文挖空**
+- **逻辑**: 选取文章中包含该单词的原句，将该单词挖空
+- **选项**: 正确单词 + 3个干扰项（词性相同、拼写相近或语义相关）
+- **Prompt**: `Create a cloze question for word "${word}" using the sentence from the text: "${sentence}".`
+
+**② 词义辨析 (Definition) - 中英双语 (L1专属)**
+- **逻辑**: 给出单词，要求选出正确含义
+- **选项**: 提供中英文双语释义，降低认知门槛
+- **Prompt**: `Select the correct definition for "${word}" with both Chinese and English meanings.`
+
+**③ 拼写输入题 (Spelling Input)**
+- **逻辑**: 给出释义和音标，要求用户输入完整拼写
+- **L2**: 可提供英文释义，部分中文提示
+- **L3**: 纯英文释义，无中文提示
+- **Prompt**: `Write the correct word based on the definition: "${definition}" and pronunciation: /${phonetic}/`
+
+**④ 情境应用题 (Contextual Application)**
+- **逻辑**: 创建新的非原文句子，考察单词在不同语境下的正确理解
+- **L2**: 标准长度句子
+- **L3**: 长句子，多从句，需深度理解
+- **Prompt**: `Create a new sentence (not from the article) that requires understanding of "${word}" in context.`
+
+**⑤ 音频相关题型 (Audio-based Questions)**
+- **L1 音频跟读选择**: 播放发音，从4个相似拼写中选择
+- **L2 音频听写选择**: 听音从选项中选出（干扰项为同词根不同词形）
+- **L3 音频完整听写**: 听音后完全输入，无选项提示
+- **Prompt**: `Generate audio pronunciation for "${word}" and create appropriate distractors.`
+
+**⑥ 词形变换题 (Word Form Transformation) - L3专属**
+- **逻辑**: 给出句子和括号中的原形单词，要求填写正确词形
+- **示例**: `She has always been known for her _______ (ambition) nature.` → `ambitious`
+- **Prompt**: `Create a sentence requiring the correct form of "${word}" based on grammatical context.`
+
+**⑦ 同义词/反义词选择 (Synonyms/Antonyms) - L2/L3**
+- **逻辑**: 考察词汇语义网络扩展
+- **Prompt**: `Provide synonym/antonym options for "${word}".`
+
+**⑧ 英英释义匹配 (Definition Matching) - L1/L3**
+- **逻辑**: 将3-4个单词与英文释义进行连线匹配
+- **L1**: 简单释义
+- **L3**: 复杂释义
+- **Prompt**: `Create a matching exercise with ${count} words and their English definitions.`
+
+##### 2.5.4 实施说明
+
+> [!NOTE]
+> V4.0 直接实现**完整版**题型配置，包含所有题型以提供最佳学习体验。
 
 #### 2.6 交互流程优化
 1.  **阅读页面**：保持不变。
@@ -148,15 +240,68 @@ interface History {
 ## 4. 实施计划
 
 ### 4.1 开发优先级
-1.  **P0**: 修改 `llmService` Prompt，支持生成 `readingQuestions` 和 `vocabularyQuestions` 双重结构。
-2.  **P0**: 重构 `QuizView` 组件，支持分步答题（阅读题 -> 词汇题）。
-3.  **P1**: 实现 `Settings` 中的难度等级存储与管理。
-4.  **P1**: 升级 `ReadingPage` 的 `handleQuizSubmit` 逻辑，实现精准的 SRS 状态更新。
-5.  **P2**: 实现难度自动调整算法 (Auto-Adjustment Logic)。
+
+> [!IMPORTANT]
+> V4.0 直接实现**完整版**题型配置，包含所有 8 种题型以提供最佳学习体验。
+
+**必须实现的功能（按优先级排序）:**
+
+1.  **P0 - 数据基础**: 
+    - 修改 `llmService` Prompt，支持生成 `readingQuestions` 和 `vocabularyQuestions` 双重结构
+    - 更新 `GeneratedContent` 接口，支持 8 种题型
+    - 实现 `Settings` 中的难度等级存储与管理
+
+2.  **P0 - UI框架**: 
+    - 重构 `QuizView` 组件，支持分步答题（阅读题 -> 词汇题）
+    - 创建 `VocabularyQuestionRenderer` 核心组件框架
+
+3.  **P0 - 基础题型组件**（选择类，无外部依赖）:
+    - ✅ 完形填空 (Cloze) - 各等级通用
+    - ✅ 词义辨析 (Definition) - L1 专属，中英双语
+    - ✅ 情境应用 (Contextual) - L2/L3
+    - ✅ 同义词/反义词 (Synonym) - L2/L3
+
+4.  **P1 - 输入类题型**:
+    - ✅ 拼写输入 (Spelling) - L2/L3
+    - ✅ 词形变换 (WordForm) - L3 专属
+
+5.  **P1 - 匹配类题型**:
+    - ✅ 英英释义匹配 (Matching) - L1/L3
+
+6.  **P2 - 音频题型**（需要TTS服务集成）:
+    - ✅ 音频跟读选择 (L1) - 播放发音，4个选项中选择正确拼写
+    - ✅ 音频听写选择 (L2) - 听音从选项中选出（同词根不同词形）
+    - ✅ 音频完整听写 (L3) - 听音后完全输入，无选项
+
+7.  **P1 - SRS与历史**:
+    - 升级 `ReadingPage` 的 `handleQuizSubmit` 逻辑，实现精准的 SRS 状态更新
+    - 保存详细的答题数据到 History 表
+
+8.  **P2 - 难度自动调整**:
+    - 实现难度自动调整算法 (Auto-Adjustment Logic)
+
+**完整版题量配置:**
+- **L1 (基础)**: 10题
+  - 完形填空(3) + 词义辨析(3) + 音频跟读选择(2) + 英英释义匹配(1组3对)
+- **L2 (进阶)**: 10题
+  - 情境应用(4) + 拼写输入(2) + 完形填空(2) + 同义/反义词(1) + 音频听写选择(1)
+- **L3 (挑战)**: 12题
+  - 拼写输入(3) + 情境应用(3) + 词形变换(2) + 音频完整听写(2) + 同义/反义词(1) + 英英释义匹配(1组3对)
+
+**验收标准:**
+- ✅ 用户可在设置中切换难度等级（L1/L2/L3）
+- ✅ LLM 能根据难度等级生成完整的题型组合
+- ✅ 前端能正确渲染所有 8 种题型并收集答案
+- ✅ SRS 系统根据词汇题结果精准更新单词状态
+- ✅ 音频题型能够正常播放并交互
+- ✅ 匹配题型支持直观的配对操作
 
 ### 4.2 技术难点预判
-*   **Prompt 复杂度**：要求 LLM 同时生成文章、阅读题和针对特定单词的词汇题，Prompt 会比较长且复杂，需反复调试以保证 JSON 格式稳定。
+*   **Prompt 复杂度**：要求 LLM 同时生成文章、阅读题和针对特定单词的分级词汇题（包含8种题型），Prompt 会比较长且复杂，需反复调试以保证 JSON 格式稳定。
 *   **干扰项生成**：生成高质量的干扰项（Distractors）是难点，如果干扰项太假（如词性不同），题目就没有意义。需在 Prompt 中强调干扰项的质量。
+*   **题型组件适配**：8种题型的 UI 组件需要统一的数据接口和交互逻辑，建议使用工厂模式或组件映射表。
+*   **音频资源管理**：音频题型需要 TTS 服务（建议使用浏览器原生 Web Speech API 或集成第三方 TTS API），需考虑资源加载、缓存策略和错误处理。
+*   **匹配题交互设计**：需要设计直观的配对 UI，可以使用下拉选择或拖拽匹配，确保在触摸设备上也易于操作。
 
 ---
 

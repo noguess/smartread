@@ -35,6 +35,7 @@ export default function ReadingPage() {
     const [score, setScore] = useState(0)
     const [selectedWord, setSelectedWord] = useState<string>('')
     const [isWordModalOpen, setIsWordModalOpen] = useState(false)
+    const [lastWordResults, setLastWordResults] = useState<{ [spelling: string]: boolean }>({})
 
     const [isReviewMode, setIsReviewMode] = useState(false)
 
@@ -73,7 +74,8 @@ export default function ReadingPage() {
             const data: GeneratedContent = {
                 title: record.title || ('Review: ' + new Date(record.date).toLocaleDateString()),
                 content: record.articleContent,
-                questions: record.questionsJson,
+                readingQuestions: record.questionsJson?.reading || [],
+                vocabularyQuestions: record.questionsJson?.vocabulary || [],
             }
             setArticleData(data)
 
@@ -116,30 +118,49 @@ export default function ReadingPage() {
         }
     }
 
-    const handleQuizSubmit = async (answers: Record<string, string>) => {
+    const handleQuizSubmit = async (answers: { reading: Record<string, string>; vocabulary: Record<string, string> }) => {
         if (!articleData) return
 
-        // Calculate Score
-        let correctCount = 0
-        articleData.questions.forEach(q => {
-            if (answers[q.id] === q.answer) {
-                correctCount++
+        // Calculate Reading Score (40% weight)
+        let readingCorrect = 0
+        articleData.readingQuestions.forEach(q => {
+            if (answers.reading[q.id] === q.answer) {
+                readingCorrect++
             }
         })
-        setScore(correctCount)
+
+        // Calculate Vocabulary Score (60% weight)
+        let vocabCorrect = 0
+        articleData.vocabularyQuestions.forEach(q => {
+            if (answers.vocabulary[q.id] === q.answer) {
+                vocabCorrect++
+            }
+        })
+
+        const totalCorrect = readingCorrect + vocabCorrect
+        setScore(totalCorrect)
         setStep('feedback')
 
-        // Update SRS for each target word
-        // Logic: If score is high (>80%), treat all words as 'Correct'? 
-        // Or just update repetition count?
-        // PRD 2.2 says: "Feedback from quiz updates word status".
-        // For simplicity: If quiz passed (>60%), mark words as Correct. Else Incorrect.
-        const passed = (correctCount / articleData.questions.length) >= 0.6
+        // Precise SRS Update Logic
+        const wordResults: { [spelling: string]: boolean } = {}
 
-        for (const word of targetWords) {
-            const updates = SRSAlgorithm.calculateNextReview(word, passed)
-            await wordService.updateWord(word.id!, updates)
+        for (const q of articleData.vocabularyQuestions) {
+            // Find the target word object
+            const word = targetWords.find(w => w.spelling === q.targetWord) ||
+                targetWords.find(w => q.stem.includes(w.spelling)) // Fallback matching
+
+            if (word && word.id) {
+                const isCorrect = answers.vocabulary[q.id] === q.answer
+                wordResults[word.spelling] = isCorrect
+
+                // Update SRS based on specific question result
+                const updates = SRSAlgorithm.calculateNextReview(word, isCorrect)
+                await wordService.updateWord(word.id, updates)
+            }
         }
+
+        // Store word results for history saving
+        setLastWordResults(wordResults)
     }
 
     const handleFinish = async (difficulty: number) => {
@@ -151,10 +172,14 @@ export default function ReadingPage() {
             title: articleData.title,
             articleContent: articleData.content,
             targetWords: targetWords.map(w => w.spelling),
-            questionsJson: articleData.questions,
-            userScore: Math.round((score / articleData.questions.length) * 100),
+            questionsJson: {
+                reading: articleData.readingQuestions,
+                vocabulary: articleData.vocabularyQuestions
+            },
+            userScore: Math.round((score / (articleData.readingQuestions.length + articleData.vocabularyQuestions.length)) * 100),
             difficultyFeedback: difficulty,
-            timeSpent: timeSpent // Save time spent
+            timeSpent: timeSpent,
+            wordResults: lastWordResults
         }
 
         await historyService.saveArticleRecord(historyRecord)
@@ -299,7 +324,8 @@ export default function ReadingPage() {
 
                 {step === 'quiz' && articleData && (
                     <QuizView
-                        questions={articleData.questions}
+                        readingQuestions={articleData.readingQuestions}
+                        vocabularyQuestions={articleData.vocabularyQuestions}
                         onSubmit={handleQuizSubmit}
                         onBack={() => setStep('reading')}
                     />
@@ -308,7 +334,7 @@ export default function ReadingPage() {
                 {step === 'feedback' && articleData && (
                     <ScoreFeedback
                         score={score}
-                        totalQuestions={articleData.questions.length}
+                        totalQuestions={articleData.readingQuestions.length + articleData.vocabularyQuestions.length}
                         onComplete={handleFinish}
                     />
                 )}
