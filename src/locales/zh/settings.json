@@ -20,7 +20,11 @@
         "medium": "中篇 (~250词)",
         "long": "长篇 (~350+词)",
         "dailyLimit": "每日新词上限",
-        "dailyLimitHelper": "限制每天引入新词的最大数量"
+        "dailyLimitHelper": "限制每天引入新词的最大数量",
+        "difficultyLevel": "难度等级",
+        "difficultyL1": "基础 (初一/L1)",
+        "difficultyL2": "进阶 (初二/L2)",
+        "difficultyL3": "挑战 (中考/L3)"
     },
     "data": {
         "title": "数据管理",

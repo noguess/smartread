@@ -20,7 +20,11 @@
         "medium": "Medium (~250 words)",
         "long": "Long (~350+ words)",
         "dailyLimit": "Daily New Words Limit",
-        "dailyLimitHelper": "Limit the maximum number of new words per day"
+        "dailyLimitHelper": "Limit the maximum number of new words per day",
+        "difficultyLevel": "Difficulty Level",
+        "difficultyL1": "Basic (Grade 7/L1)",
+        "difficultyL2": "Intermediate (Grade 8/L2)",
+        "difficultyL3": "Advanced (Zhongkao/L3)"
     },
     "data": {
         "title": "Data Management",

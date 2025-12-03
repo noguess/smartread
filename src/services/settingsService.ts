@@ -9,11 +9,18 @@ export const settingsService = {
                 apiKey: '',
                 articleLenPref: 'medium',
                 dailyNewLimit: 10,
+                difficultyLevel: 'L2', // Initialize default difficultyLevel
             }
             const id = await db.settings.add(defaultSettings)
             return { ...defaultSettings, id }
         }
-        return settings[0]
+
+        const currentSettings = settings[0]
+        if (!currentSettings.difficultyLevel) {
+            currentSettings.difficultyLevel = 'L2'
+            await db.settings.update(currentSettings.id!, { difficultyLevel: 'L2' })
+        }
+        return currentSettings
     },
 
     async saveSettings(changes: Partial<Setting>) {

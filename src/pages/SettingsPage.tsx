@@ -30,6 +30,7 @@ export default function SettingsPage() {
     const [apiKey, setApiKey] = useState('')
     const [articleLen, setArticleLen] = useState<'short' | 'medium' | 'long'>('medium')
     const [dailyLimit, setDailyLimit] = useState(10)
+    const [difficultyLevel, setDifficultyLevel] = useState<'L1' | 'L2' | 'L3'>('L2')
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMsg, setSnackbarMsg] = useState('')
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
@@ -48,6 +49,7 @@ export default function SettingsPage() {
             setApiKey(current.apiKey)
             setArticleLen(current.articleLenPref)
             setDailyLimit(current.dailyNewLimit)
+            setDifficultyLevel(current.difficultyLevel || 'L2')
         }
     }
 
@@ -57,6 +59,7 @@ export default function SettingsPage() {
             apiKey,
             articleLenPref: articleLen,
             dailyNewLimit: dailyLimit,
+            difficultyLevel: difficultyLevel,
         }
         await settingsService.saveSettings(newSettings)
         setSettings(newSettings)
@@ -210,6 +213,19 @@ export default function SettingsPage() {
                     helperText={t('settings:preferences.dailyLimitHelper')}
                     sx={{ mt: 2 }}
                 />
+
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                    <InputLabel>{t('settings:preferences.difficultyLevel')}</InputLabel>
+                    <Select
+                        value={difficultyLevel}
+                        label={t('settings:preferences.difficultyLevel')}
+                        onChange={(e) => setDifficultyLevel(e.target.value as any)}
+                    >
+                        <MenuItem value="L1">L1 - {t('settings:preferences.difficultyL1')}</MenuItem>
+                        <MenuItem value="L2">L2 - {t('settings:preferences.difficultyL2')}</MenuItem>
+                        <MenuItem value="L3">L3 - {t('settings:preferences.difficultyL3')}</MenuItem>
+                    </Select>
+                </FormControl>
             </Paper>
 
             {/* V2.0: 主题模式切换 */}

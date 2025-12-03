@@ -20,10 +20,11 @@ export interface History {
     title?: string
     articleContent: string
     targetWords: string[]
-    questionsJson: any
+    questionsJson: { reading: any[]; vocabulary: any[] } | any // Union type for compatibility
     userScore: number
     difficultyFeedback: number
     timeSpent?: number // Time spent in seconds
+    wordResults?: { [spelling: string]: boolean }
 }
 
 export interface Setting {
@@ -32,6 +33,7 @@ export interface Setting {
     apiBaseUrl?: string
     articleLenPref: 'short' | 'medium' | 'long'
     dailyNewLimit: number
+    difficultyLevel: 'L1' | 'L2' | 'L3'
 }
 
 export class SmartReaderDB extends Dexie {
