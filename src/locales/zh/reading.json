@@ -5,7 +5,9 @@
     },
     "buttons": {
         "startQuiz": "开始测验",
-        "reviewQuiz": "复习测验"
+        "reviewQuiz": "复习测验",
+        "viewAnswers": "查看答题记录",
+        "retakeQuiz": "重新测验"
     },
     "sidebar": {
         "difficulty": "难度",

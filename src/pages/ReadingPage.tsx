@@ -397,7 +397,7 @@ export default function ReadingPage() {
                                                 }
                                             }}
                                         >
-                                            查看答题记录
+                                            {t('reading:buttons.viewAnswers')}
                                         </Button>
                                         <Button
                                             variant="outlined"
@@ -422,7 +422,7 @@ export default function ReadingPage() {
                                                 }
                                             }}
                                         >
-                                            重新测验
+                                            {t('reading:buttons.retakeQuiz')}
                                         </Button>
                                     </>
                                 ) : (

@@ -5,7 +5,9 @@
     },
     "buttons": {
         "startQuiz": "Start Quiz",
-        "reviewQuiz": "Review Quiz"
+        "reviewQuiz": "Review Quiz",
+        "viewAnswers": "View Answer Record",
+        "retakeQuiz": "Retake Quiz"
     },
     "sidebar": {
         "difficulty": "Difficulty",
