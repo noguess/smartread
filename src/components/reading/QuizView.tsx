@@ -21,13 +21,25 @@ interface QuizViewProps {
     vocabularyQuestions: Question[]
     onSubmit: (answers: { reading: Record<string, string>; vocabulary: Record<string, string | string[]> }) => void
     onBack: () => void
+    initialAnswers?: {
+        reading: Record<string, string>
+        vocabulary: Record<string, string | string[]>
+    }
+    readOnly?: boolean
 }
 
-export default function QuizView({ readingQuestions, vocabularyQuestions, onSubmit, onBack }: QuizViewProps) {
+export default function QuizView({
+    readingQuestions,
+    vocabularyQuestions,
+    onSubmit,
+    onBack,
+    initialAnswers,
+    readOnly = false
+}: QuizViewProps) {
     const { t } = useTranslation(['reading'])
     const [activeStep, setActiveStep] = useState(0)
-    const [readingAnswers, setReadingAnswers] = useState<Record<string, string>>({})
-    const [vocabAnswers, setVocabAnswers] = useState<Record<string, string | string[]>>({})
+    const [readingAnswers, setReadingAnswers] = useState<Record<string, string>>(initialAnswers?.reading || {})
+    const [vocabAnswers, setVocabAnswers] = useState<Record<string, string | string[]>>(initialAnswers?.vocabulary || {})
 
     const steps = ['Reading Comprehension', 'Vocabulary Mastery']
 
@@ -104,36 +116,76 @@ export default function QuizView({ readingQuestions, vocabularyQuestions, onSubm
             {activeStep === 0 ? (
                 // Reading Questions - Simple Radio Group
                 <>
-                    {readingQuestions.map((q, index) => (
-                        <Box key={q.id} sx={{ mb: 4 }}>
-                            <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
-                                {index + 1}. {q.stem}
-                            </Typography>
-                            <FormControl fullWidth>
-                                <RadioGroup
-                                    value={readingAnswers[q.id] || ''}
-                                    onChange={(e) => handleReadingChange(q.id, e.target.value)}
-                                >
-                                    {q.options?.map((opt) => (
-                                        <FormControlLabel key={opt} value={opt} control={<Radio />} label={opt} />
-                                    ))}
-                                </RadioGroup>
-                            </FormControl>
-                        </Box>
-                    ))}
+                    {readingQuestions.map((q, index) => {
+                        const userAnswer = readingAnswers[q.id]
+                        const isCorrect = userAnswer === q.answer
+
+                        return (
+                            <Box key={q.id} sx={{ mb: 4 }}>
+                                <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+                                    {index + 1}. {q.stem}
+                                </Typography>
+                                <FormControl fullWidth disabled={readOnly}>
+                                    <RadioGroup
+                                        value={userAnswer || ''}
+                                        onChange={(e) => handleReadingChange(q.id, e.target.value)}
+                                    >
+                                        {q.options?.map((opt) => {
+                                            const isSelected = userAnswer === opt
+                                            const isTheCorrectAnswer = q.answer === opt
+
+                                            let color = 'text.primary'
+                                            if (readOnly) {
+                                                if (isTheCorrectAnswer) color = 'success.main'
+                                                else if (isSelected && !isCorrect) color = 'error.main'
+                                            }
+
+                                            return (
+                                                <FormControlLabel
+                                                    key={opt}
+                                                    value={opt}
+                                                    control={<Radio color={readOnly && isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary'} />}
+                                                    label={
+                                                        <Typography color={color} fontWeight={readOnly && isTheCorrectAnswer ? 'bold' : 'normal'}>
+                                                            {opt} {readOnly && isTheCorrectAnswer && '(Correct)'} {readOnly && isSelected && !isCorrect && '(Your Answer)'}
+                                                        </Typography>
+                                                    }
+                                                />
+                                            )
+                                        })}
+                                    </RadioGroup>
+                                </FormControl>
+                            </Box>
+                        )
+                    })}
                 </>
             ) : (
                 // Vocabulary Questions - Using VocabularyQuestionRenderer
                 <>
-                    {vocabularyQuestions.map((q, index) => (
-                        <VocabularyQuestionRenderer
-                            key={q.id}
-                            question={q}
-                            answer={vocabAnswers[q.id] || (q.type === 'matching' ? [] : '')}
-                            onChange={(value) => handleVocabChange(q.id, value)}
-                            index={index}
-                        />
-                    ))}
+                    {vocabularyQuestions.map((q, index) => {
+                        const userAnswer = vocabAnswers[q.id]
+                        let isCorrect = false
+
+                        if (Array.isArray(q.answer) && Array.isArray(userAnswer)) {
+                            isCorrect = q.answer.length === userAnswer.length &&
+                                q.answer.every((val, idx) => val === userAnswer[idx])
+                        } else {
+                            isCorrect = userAnswer === q.answer
+                        }
+
+                        return (
+                            <VocabularyQuestionRenderer
+                                key={q.id}
+                                question={q}
+                                answer={userAnswer || (q.type === 'matching' ? [] : '')}
+                                onChange={(value) => handleVocabChange(q.id, value)}
+                                index={index}
+                                readOnly={readOnly}
+                                correctAnswer={q.answer}
+                                isCorrect={isCorrect}
+                            />
+                        )
+                    })}
                 </>
             )}
 
@@ -146,20 +198,22 @@ export default function QuizView({ readingQuestions, vocabularyQuestions, onSubm
                     <Button
                         variant="contained"
                         size="large"
-                        disabled={!isStepComplete()}
+                        disabled={!readOnly && !isStepComplete()}
                         onClick={handleNext}
                     >
                         {t('reading:quiz.next', 'Next Part')}
                     </Button>
                 ) : (
-                    <Button
-                        variant="contained"
-                        size="large"
-                        disabled={!isStepComplete()}
-                        onClick={handleSubmit}
-                    >
-                        {t('reading:quiz.submit')}
-                    </Button>
+                    !readOnly && (
+                        <Button
+                            variant="contained"
+                            size="large"
+                            disabled={!isStepComplete()}
+                            onClick={handleSubmit}
+                        >
+                            {t('reading:quiz.submit')}
+                        </Button>
+                    )
                 )}
             </Box>
         </Paper>

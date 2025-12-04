@@ -110,30 +110,36 @@ DIFFICULTY-SPECIFIC ARTICLE REQUIREMENTS:
 `
 
 export const llmService = {
-    async generateArticle(words: Word[], settings: Setting): Promise<GeneratedContent> {
-        const apiKey = settings.apiKey
-        const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
+   async generateArticle(words: Word[], settings: Setting): Promise<GeneratedContent> {
+      const apiKey = settings.apiKey
+      const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
 
-        if (!apiKey) {
-            throw new Error('API Key is missing. Please configure it in Settings.')
-        }
+      if (!apiKey) {
+         throw new Error('API Key is missing. Please configure it in Settings.')
+      }
 
-        const wordList = words.map((w) => w.spelling).join(', ')
-        const lengthPrompt = settings.articleLenPref === 'short' ? '150 words' : settings.articleLenPref === 'long' ? '300 words' : '200 words'
+      const wordList = words.map((w) => w.spelling).join(', ')
+      const lengthPrompt = settings.articleLenPref === 'short' ? '150 words' : settings.articleLenPref === 'long' ? '300 words' : '200 words'
 
-        const difficultyLevel = settings.difficultyLevel || 'L2'
-        const cefrLevel = difficultyLevel === 'L1' ? 'A1' : difficultyLevel === 'L2' ? 'A2' : 'B1'
+      // Validate and normalize difficulty level
+      let difficultyLevel = settings.difficultyLevel
+      if (!['L1', 'L2', 'L3'].includes(difficultyLevel)) {
+         console.warn(`Invalid difficulty level "${difficultyLevel}", defaulting to L2`)
+         difficultyLevel = 'L2'
+      }
 
-        // 根据难度等级确定题量配置
-        const questionConfig = {
-            'L1': { total: 10, description: 'Cloze(3) + Definition(3) + Audio Selection(2) + Matching(1 set of 3 pairs)' },
-            'L2': { total: 10, description: 'Contextual(4) + Spelling Input(2) + Cloze(2) + Synonym/Antonym(1) + Audio Dictation(1)' },
-            'L3': { total: 12, description: 'Spelling Input(3) + Contextual(3) + Word Form(2) + Audio Dictation(2) + Synonym/Antonym(1) + Matching(1 set of 3 pairs)' }
-        }
+      const cefrLevel = difficultyLevel === 'L1' ? 'A1' : difficultyLevel === 'L2' ? 'A2' : 'B1'
 
-        const config = questionConfig[difficultyLevel]
+      // 根据难度等级确定题量配置
+      const questionConfig = {
+         'L1': { total: 10, description: 'Cloze(3) + Definition(3) + Audio Selection(2) + Matching(1 set of 3 pairs)' },
+         'L2': { total: 10, description: 'Contextual(4) + Spelling Input(2) + Cloze(2) + Synonym/Antonym(1) + Audio Dictation(1)' },
+         'L3': { total: 12, description: 'Spelling Input(3) + Contextual(3) + Word Form(2) + Audio Dictation(2) + Synonym/Antonym(1) + Matching(1 set of 3 pairs)' }
+      }
 
-        const userPrompt = `
+      const config = questionConfig[difficultyLevel]
+
+      const userPrompt = `
 Please write an article using the following target words: ${wordList}.
 Difficulty Level: ${difficultyLevel} (CEFR ${cefrLevel})
 Target length: approximately ${lengthPrompt}.
@@ -150,52 +156,64 @@ IMPORTANT REQUIREMENTS:
 8. Return ONLY valid JSON, no additional text
 `
 
-        try {
-            const response = await fetch(`${baseUrl}/chat/completions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`,
-                },
-                body: JSON.stringify({
-                    model: 'deepseek-chat', // Or 'deepseek-coder', or user configurable
-                    messages: [
-                        { role: 'system', content: SYSTEM_PROMPT },
-                        { role: 'user', content: userPrompt },
-                    ],
-                    temperature: 0.7,
-                    response_format: { type: 'json_object' }, // If supported, otherwise rely on prompt
-                }),
-            })
+      try {
+         console.log('Starting LLM generation...', { baseUrl, difficultyLevel })
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}))
-                throw new Error(`API Error: ${response.status} ${errorData.error?.message || response.statusText}`)
+         const controller = new AbortController()
+         const timeoutId = setTimeout(() => controller.abort(), 60000) // 60s timeout
+
+         const response = await fetch(`${baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+               model: 'deepseek-chat', // Or 'deepseek-coder', or user configurable
+               messages: [
+                  { role: 'system', content: SYSTEM_PROMPT },
+                  { role: 'user', content: userPrompt },
+               ],
+               temperature: 0.7,
+               response_format: { type: 'json_object' }, // If supported, otherwise rely on prompt
+            }),
+            signal: controller.signal
+         })
+
+         clearTimeout(timeoutId)
+
+         if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}))
+            console.error('API Error Response:', errorData)
+            throw new Error(`API Error: ${response.status} ${errorData.error?.message || response.statusText}`)
+         }
+
+         const data = await response.json()
+         const contentStr = data.choices[0]?.message?.content
+
+         if (!contentStr) {
+            throw new Error('Empty response from API')
+         }
+
+         // Parse JSON content
+         try {
+            const parsed: GeneratedContent = JSON.parse(contentStr)
+            // Validate structure briefly
+            if (!parsed.title || !parsed.content || !Array.isArray(parsed.readingQuestions) || !Array.isArray(parsed.vocabularyQuestions)) {
+               throw new Error('Invalid JSON structure: Missing required fields')
             }
+            return parsed
+         } catch (parseError) {
+            console.error('JSON Parse Error:', parseError, contentStr)
+            throw new Error('Failed to parse generated content. The AI did not return valid JSON.')
+         }
 
-            const data = await response.json()
-            const contentStr = data.choices[0]?.message?.content
-
-            if (!contentStr) {
-                throw new Error('Empty response from API')
-            }
-
-            // Parse JSON content
-            try {
-                const parsed: GeneratedContent = JSON.parse(contentStr)
-                // Validate structure briefly
-                if (!parsed.title || !parsed.content || !Array.isArray(parsed.readingQuestions) || !Array.isArray(parsed.vocabularyQuestions)) {
-                    throw new Error('Invalid JSON structure')
-                }
-                return parsed
-            } catch (parseError) {
-                console.error('JSON Parse Error:', parseError, contentStr)
-                throw new Error('Failed to parse generated content. The AI did not return valid JSON.')
-            }
-
-        } catch (error) {
-            console.error('LLM Service Error:', error)
-            throw error
-        }
-    },
+      } catch (error: any) {
+         console.error('LLM Service Error:', error)
+         if (error.name === 'AbortError') {
+            throw new Error('Request timed out after 60 seconds')
+         }
+         throw error
+      }
+   },
 }

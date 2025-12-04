@@ -25,6 +25,10 @@ export interface History {
     difficultyFeedback: number
     timeSpent?: number // Time spent in seconds
     wordResults?: { [spelling: string]: boolean }
+    userAnswers?: {
+        reading: Record<string, string>
+        vocabulary: Record<string, string | string[]>
+    }
 }
 
 export interface Setting {

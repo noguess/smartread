@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Box, Grid, Typography, Container } from '@mui/material'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Box, Grid, Typography, Container, Snackbar, Alert } from '@mui/material'
 import { wordService } from '../services/wordService'
 import { historyService } from '../services/historyService'
 import { Word, History, WordStatus } from '../services/db'
@@ -14,8 +14,11 @@ import { useTranslation } from 'react-i18next'
 export default function HomePage() {
     const { t } = useTranslation(['home'])
     const navigate = useNavigate()
+    const location = useLocation()
     const [allWords, setAllWords] = useState<Word[]>([])
     const [history, setHistory] = useState<History[]>([])
+    const [snackbarOpen, setSnackbarOpen] = useState(false)
+    const [snackbarMsg, setSnackbarMsg] = useState('')
     const [statusCounts, setStatusCounts] = useState<Record<WordStatus, number>>({
         New: 0,
         Learning: 0,
@@ -26,6 +29,15 @@ export default function HomePage() {
 
     useEffect(() => {
         loadData()
+
+        // Check for message in navigation state
+        const state = location.state as { message?: string }
+        if (state?.message) {
+            setSnackbarMsg(state.message)
+            setSnackbarOpen(true)
+            // Clear state to prevent showing again on refresh
+            window.history.replaceState({}, document.title)
+        }
     }, [])
 
     const loadData = async () => {
@@ -96,6 +108,17 @@ export default function HomePage() {
                     onGenerate={handleManualGenerate}
                     allWords={allWords}
                 />
+
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={4000}
+                    onClose={() => setSnackbarOpen(false)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Alert onClose={() => setSnackbarOpen(false)} severity="info" sx={{ width: '100%' }}>
+                        {snackbarMsg}
+                    </Alert>
+                </Snackbar>
             </Box>
         </Container>
     )

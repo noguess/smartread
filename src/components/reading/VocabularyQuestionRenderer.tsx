@@ -22,6 +22,9 @@ interface VocabularyQuestionRendererProps {
     answer: string | string[]
     onChange: (value: string | string[]) => void
     index: number
+    readOnly?: boolean
+    correctAnswer?: string | string[]
+    isCorrect?: boolean
 }
 
 export default function VocabularyQuestionRenderer({
@@ -29,6 +32,9 @@ export default function VocabularyQuestionRenderer({
     answer,
     onChange,
     index,
+    readOnly = false,
+    correctAnswer,
+    isCorrect,
 }: VocabularyQuestionRendererProps) {
     const [isPlaying, setIsPlaying] = useState(false)
 
@@ -51,25 +57,40 @@ export default function VocabularyQuestionRenderer({
             case 'synonym':
                 // 选择题类型 - 使用 RadioGroup
                 return (
-                    <FormControl fullWidth>
+                    <FormControl fullWidth disabled={readOnly}>
                         <RadioGroup
                             value={(answer as string) || ''}
                             onChange={(e) => onChange(e.target.value)}
                         >
-                            {(question.options || []).map((opt) => (
-                                <FormControlLabel
-                                    key={opt}
-                                    value={opt}
-                                    control={<Radio />}
-                                    label={opt}
-                                    sx={{
-                                        mb: 0.5,
-                                        '& .MuiFormControlLabel-label': {
-                                            fontSize: '1rem',
-                                        },
-                                    }}
-                                />
-                            ))}
+                            {(question.options || []).map((opt) => {
+                                const isSelected = (answer as string) === opt
+                                const isTheCorrectAnswer = (correctAnswer as string) === opt
+
+                                let color = 'text.primary'
+                                if (readOnly) {
+                                    if (isTheCorrectAnswer) color = 'success.main'
+                                    else if (isSelected && !isCorrect) color = 'error.main'
+                                }
+
+                                return (
+                                    <FormControlLabel
+                                        key={opt}
+                                        value={opt}
+                                        control={<Radio color={readOnly && isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary'} />}
+                                        label={
+                                            <Typography color={color} fontWeight={readOnly && isTheCorrectAnswer ? 'bold' : 'normal'}>
+                                                {opt} {readOnly && isTheCorrectAnswer && '(Correct)'} {readOnly && isSelected && !isCorrect && '(Your Answer)'}
+                                            </Typography>
+                                        }
+                                        sx={{
+                                            mb: 0.5,
+                                            '& .MuiFormControlLabel-label': {
+                                                fontSize: '1rem',
+                                            },
+                                        }}
+                                    />
+                                )
+                            })}
                         </RadioGroup>
                     </FormControl>
                 )
@@ -78,20 +99,29 @@ export default function VocabularyQuestionRenderer({
             case 'wordForm':
                 // 输入题类型 - 使用 TextField
                 return (
-                    <TextField
-                        fullWidth
-                        variant="outlined"
-                        placeholder="Type your answer here..."
-                        value={(answer as string) || ''}
-                        onChange={(e) => onChange(e.target.value)}
-                        sx={{
-                            mt: 2,
-                            '& .MuiOutlinedInput-root': {
-                                fontSize: '1.1rem',
-                                borderRadius: 2,
-                            },
-                        }}
-                    />
+                    <Box>
+                        <TextField
+                            fullWidth
+                            variant="outlined"
+                            placeholder="Type your answer here..."
+                            value={(answer as string) || ''}
+                            onChange={(e) => onChange(e.target.value)}
+                            disabled={readOnly}
+                            error={readOnly && !isCorrect}
+                            sx={{
+                                mt: 2,
+                                '& .MuiOutlinedInput-root': {
+                                    fontSize: '1.1rem',
+                                    borderRadius: 2,
+                                },
+                            }}
+                        />
+                        {readOnly && !isCorrect && (
+                            <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>
+                                Correct Answer: {correctAnswer as string}
+                            </Typography>
+                        )}
+                    </Box>
                 )
 
             case 'audio':
@@ -128,30 +158,54 @@ export default function VocabularyQuestionRenderer({
                         {/* 答题区域 */}
                         {hasOptions ? (
                             // 听音选择
-                            <FormControl fullWidth>
+                            <FormControl fullWidth disabled={readOnly}>
                                 <RadioGroup
                                     value={(answer as string) || ''}
                                     onChange={(e) => onChange(e.target.value)}
                                 >
-                                    {question.options!.map((opt) => (
-                                        <FormControlLabel
-                                            key={opt}
-                                            value={opt}
-                                            control={<Radio />}
-                                            label={opt}
-                                        />
-                                    ))}
+                                    {question.options!.map((opt) => {
+                                        const isSelected = (answer as string) === opt
+                                        const isTheCorrectAnswer = (correctAnswer as string) === opt
+
+                                        let color = 'text.primary'
+                                        if (readOnly) {
+                                            if (isTheCorrectAnswer) color = 'success.main'
+                                            else if (isSelected && !isCorrect) color = 'error.main'
+                                        }
+
+                                        return (
+                                            <FormControlLabel
+                                                key={opt}
+                                                value={opt}
+                                                control={<Radio color={readOnly && isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary'} />}
+                                                label={
+                                                    <Typography color={color} fontWeight={readOnly && isTheCorrectAnswer ? 'bold' : 'normal'}>
+                                                        {opt} {readOnly && isTheCorrectAnswer && '(Correct)'} {readOnly && isSelected && !isCorrect && '(Your Answer)'}
+                                                    </Typography>
+                                                }
+                                            />
+                                        )
+                                    })}
                                 </RadioGroup>
                             </FormControl>
                         ) : (
                             // 听音输入
-                            <TextField
-                                fullWidth
-                                variant="outlined"
-                                placeholder="Type what you hear..."
-                                value={(answer as string) || ''}
-                                onChange={(e) => onChange(e.target.value)}
-                            />
+                            <Box>
+                                <TextField
+                                    fullWidth
+                                    variant="outlined"
+                                    placeholder="Type what you hear..."
+                                    value={(answer as string) || ''}
+                                    onChange={(e) => onChange(e.target.value)}
+                                    disabled={readOnly}
+                                    error={readOnly && !isCorrect}
+                                />
+                                {readOnly && !isCorrect && (
+                                    <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>
+                                        Correct Answer: {correctAnswer as string}
+                                    </Typography>
+                                )}
+                            </Box>
                         )}
                     </Box>
                 )
@@ -166,51 +220,67 @@ export default function VocabularyQuestionRenderer({
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                             Match each word with its definition:
                         </Typography>
-                        {pairs.map((pair, idx) => (
-                            <Paper
-                                key={idx}
-                                elevation={0}
-                                sx={{
-                                    p: 2,
-                                    mb: 1.5,
-                                    bgcolor: 'action.hover',
-                                    borderRadius: 2,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 2,
-                                }}
-                            >
-                                <Typography
-                                    variant="body1"
-                                    fontWeight="bold"
-                                    sx={{ minWidth: 120 }}
-                                >
-                                    {pair.word}
-                                </Typography>
-                                <Typography variant="body2" sx={{ mx: 2 }}>
-                                    →
-                                </Typography>
-                                <Select
-                                    fullWidth
-                                    value={currentAnswers[idx] || ''}
-                                    onChange={(e) => {
-                                        const newAnswers = [...currentAnswers]
-                                        newAnswers[idx] = e.target.value
-                                        onChange(newAnswers)
+                        {pairs.map((pair, idx) => {
+                            const userAnswer = currentAnswers[idx]
+                            const correctPairAnswer = Array.isArray(correctAnswer) ? correctAnswer[idx] : ''
+                            const isPairCorrect = userAnswer === correctPairAnswer
+
+                            return (
+                                <Paper
+                                    key={idx}
+                                    elevation={0}
+                                    sx={{
+                                        p: 2,
+                                        mb: 1.5,
+                                        bgcolor: readOnly
+                                            ? (isPairCorrect ? 'success.light' : 'error.light')
+                                            : 'action.hover',
+                                        borderRadius: 2,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 2,
                                     }}
-                                    displayEmpty
                                 >
-                                    <MenuItem value="" disabled>
-                                        <em>Select definition...</em>
-                                    </MenuItem>
-                                    {pairs.map((p, defIdx) => (
-                                        <MenuItem key={defIdx} value={`${pair.word}-def${defIdx}`}>
-                                            {p.definition}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </Paper>
-                        ))}
+                                    <Typography
+                                        variant="body1"
+                                        fontWeight="bold"
+                                        sx={{ minWidth: 120 }}
+                                    >
+                                        {pair.word}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mx: 2 }}>
+                                        →
+                                    </Typography>
+                                    <Box sx={{ flex: 1 }}>
+                                        <Select
+                                            fullWidth
+                                            value={userAnswer || ''}
+                                            onChange={(e) => {
+                                                const newAnswers = [...currentAnswers]
+                                                newAnswers[idx] = e.target.value
+                                                onChange(newAnswers)
+                                            }}
+                                            displayEmpty
+                                            disabled={readOnly}
+                                        >
+                                            <MenuItem value="" disabled>
+                                                <em>Select definition...</em>
+                                            </MenuItem>
+                                            {pairs.map((p, defIdx) => (
+                                                <MenuItem key={defIdx} value={`${pair.word}-def${defIdx}`}>
+                                                    {p.definition}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                        {readOnly && !isPairCorrect && (
+                                            <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
+                                                Correct: {pairs.find(p => `${pair.word}-def${pairs.indexOf(p)}` === correctPairAnswer)?.definition || 'Unknown'}
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                </Paper>
+                            )
+                        })}
                     </Box>
                 )
 

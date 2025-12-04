@@ -33,11 +33,19 @@ export default function ReadingPage() {
     const [articleData, setArticleData] = useState<GeneratedContent | null>(null)
     const [targetWords, setTargetWords] = useState<Word[]>([])
     const [score, setScore] = useState(0)
+    const [readingScore, setReadingScore] = useState(0)
     const [selectedWord, setSelectedWord] = useState<string>('')
     const [isWordModalOpen, setIsWordModalOpen] = useState(false)
     const [lastWordResults, setLastWordResults] = useState<{ [spelling: string]: boolean }>({})
+    const [quizAnswers, setQuizAnswers] = useState<{
+        reading: Record<string, string>
+        vocabulary: Record<string, string | string[]>
+    } | null>(null)
 
     const [isReviewMode, setIsReviewMode] = useState(false)
+    const [viewMode, setViewMode] = useState<'results' | 'retake' | null>(null)
+
+    const [error, setError] = useState<string | null>(null)
 
     // Study Timer
     const { timeSpent, start: startTimer, pause: pauseTimer } = useStudyTimer(false)
@@ -79,12 +87,18 @@ export default function ReadingPage() {
             }
             setArticleData(data)
 
+            if (record.userAnswers) {
+                setQuizAnswers(record.userAnswers)
+            }
+
             // Fetch full word objects
             const words = await Promise.all(
                 record.targetWords.map(spelling => wordService.getWordBySpelling(spelling))
             )
             setTargetWords(words.filter((w): w is Word => !!w))
 
+            // Reset viewMode when loading new review content
+            setViewMode(null)
             setStep('reading')
         } catch (error) {
             console.error('Failed to load review', error)
@@ -95,13 +109,17 @@ export default function ReadingPage() {
     const generateContent = async (words: Word[]) => {
         try {
             setStep('generating')
+            setError(null)
+            console.log('Starting content generation for words:', words.map(w => w.spelling))
 
             // Check Settings
             const settings = await settingsService.getSettings()
+            console.log('Using settings:', settings)
 
             let data: GeneratedContent
             if (settings && settings.apiKey) {
                 // Use Real API
+                console.log('Calling Real LLM Service...')
                 data = await llmService.generateArticle(words, settings)
             } else {
                 // Fallback to Mock
@@ -109,17 +127,24 @@ export default function ReadingPage() {
                 data = await mockLLMService.generateArticle(words)
             }
 
+            console.log('Generation successful:', data)
             setArticleData(data)
             setStep('reading')
         } catch (error) {
             console.error('Generation failed', error)
-            alert(t('reading:error.generationFailed', { error: error instanceof Error ? error.message : 'Unknown error' }))
-            navigate('/')
+            setError(error instanceof Error ? error.message : 'Unknown error occurred')
+            // Do not navigate away, let user see error and retry
         }
     }
 
-    const handleQuizSubmit = async (answers: { reading: Record<string, string>; vocabulary: Record<string, string> }) => {
+    const handleRetry = () => {
+        generateContent(targetWords)
+    }
+
+    const handleQuizSubmit = async (answers: { reading: Record<string, string>; vocabulary: Record<string, string | string[]> }) => {
         if (!articleData) return
+
+        setQuizAnswers(answers)
 
         // Calculate Reading Score (40% weight)
         let readingCorrect = 0
@@ -132,13 +157,27 @@ export default function ReadingPage() {
         // Calculate Vocabulary Score (60% weight)
         let vocabCorrect = 0
         articleData.vocabularyQuestions.forEach(q => {
-            if (answers.vocabulary[q.id] === q.answer) {
+            const userAnswer = answers.vocabulary[q.id]
+            const correctAnswer = q.answer
+
+            let isCorrect = false
+            if (Array.isArray(correctAnswer) && Array.isArray(userAnswer)) {
+                // Array comparison for matching questions
+                isCorrect = correctAnswer.length === userAnswer.length &&
+                    correctAnswer.every((val, index) => val === userAnswer[index])
+            } else {
+                // Simple string comparison
+                isCorrect = userAnswer === correctAnswer
+            }
+
+            if (isCorrect) {
                 vocabCorrect++
             }
         })
 
         const totalCorrect = readingCorrect + vocabCorrect
         setScore(totalCorrect)
+        setReadingScore(readingCorrect)
         setStep('feedback')
 
         // Precise SRS Update Logic
@@ -150,7 +189,17 @@ export default function ReadingPage() {
                 targetWords.find(w => q.stem.includes(w.spelling)) // Fallback matching
 
             if (word && word.id) {
-                const isCorrect = answers.vocabulary[q.id] === q.answer
+                const userAnswer = answers.vocabulary[q.id]
+                const correctAnswer = q.answer
+
+                let isCorrect = false
+                if (Array.isArray(correctAnswer) && Array.isArray(userAnswer)) {
+                    isCorrect = correctAnswer.length === userAnswer.length &&
+                        correctAnswer.every((val, index) => val === userAnswer[index])
+                } else {
+                    isCorrect = userAnswer === correctAnswer
+                }
+
                 wordResults[word.spelling] = isCorrect
 
                 // Update SRS based on specific question result
@@ -179,11 +228,35 @@ export default function ReadingPage() {
             userScore: Math.round((score / (articleData.readingQuestions.length + articleData.vocabularyQuestions.length)) * 100),
             difficultyFeedback: difficulty,
             timeSpent: timeSpent,
-            wordResults: lastWordResults
+            wordResults: lastWordResults,
+            userAnswers: quizAnswers || undefined
         }
 
         await historyService.saveArticleRecord(historyRecord)
-        navigate('/')
+
+        // Auto-adjustment Logic
+        const settings = await settingsService.getSettings()
+        const currentLevel = settings?.difficultyLevel || 'L2'
+        let newLevel = currentLevel
+        let message = ''
+
+        // Upgrade Condition: Reading 4/4 correct AND Feedback <= 2 (Easy)
+        if (readingScore === 4 && difficulty <= 2) {
+            if (currentLevel === 'L1') newLevel = 'L2'
+            else if (currentLevel === 'L2') newLevel = 'L3'
+        }
+        // Downgrade Condition: Reading < 2 correct AND Feedback = 5 (Too Hard)
+        else if (readingScore < 2 && difficulty === 5) {
+            if (currentLevel === 'L3') newLevel = 'L2'
+            else if (currentLevel === 'L2') newLevel = 'L1'
+        }
+
+        if (newLevel !== currentLevel) {
+            await settingsService.saveSettings({ difficultyLevel: newLevel })
+            message = t('reading:difficultyChanged', `Difficulty adjusted to ${newLevel}`, { level: newLevel })
+        }
+
+        navigate('/', { state: { message } })
     }
 
     const handleWordClick = (word: string) => {
@@ -200,27 +273,48 @@ export default function ReadingPage() {
         return (
             <Container maxWidth="md" sx={{ py: 8 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {/* Title Skeleton */}
-                    <Skeleton variant="text" height={60} width="60%" sx={{ mx: 'auto' }} />
-
-                    {/* Content Skeletons */}
-                    <Box sx={{ mt: 4 }}>
-                        <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 4, mb: 2 }} />
-                        <Skeleton variant="text" height={30} />
-                        <Skeleton variant="text" height={30} />
-                        <Skeleton variant="text" height={30} width="80%" />
-                    </Box>
-
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                        <Box sx={{ textAlign: 'center' }}>
-                            <Typography variant="h6" color="text.secondary" gutterBottom>
-                                {t('reading:generating.title')}
+                    {error ? (
+                        <Paper sx={{ p: 4, textAlign: 'center', bgcolor: '#fff5f5', border: '1px solid #ffcdd2' }}>
+                            <Typography variant="h6" color="error" gutterBottom>
+                                {t('reading:error.generationFailed', 'Generation Failed')}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                {t('reading:generating.subtitle', { count: targetWords.length })}
+                            <Typography color="text.secondary" sx={{ mb: 3 }}>
+                                {error}
                             </Typography>
-                        </Box>
-                    </Box>
+                            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                                <Button variant="outlined" onClick={() => navigate('/')}>
+                                    {t('common:button.back', 'Back')}
+                                </Button>
+                                <Button variant="contained" onClick={handleRetry}>
+                                    {t('common:button.retry', 'Retry')}
+                                </Button>
+                            </Box>
+                        </Paper>
+                    ) : (
+                        <>
+                            {/* Title Skeleton */}
+                            <Skeleton variant="text" height={60} width="60%" sx={{ mx: 'auto' }} />
+
+                            {/* Content Skeletons */}
+                            <Box sx={{ mt: 4 }}>
+                                <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 4, mb: 2 }} />
+                                <Skeleton variant="text" height={30} />
+                                <Skeleton variant="text" height={30} />
+                                <Skeleton variant="text" height={30} width="80%" />
+                            </Box>
+
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                                <Box sx={{ textAlign: 'center' }}>
+                                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                                        {t('reading:generating.title')}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {t('reading:generating.subtitle', { count: targetWords.length })}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </>
+                    )}
                 </Box>
             </Container>
         )
@@ -278,27 +372,82 @@ export default function ReadingPage() {
                                 fontSize={fontSize}
                             />
 
-                            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                                <Button
-                                    variant="contained"
-                                    size="large"
-                                    onClick={() => setStep('quiz')}
-                                    sx={{
-                                        px: 6,
-                                        py: 1.5,
-                                        borderRadius: 8,
-                                        fontSize: '1.2rem',
-                                        background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
-                                        boxShadow: '0 4px 20px rgba(74, 144, 226, 0.3)',
-                                        transition: 'all 0.2s ease',
-                                        '&:hover': {
-                                            transform: 'scale(1.02)',
-                                            boxShadow: '0 6px 24px rgba(74, 144, 226, 0.4)'
-                                        }
-                                    }}
-                                >
-                                    {isReviewMode ? t('reading:buttons.reviewQuiz') : t('reading:buttons.startQuiz')}
-                                </Button>
+                            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
+                                {isReviewMode ? (
+                                    // Review mode: show two buttons
+                                    <>
+                                        <Button
+                                            variant="contained"
+                                            size="large"
+                                            onClick={() => {
+                                                setViewMode('results')
+                                                setStep('quiz')
+                                            }}
+                                            sx={{
+                                                px: 4,
+                                                py: 1.5,
+                                                borderRadius: 8,
+                                                fontSize: '1.1rem',
+                                                background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
+                                                boxShadow: '0 4px 20px rgba(74, 144, 226, 0.3)',
+                                                transition: 'all 0.2s ease',
+                                                '&:hover': {
+                                                    transform: 'scale(1.02)',
+                                                    boxShadow: '0 6px 24px rgba(74, 144, 226, 0.4)'
+                                                }
+                                            }}
+                                        >
+                                            查看答题记录
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            size="large"
+                                            onClick={() => {
+                                                setViewMode('retake')
+                                                setQuizAnswers(null) // Clear previous answers for retake
+                                                setStep('quiz')
+                                            }}
+                                            sx={{
+                                                px: 4,
+                                                py: 1.5,
+                                                borderRadius: 8,
+                                                fontSize: '1.1rem',
+                                                borderColor: '#4A90E2',
+                                                color: '#4A90E2',
+                                                transition: 'all 0.2s ease',
+                                                '&:hover': {
+                                                    borderColor: '#7B68EE',
+                                                    backgroundColor: 'rgba(74, 144, 226, 0.05)',
+                                                    transform: 'scale(1.02)'
+                                                }
+                                            }}
+                                        >
+                                            重新测验
+                                        </Button>
+                                    </>
+                                ) : (
+                                    // Normal mode: single start button
+                                    <Button
+                                        variant="contained"
+                                        size="large"
+                                        onClick={() => setStep('quiz')}
+                                        sx={{
+                                            px: 6,
+                                            py: 1.5,
+                                            borderRadius: 8,
+                                            fontSize: '1.2rem',
+                                            background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
+                                            boxShadow: '0 4px 20px rgba(74, 144, 226, 0.3)',
+                                            transition: 'all 0.2s ease',
+                                            '&:hover': {
+                                                transform: 'scale(1.02)',
+                                                boxShadow: '0 6px 24px rgba(74, 144, 226, 0.4)'
+                                            }
+                                        }}
+                                    >
+                                        {t('reading:buttons.startQuiz')}
+                                    </Button>
+                                )}
                             </Box>
                         </Grid>
 
@@ -328,6 +477,8 @@ export default function ReadingPage() {
                         vocabularyQuestions={articleData.vocabularyQuestions}
                         onSubmit={handleQuizSubmit}
                         onBack={() => setStep('reading')}
+                        initialAnswers={viewMode === 'results' ? quizAnswers || undefined : undefined}
+                        readOnly={viewMode === 'results'}
                     />
                 )}
 
