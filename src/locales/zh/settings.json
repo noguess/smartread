@@ -16,9 +16,9 @@
     "preferences": {
         "title": "学习偏好",
         "articleLength": "文章长度",
-        "short": "短篇 (~150词)",
-        "medium": "中篇 (~250词)",
-        "long": "长篇 (~350+词)",
+        "short": "短篇 (~400词)",
+        "medium": "中篇 (~600词)",
+        "long": "长篇 (~800词)",
         "dailyLimit": "每日新词上限",
         "dailyLimitHelper": "限制每天引入新词的最大数量",
         "difficultyLevel": "难度等级",

@@ -16,9 +16,9 @@
     "preferences": {
         "title": "Learning Preferences",
         "articleLength": "Article Length",
-        "short": "Short (~150 words)",
-        "medium": "Medium (~250 words)",
-        "long": "Long (~350+ words)",
+        "short": "Short (~400 words)",
+        "medium": "Medium (~600 words)",
+        "long": "Long (~800 words)",
         "dailyLimit": "Daily New Words Limit",
         "dailyLimitHelper": "Limit the maximum number of new words per day",
         "difficultyLevel": "Difficulty Level",

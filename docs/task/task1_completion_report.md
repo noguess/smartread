@@ -1,185 +1,27 @@
-# 任务 1 完成报告：设计系统升级 - 色彩与主题
+# Task 1 Completion Report: Settings & Data Updates
 
-**完成时间：** 2025-11-29  
-**状态：** ✅ 已完成并验收通过
+## Status: Completed
 
----
+## Changes Implemented
 
-## 📋 任务目标回顾
+### 1. Article Length Definitions Updated
+- **File**: `src/services/llmService.ts`
+- **Change**: Updated the `lengthPrompt` logic to reflect the new V5.0 standards:
+  - **Short**: 400 words (was 150)
+  - **Medium**: 600 words (was 250)
+  - **Long**: 800 words (was 350)
+- **Refinement**: Removed conflicting word count ranges from the `DIFFICULTY-SPECIFIC ARTICLE REQUIREMENTS` section in the System Prompt to ensure the user's length preference takes precedence.
 
-更新全局色彩系统、字体、圆角等视觉基础元素，使设计更符合初中生用户群体的审美和使用习惯。
+### 2. UI Labels Updated (Internationalization)
+- **Files**:
+  - `src/locales/en/settings.json`
+  - `src/locales/zh/settings.json`
+- **Change**: Updated the display labels in the Settings page to show the new word counts (e.g., "Short (~400 words)").
 
----
+## Verification
+- Checked code in `llmService.ts` to ensure `lengthPrompt` is correctly calculated and injected into the user prompt.
+- Verified that `SYSTEM_PROMPT` no longer contains hardcoded length limits that would contradict the user's choice.
+- Verified JSON translation files contain the correct strings.
 
-## ✨ 完成内容
-
-### 1. 创建独立的主题配置系统
-
-**新增文件：**
-- ✅ `src/theme/palette.ts` - 色彩系统配置
-- ✅ `src/theme/typography.ts` - 字体系统配置
-- ✅ `src/theme/components.ts` - 组件样式覆盖
-- ✅ `src/theme/index.ts` - 主题系统统一导出
-- ✅ `src/theme/ThemeContext.tsx` - 主题切换 Context 和 Hook
-- ✅ `src/components/ThemeSwitcher.tsx` - 主题切换 UI 组件
-
-### 2. 色彩系统升级
-
-**主色调：**
-- 从单一的 Deep Teal (#006064) 升级为渐变蓝紫色系
-- Primary: #4A90E2 → #7B68EE（活力渐变）
-- Secondary: #00D9A5（薄荷绿强调色）
-
-**状态色系统：**
-- ✅ 成功/掌握：翠绿渐变 (#10B981 → #34D399)
-- ✅ 学习中：橙色渐变 (#F59E0B → #FBBF24)
-- ✅ 需复习：柔和红色 (#EF4444 → #F87171)
-- ✅ 新词：蓝色 (#3B82F6)
-
-**双主题支持：**
-- ✅ 浅色模式：米白/浅灰底色 (#F8F9FA)
-- ✅ 护眼模式：暖色调米黄底色 (#FFF8E7)，适合长时间阅读
-
-### 3. 字体系统升级
-
-**引入 Google Fonts：**
-- ✅ **Noto Sans SC**（思源黑体）- 中文正文和标题
-- ✅ **Poppins** - 英文标题，更具设计感
-- ✅ **Inter** - 英文正文，现代化无衬线字体
-
-**排版优化：**
-- ✅ 正文字号：16px → **17px**（提升可读性）
-- ✅ 行高：1.5 → **1.7**（增加呼吸感）
-- ✅ 字间距：0.5px（中英文混排优化）
-
-### 4. 组件样式优化
-
-**圆角升级：**
-- Card/Paper：8px → **16px**
-- Button：4px → **12px**
-- Dialog：默认 → **20px**
-
-**阴影优化：**
-- 从硬边阴影改为柔和扩散阴影
-- Card: `0 4px 20px rgba(0,0,0,0.06)`
-- Hover: `0 8px 30px rgba(0,0,0,0.1)`
-
-**按钮优化：**
-- ✅ 主按钮使用渐变背景
-- ✅ Hover 效果：轻微缩放 (scale: 1.02)
-- ✅ 平滑过渡动画 (transition: all 0.2s ease)
-
-**其他组件：**
-- ✅ 进度条：渐变彩色条
-- ✅ IconButton：Hover 缩放效果
-- ✅ TextField：圆角 12px
-
-### 5. 主题切换功能
-
-**实现细节：**
-- ✅ 在设置页面添加主题切换组件
-- ✅ 支持浅色模式和护眼模式切换
-- ✅ 选择持久化到 localStorage
-- ✅ 页面刷新后保持用户选择
-
-**用户体验：**
-- ✅ 切换即时生效，无需刷新
-- ✅ 友好的 UI 说明（适用场景提示）
-- ✅ 图标辅助识别（☀️ 浅色 / 👁️ 护眼）
-
----
-
-## 🎬 功能演示
-
-已录制浏览器操作视频，展示了：
-1. 首页的新设计风格
-2. 设置页面的主题切换器
-3. 切换到护眼模式的效果
-4. 切换回浅色模式的效果
-
-**录制文件：** `theme_verification_1764401897377.webp`
-
-**截图：**
-- `v2_homepage_light.png` - 首页浅色模式
-- `v2_settings_light.png` - 设置页浅色模式
-- `v2_settings_eyecare.png` - 设置页护眼模式
-
----
-
-## ✅ 验收标准检查
-
-- [x] 所有页面色彩统一更新为新配色方案
-- [x] 字体大小和行高符合新标准（17px / 1.7）
-- [x] 卡片圆角、阴影效果符合新设计（16px / 柔和阴影）
-- [x] 切换护眼模式时颜色正确变化（暖色调米黄）
-- [x] 现有功能完全正常（不受主题更改影响）
-- [x] 主题选择持久化保存
-- [x] 无 TypeScript 编译错误
-- [x] 视觉效果符合青少年友好设计原则
-
----
-
-## 📊 技术指标
-
-**代码质量：**
-- ✅ TypeScript 类型安全
-- ✅ 无 ESLint 重大错误
-- ✅ 代码模块化，易于维护
-
-**性能：**
-- ✅ 主题切换响应时间 < 100ms
-- ✅ Google Fonts 使用 preconnect 优化加载
-- ✅ CSS-in-JS 性能优化（MUI emotion）
-
-**兼容性：**
-- ✅ 支持现代浏览器（Chrome, Safari, Edge）
-- ✅ 响应式布局正常工作
-- ✅ 移动端和桌面端显示正常
-
----
-
-## 🔄 与原设计的对比
-
-| 项目 | V1.3 | V2.0 |
-|------|------|------|
-| 主色调 | Deep Teal 单色 | 蓝紫渐变 |
-| 辅助色 | Deep Blue | 薄荷绿/阳光黄 |
-| 背景色 | #FAFAFA | #F8F9FA (浅色) / #FFF8E7 (护眼) |
-| 正文字号 | 16px | **17px** ⬆️ |
-| 行高 | 1.5 | **1.7** ⬆️ |
-| 卡片圆角 | 8px | **16px** ⬆️ |
-| 按钮圆角 | 4px | **12px** ⬆️ |
-| 主题支持 | 仅浅色 | 浅色 + 护眼 |
-| 字体 | 系统默认 | Google Fonts（思源/Poppins/Inter） |
-
----
-
-## 🎯 用户体验提升
-
-1. **更活泼的视觉语言**：渐变色和明亮配色降低学习压力感
-2. **更舒适的阅读体验**：字号和行高提升，长时间阅读不疲劳
-3. **更现代的设计感**：圆角和阴影优化，符合年轻用户审美
-4. **个性化选择**：护眼模式满足不同使用场景
-5. **专业字体**：中英文混排更美观，品牌质感提升
-
----
-
-## 🚀 后续任务
-
-任务 1 已完成，可以继续执行：
-- **任务 2**：组件样式升级（空状态插图、Emoji 点缀等）
-- **任务 3**：国际化基础设施搭建
-
----
-
-## 📝 备注
-
-- 主题配置已解耦到独立的 `theme/` 目录，便于后续维护
-- 预留了扩展空间，可以轻松添加更多主题（如深色模式）
-- 所有颜色和样式参数都集中管理，确保设计一致性
-- 使用 MUI 的主题系统，TypeScript 类型安全
-
----
-
-**完成人员：** Antigravity Agent  
-**审核状态：** ✅ 通过验收，可进入下一任务
+## Next Steps
+Proceed to **Task 2: Homepage Redesign**.

@@ -104,9 +104,9 @@ CRITICAL REQUIREMENTS FOR ALL LEVELS:
 - Each vocabulary question MUST have a "targetWord" field
 
 DIFFICULTY-SPECIFIC ARTICLE REQUIREMENTS:
-- L1: Simple vocabulary, clear structure, ~150-200 words
-- L2: Moderate complexity, varied sentence patterns, ~200-250 words  
-- L3: Advanced vocabulary, complex sentences, ~250-300 words
+- L1: Simple vocabulary, clear structure
+- L2: Moderate complexity, varied sentence patterns
+- L3: Advanced vocabulary, complex sentences
 `
 
 export const llmService = {
@@ -119,7 +119,7 @@ export const llmService = {
       }
 
       const wordList = words.map((w) => w.spelling).join(', ')
-      const lengthPrompt = settings.articleLenPref === 'short' ? '150 words' : settings.articleLenPref === 'long' ? '300 words' : '200 words'
+      const lengthPrompt = settings.articleLenPref === 'short' ? '400 words' : settings.articleLenPref === 'long' ? '800 words' : '600 words'
 
       // Validate and normalize difficulty level
       let difficultyLevel = settings.difficultyLevel
