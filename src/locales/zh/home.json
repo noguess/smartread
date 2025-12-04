@@ -4,7 +4,14 @@
         "title": "开始学习",
         "todayPlan": "今日计划：{{reviewCount}} 个复习词 + {{newCount}} 个新词",
         "smartGenerate": "智能生成",
-        "customMode": "自定义模式"
+        "customMode": "自定义模式",
+        "consecutiveDays": "连续学习",
+        "days": "天",
+        "totalTime": "累计时长",
+        "min": "分钟",
+        "lastLearning": "上次学习",
+        "startToday": "今天开始！",
+        "encourage": "加油，持续学习才能进步！"
     },
     "stats": {
         "title": "记忆状态",

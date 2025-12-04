@@ -4,7 +4,14 @@
         "title": "Start Learning",
         "todayPlan": "Today's Plan: {{reviewCount}} review words + {{newCount}} new words",
         "smartGenerate": "Smart Generate",
-        "customMode": "Custom Mode"
+        "customMode": "Custom Mode",
+        "consecutiveDays": "Consecutive Days",
+        "days": "days",
+        "totalTime": "Total Time",
+        "min": "min",
+        "lastLearning": "Last Learning",
+        "startToday": "Start today!",
+        "encourage": "Don't give up! Start a new streak today."
     },
     "stats": {
         "title": "Memory Status",

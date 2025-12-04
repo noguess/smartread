@@ -27,6 +27,13 @@ export default function HomePage() {
     })
     const [isManualDialogOpen, setIsManualDialogOpen] = useState(false)
 
+    const [stats, setStats] = useState({
+        consecutiveDays: 0,
+        totalMinutes: 0,
+        lastLearningDate: '',
+    })
+    const [recommendedWord, setRecommendedWord] = useState<Word | null>(null)
+
     useEffect(() => {
         loadData()
 
@@ -56,6 +63,82 @@ export default function HomePage() {
             counts[w.status]++
         })
         setStatusCounts(counts)
+
+        // Calculate Stats
+        calculateStats(hist)
+
+        // Select Recommended Word (Prioritize Review > Learning > New)
+        if (words.length > 0) {
+            const reviewWords = words.filter(w => w.status === 'Review')
+            const learningWords = words.filter(w => w.status === 'Learning')
+            const newWords = words.filter(w => w.status === 'New')
+
+            let pool = reviewWords
+            if (pool.length === 0) pool = learningWords
+            if (pool.length === 0) pool = newWords
+            if (pool.length === 0) pool = words
+
+            if (pool.length > 0) {
+                const random = pool[Math.floor(Math.random() * pool.length)]
+                setRecommendedWord(random)
+            }
+        }
+    }
+
+    const calculateStats = (hist: History[]) => {
+        if (!hist || hist.length === 0) {
+            setStats({ consecutiveDays: 0, totalMinutes: 0, lastLearningDate: '' })
+            return
+        }
+
+        // Sort by date descending
+        const sorted = [...hist].sort((a, b) => b.date - a.date)
+
+        // Total Minutes (Estimate 5 mins per article if timeSpent is missing)
+        const totalSeconds = sorted.reduce((acc, curr) => acc + (curr.timeSpent || 300), 0)
+        const totalMinutes = Math.floor(totalSeconds / 60)
+
+        // Consecutive Days
+        let consecutive = 0
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        // Get unique dates from history
+        const uniqueDates = Array.from(new Set(sorted.map(h => {
+            const d = new Date(h.date)
+            d.setHours(0, 0, 0, 0)
+            return d.getTime()
+        }))).sort((a, b) => b - a) // Descending
+
+        if (uniqueDates.length > 0) {
+            const lastDate = new Date(uniqueDates[0])
+            const diffTime = Math.abs(today.getTime() - lastDate.getTime())
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+            // If last learning was today or yesterday, start counting
+            if (diffDays <= 1) {
+                consecutive = 1
+                let currentDate = lastDate
+
+                for (let i = 1; i < uniqueDates.length; i++) {
+                    const prevDate = new Date(uniqueDates[i])
+                    const dayDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
+
+                    if (Math.round(dayDiff) === 1) {
+                        consecutive++
+                        currentDate = prevDate
+                    } else {
+                        break
+                    }
+                }
+            }
+        }
+
+        setStats({
+            consecutiveDays: consecutive,
+            totalMinutes,
+            lastLearningDate: uniqueDates.length > 0 ? new Date(uniqueDates[0]).toLocaleDateString() : ''
+        })
     }
 
     const handleSmartGenerate = () => {
@@ -80,8 +163,10 @@ export default function HomePage() {
                     {/* Hero Section */}
                     <Grid item xs={12} md={8}>
                         <DashboardHero
-                            reviewCount={statusCounts.Review}
-                            newCount={statusCounts.New} // This is total new, maybe we want daily limit?
+                            consecutiveDays={stats.consecutiveDays}
+                            totalMinutes={stats.totalMinutes}
+                            lastLearningDate={stats.lastLearningDate}
+                            recommendedWord={recommendedWord}
                             onSmartGenerate={handleSmartGenerate}
                             onManualMode={() => setIsManualDialogOpen(true)}
                         />
