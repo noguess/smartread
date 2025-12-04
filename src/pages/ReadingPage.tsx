@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Container, Box, Typography, Button, Grid, Paper, Chip, Skeleton } from '@mui/material'
+import { Container, Box, Typography, Button, Grid, Paper, Chip } from '@mui/material'
 
 import { Word, History } from '../services/db'
 import { mockLLMService, GeneratedContent } from '../services/mockLLMService'
@@ -16,6 +16,7 @@ import WordDetailModal from '../components/WordDetailModal'
 import ReadingProgressBar from '../components/reading/ReadingProgressBar'
 import ReadingToolbar from '../components/reading/ReadingToolbar'
 import ReadingTimer from '../components/reading/ReadingTimer'
+import GenerationLoading from '../components/reading/GenerationLoading'
 import { useTranslation } from 'react-i18next'
 import { useStudyTimer } from '../hooks/useStudyTimer'
 
@@ -291,29 +292,7 @@ export default function ReadingPage() {
                             </Box>
                         </Paper>
                     ) : (
-                        <>
-                            {/* Title Skeleton */}
-                            <Skeleton variant="text" height={60} width="60%" sx={{ mx: 'auto' }} />
-
-                            {/* Content Skeletons */}
-                            <Box sx={{ mt: 4 }}>
-                                <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 4, mb: 2 }} />
-                                <Skeleton variant="text" height={30} />
-                                <Skeleton variant="text" height={30} />
-                                <Skeleton variant="text" height={30} width="80%" />
-                            </Box>
-
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                                <Box sx={{ textAlign: 'center' }}>
-                                    <Typography variant="h6" color="text.secondary" gutterBottom>
-                                        {t('reading:generating.title')}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {t('reading:generating.subtitle', { count: targetWords.length })}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </>
+                        <GenerationLoading words={targetWords} />
                     )}
                 </Box>
             </Container>

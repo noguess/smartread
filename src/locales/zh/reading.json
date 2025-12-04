@@ -1,7 +1,14 @@
 {
     "generating": {
         "title": "正在生成文章...",
-        "subtitle": "正在融入 {{count}} 个目标单词"
+        "subtitle": "正在融入 {{count}} 个目标单词",
+        "steps": {
+            "analyze": "正在分析词汇...",
+            "structure": "构建文章结构...",
+            "draft": "起草文章内容...",
+            "questions": "生成阅读题目...",
+            "finalize": "最终优化..."
+        }
     },
     "buttons": {
         "startQuiz": "开始测验",

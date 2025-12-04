@@ -1,7 +1,14 @@
 {
     "generating": {
         "title": "Writing your story...",
-        "subtitle": "Incorporating {{count}} target words"
+        "subtitle": "Incorporating {{count}} target words",
+        "steps": {
+            "analyze": "Analyzing vocabulary...",
+            "structure": "Structuring article...",
+            "draft": "Drafting content...",
+            "questions": "Generating questions...",
+            "finalize": "Finalizing..."
+        }
     },
     "buttons": {
         "startQuiz": "Start Quiz",
