@@ -31,6 +31,28 @@ export interface History {
     }
 }
 
+export interface Article {
+    id?: number
+    uuid: string // v4 uuid
+    title: string
+    content: string // Markdown content
+    targetWords: string[]
+    difficultyLevel: 'L1' | 'L2' | 'L3'
+    createdAt: number
+    source: 'generated' | 'imported'
+}
+
+export interface QuizRecord {
+    id?: number
+    articleId: string // References Article.uuid
+    date: number
+    questions: any // Snapshot of generated questions
+    userAnswers: any
+    score: number
+    difficultyFeedback: number
+    timeSpent?: number
+}
+
 export interface Setting {
     id?: number
     apiKey: string
@@ -42,15 +64,30 @@ export interface Setting {
 
 export class SmartReaderDB extends Dexie {
     words!: Table<Word>
-    history!: Table<History>
+    history!: Table<History> // Legacy V1 table
     settings!: Table<Setting>
+
+    // V2 Tables
+    articles!: Table<Article>
+    quizRecords!: Table<QuizRecord>
 
     constructor() {
         super('SmartReaderDB_v2')
+
+        // Version 1
         this.version(1).stores({
             words: '++id, spelling, status, nextReviewAt',
             history: '++id, date',
             settings: '++id',
+        })
+
+        // Version 2: Add articles and quizRecords
+        this.version(2).stores({
+            words: '++id, spelling, status, nextReviewAt',
+            history: '++id, date', // Keep for migration
+            settings: '++id',
+            articles: '++id, uuid, createdAt',
+            quizRecords: '++id, articleId, date'
         })
     }
 }

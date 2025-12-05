@@ -55,11 +55,14 @@ function AnimatedRoutes() {
     )
 }
 
+import { migrateV1ToV2 } from './services/migrationService'
+
 function AppContent() {
     const { themeMode } = useThemeMode()
 
     useEffect(() => {
-        // Database initialization logic if needed in future
+        // Run database migration
+        migrateV1ToV2()
     }, [])
 
     return (
