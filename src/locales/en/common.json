@@ -2,6 +2,7 @@
     "appName": "Smart Reader",
     "nav": {
         "home": "Home",
+        "library": "Library",
         "history": "Learning History",
         "vocabulary": "Vocabulary",
         "statistics": "Statistics",

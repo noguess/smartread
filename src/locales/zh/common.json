@@ -2,6 +2,7 @@
     "appName": "智能阅读器",
     "nav": {
         "home": "首页",
+        "library": "文库",
         "history": "学习记录",
         "vocabulary": "单词本",
         "statistics": "统计",

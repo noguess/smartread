@@ -1,0 +1,16 @@
+{
+    "title": "My Library",
+    "subtitle": "{{count}} articles saved",
+    "empty": {
+        "title": "No articles yet",
+        "description": "Generate your first article from the home page",
+        "button": "Go to Home"
+    },
+    "card": {
+        "read": "Read"
+    },
+    "delete": {
+        "title": "Delete Article",
+        "message": "Are you sure you want to delete this article? This action cannot be undone."
+    }
+}

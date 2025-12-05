@@ -3,6 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Box, Grid, Typography, Container, Snackbar, Alert } from '@mui/material'
 import { wordService } from '../services/wordService'
 import { historyService } from '../services/historyService'
+import { articleService } from '../services/articleService'
+import { llmService } from '../services/llmService'
+import { mockLLMService } from '../services/mockLLMService'
+import { settingsService } from '../services/settingsService'
 import { Word, History, WordStatus } from '../services/db'
 import { WordSelector } from '../utils/WordSelector'
 import DashboardHero from '../components/dashboard/DashboardHero'
@@ -10,6 +14,7 @@ import DashboardStats from '../components/dashboard/DashboardStats'
 import RecentActivityList from '../components/dashboard/RecentActivityList'
 import ManualGenerationDialog from '../components/dashboard/ManualGenerationDialog'
 import { useTranslation } from 'react-i18next'
+import { v4 as uuidv4 } from 'uuid'
 
 export default function HomePage() {
     const { t } = useTranslation(['home'])
@@ -141,15 +146,49 @@ export default function HomePage() {
         })
     }
 
-    const handleSmartGenerate = () => {
+    const handleSmartGenerate = async () => {
         // Default to 15 words for smart generate
         const selected = WordSelector.selectWordsForArticle(allWords, 15)
-        navigate('/reading', { state: { words: selected } })
+        await generateAndSaveArticle(selected)
     }
 
-    const handleManualGenerate = (selectedWords: Word[]) => {
+    const handleManualGenerate = async (selectedWords: Word[]) => {
         setIsManualDialogOpen(false)
-        navigate('/reading', { state: { words: selectedWords } })
+        await generateAndSaveArticle(selectedWords)
+    }
+
+    const generateAndSaveArticle = async (words: Word[]) => {
+        try {
+            // Get settings
+            const settings = await settingsService.getSettings()
+            if (!settings) {
+                setSnackbarMsg('Please configure settings first')
+                setSnackbarOpen(true)
+                return
+            }
+
+            // Call generateArticleOnly (no quiz generation)
+            const articleData = settings.apiKey
+                ? await llmService.generateArticleOnly(words, settings)
+                : await mockLLMService.generateArticleOnly(words, settings)
+
+            // Save to database
+            const articleId = await articleService.add({
+                uuid: uuidv4(),
+                title: articleData.title,
+                content: articleData.content,
+                targetWords: articleData.targetWords,
+                difficultyLevel: settings.difficultyLevel || 'L2',
+                source: 'generated'
+            })
+
+            // Navigate to reading page with article ID
+            navigate(`/read/${articleId}`)
+        } catch (error) {
+            console.error('Failed to generate article:', error)
+            setSnackbarMsg('Failed to generate article. Please try again.')
+            setSnackbarOpen(true)
+        }
     }
 
     return (

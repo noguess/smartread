@@ -5,6 +5,7 @@ import { AnimatePresence } from 'framer-motion'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ReadingPage from './pages/ReadingPage'
+import LibraryPage from './pages/LibraryPage'
 import HistoryPage from './pages/HistoryPage'
 import VocabularyPage from './pages/VocabularyPage'
 import StatisticsPage from './pages/StatisticsPage'
@@ -27,6 +28,16 @@ function AnimatedRoutes() {
                 <Route path="/reading" element={
                     <PageTransition>
                         <ReadingPage />
+                    </PageTransition>
+                } />
+                <Route path="/read/:id" element={
+                    <PageTransition>
+                        <ReadingPage />
+                    </PageTransition>
+                } />
+                <Route path="/library" element={
+                    <PageTransition>
+                        <LibraryPage />
                     </PageTransition>
                 } />
                 <Route path="/history" element={
