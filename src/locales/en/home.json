@@ -1,17 +1,14 @@
 {
     "title": "Home",
     "hero": {
-        "title": "Start Learning",
-        "todayPlan": "Today's Plan: {{reviewCount}} review words + {{newCount}} new words",
-        "smartGenerate": "Smart Generate",
+        "greeting": "Hi, ready to start learning today?",
+        "smartGenerate": "Smart Generate Plan",
         "customMode": "Custom Mode",
-        "consecutiveDays": "Consecutive Days",
+        "streak": "Streak",
         "days": "days",
-        "totalTime": "Total Time",
+        "todayAccumulation": "Today's Accumulation",
         "min": "min",
-        "lastLearning": "Last Learning",
-        "startToday": "Start today!",
-        "encourage": "Don't give up! Start a new streak today."
+        "dailyWord": "Daily Word"
     },
     "stats": {
         "title": "Memory Status",
@@ -25,7 +22,8 @@
     "recentActivity": {
         "title": "Recent Activity",
         "noActivity": "No learning records yet. Start your first article!",
-        "points": "pts"
+        "points": "pts",
+        "article": "Article"
     },
     "manual": {
         "title": "Customize Your Reading",

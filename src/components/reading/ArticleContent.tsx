@@ -1,4 +1,5 @@
 import { Paper, Typography, Box } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
 import { useEffect, useState } from 'react'
 import styles from '../../styles/reading.module.css'
@@ -17,6 +18,7 @@ const fontSizeMap = {
 }
 
 export default function ArticleContent({ title, content, onWordClick, fontSize }: ArticleContentProps) {
+    const { t } = useTranslation(['reading'])
     const [showHint, setShowHint] = useState(false)
 
     useEffect(() => {
@@ -75,7 +77,7 @@ export default function ArticleContent({ title, content, onWordClick, fontSize }
                     }}
                 >
                     <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        💡 提示：点击蓝色单词可查看释义和视频讲解
+                        {t('reading:hint.clickWord')}
                     </Typography>
                 </Box>
             )}
@@ -83,7 +85,7 @@ export default function ArticleContent({ title, content, onWordClick, fontSize }
             <Paper
                 elevation={0}
                 sx={{
-                    maxWidth: 680,
+                    maxWidth: 860,
                     margin: '0 auto',
                     p: { xs: 3, md: 6 },
                     borderRadius: 4,

@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
-import { Box, Typography, Paper, LinearProgress, Stack, Chip } from '@mui/material'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { Box, Typography, Paper, Stack, Chip } from '@mui/material'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AutoAwesome, CheckCircle, RadioButtonUnchecked } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
@@ -7,13 +7,22 @@ import { Word } from '../../services/db'
 
 interface GenerationLoadingProps {
     words: Word[]
+    realProgress?: number // Real download progress from API (0-100)
 }
 
-export default function GenerationLoading({ words }: GenerationLoadingProps) {
+export default function GenerationLoading({ words, realProgress = 0 }: GenerationLoadingProps) {
     const { t } = useTranslation(['reading'])
-    const [progress, setProgress] = useState(0)
+    const [simulatedProgress, setSimulatedProgress] = useState(0)
     const [activeStep, setActiveStep] = useState(0)
-    const [logs, setLogs] = useState<string[]>([])
+    const [logs, setLogs] = useState<Array<{ timestamp: Date; label: string; duration?: number }>>([])
+    const [stepStartTime, setStepStartTime] = useState(new Date())
+    const [currentStepDuration, setCurrentStepDuration] = useState(0)
+    const [typingWordIndex, setTypingWordIndex] = useState(0)
+    const [typingCharIndex, setTypingCharIndex] = useState(0)
+
+    // Use ref to prevent flickering - once 100%, always 100%
+    const hasReached100Ref = useRef(false)
+    const [finalProgress, setFinalProgress] = useState(0)
 
     const steps = useMemo(() => [
         { id: 'analyze', label: t('reading:generating.steps.analyze', 'Analyzing vocabulary...') },
@@ -23,16 +32,62 @@ export default function GenerationLoading({ words }: GenerationLoadingProps) {
         { id: 'finalize', label: t('reading:generating.steps.finalize', 'Finalizing...') },
     ], [t])
 
+    // Initialize first step on mount
     useEffect(() => {
-        // Simulate progress
+        const now = new Date()
+        setStepStartTime(now)
+        setLogs([{
+            timestamp: now,
+            label: steps[0].label
+        }])
+    }, [steps])
+
+    // Word typing animation (only for first step)
+    useEffect(() => {
+        if (activeStep !== 0 || typingWordIndex >= words.length) return
+
+        const currentWord = words[typingWordIndex]?.spelling || ''
+
+        if (typingCharIndex < currentWord.length) {
+            const timer = setTimeout(() => {
+                setTypingCharIndex(prev => prev + 1)
+            }, 50) // Type each character every 50ms
+            return () => clearTimeout(timer)
+        } else {
+            // Finished current word, move to next after a pause
+            const timer = setTimeout(() => {
+                setTypingWordIndex(prev => prev + 1)
+                setTypingCharIndex(0)
+            }, 200) // Pause between words
+            return () => clearTimeout(timer)
+        }
+    }, [activeStep, typingWordIndex, typingCharIndex, words])
+
+    // Real-time current step duration tracker
+    useEffect(() => {
+        const timer = setInterval(() => {
+            const now = new Date()
+            const elapsed = Math.floor((now.getTime() - stepStartTime.getTime()) / 1000)
+            setCurrentStepDuration(elapsed)
+        }, 1000) // Update every second
+
+        return () => clearInterval(timer)
+    }, [stepStartTime])
+
+    // Simulated progress (runs independently)
+    useEffect(() => {
         const totalDuration = 45000 // 45 seconds estimated
         const interval = 100
-        const stepsCount = steps.length
 
         let currentProgress = 0
-        let lastStepIndex = -1
 
         const timer = setInterval(() => {
+            // Don't update if already at 100%
+            if (hasReached100Ref.current) {
+                clearInterval(timer)
+                return
+            }
+
             currentProgress += (interval / totalDuration) * 100
 
             // Non-linear progress for realism
@@ -44,20 +99,79 @@ export default function GenerationLoading({ words }: GenerationLoadingProps) {
                 currentProgress = 99 // Wait for actual completion
             }
 
-            setProgress(currentProgress)
-
-            // Update active step based on progress
-            const stepIndex = Math.floor((currentProgress / 100) * stepsCount)
-            if (stepIndex !== lastStepIndex && stepIndex < stepsCount) {
-                lastStepIndex = stepIndex
-                setActiveStep(stepIndex)
-                setLogs(prev => [...prev, steps[stepIndex].label])
-            }
-
+            setSimulatedProgress(currentProgress)
         }, interval)
 
         return () => clearInterval(timer)
-    }, [steps])
+    }, [])
+
+    // Blend simulated and real progress, and lock at 100%
+    useEffect(() => {
+        // Once locked at 100%, never change
+        if (hasReached100Ref.current) {
+            setFinalProgress(100)
+            return
+        }
+
+        let displayValue: number
+
+        if (realProgress === 0) {
+            // No real data yet, use simulated
+            displayValue = simulatedProgress
+        } else if (realProgress >= 100) {
+            // Real progress says we're done - lock immediately
+            displayValue = 100
+            hasReached100Ref.current = true
+        } else {
+            // Blend: take the max to ensure progress never goes backwards
+            const blended = Math.max(
+                simulatedProgress,
+                realProgress * 0.7 + simulatedProgress * 0.3
+            )
+            displayValue = Math.min(blended, 99) // Cap at 99 until truly done
+        }
+
+        setFinalProgress(displayValue)
+    }, [simulatedProgress, realProgress])
+
+    // Lock progress at 100 once ref is set
+    const displayProgress = useMemo(() => {
+        return hasReached100Ref.current ? 100 : finalProgress
+    }, [finalProgress])
+
+    // Update active step based on display progress
+    useEffect(() => {
+        const stepIndex = Math.floor((displayProgress / 100) * steps.length)
+        if (stepIndex !== activeStep && stepIndex < steps.length) {
+            const now = new Date()
+            const previousStepDuration = Math.floor((now.getTime() - stepStartTime.getTime()) / 1000)
+
+            // Update the last log entry with duration (if exists)
+            if (logs.length > 0) {
+                setLogs(prev => {
+                    const updated = [...prev]
+                    updated[updated.length - 1].duration = previousStepDuration
+                    return updated
+                })
+            }
+
+            // Add new step log
+            setActiveStep(stepIndex)
+            setStepStartTime(now)
+            setCurrentStepDuration(0) // Reset current step duration
+            setLogs(prev => [...prev, {
+                timestamp: now,
+                label: steps[stepIndex].label
+            }])
+        }
+    }, [displayProgress, activeStep, steps, stepStartTime, logs.length])
+
+    const logsEndRef = useRef<HTMLDivElement>(null)
+
+    // Auto-scroll to bottom when logs change
+    useEffect(() => {
+        logsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, [logs, typingCharIndex])
 
     return (
         <Box sx={{
@@ -91,7 +205,7 @@ export default function GenerationLoading({ words }: GenerationLoadingProps) {
                         strokeWidth="8"
                         strokeLinecap="round"
                         initial={{ pathLength: 0 }}
-                        animate={{ pathLength: progress / 100 }}
+                        animate={{ pathLength: displayProgress / 100 }}
                         transition={{ duration: 0.5, ease: "linear" }}
                         style={{ rotate: -90, transformOrigin: "50% 50%" }}
                     />
@@ -109,7 +223,7 @@ export default function GenerationLoading({ words }: GenerationLoadingProps) {
                 }}>
                     <AutoAwesome sx={{ color: '#4A90E2', fontSize: 32, mb: 0.5 }} />
                     <Typography variant="caption" color="text.secondary" fontWeight="bold">
-                        {Math.round(progress)}%
+                        {Math.round(displayProgress)}%
                     </Typography>
                 </Box>
             </Box>
@@ -157,34 +271,73 @@ export default function GenerationLoading({ words }: GenerationLoadingProps) {
                 borderRadius: 2,
                 fontFamily: 'monospace',
                 fontSize: '0.85rem',
-                height: 150,
-                overflow: 'hidden',
-                position: 'relative'
+                height: 180, // Increased height
+                overflowY: 'auto', // Allow scrolling
+                position: 'relative',
+                '&::-webkit-scrollbar': { display: 'none' }, // Hide scrollbar
+                scrollbarWidth: 'none' // Hide scrollbar Firefox
             }}>
-                <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, p: 1, bgcolor: '#2d2d2d', display: 'flex', gap: 1 }}>
+                <Box sx={{ position: 'sticky', top: -16, left: 0, right: 0, p: 1, mb: 1, bgcolor: '#2d2d2d', display: 'flex', gap: 1, zIndex: 1, mx: -2, mt: -2, px: 2 }}>
                     <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#ff5f56' }} />
                     <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#ffbd2e' }} />
                     <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#27c93f' }} />
                 </Box>
-                <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     <AnimatePresence initial={false}>
-                        {logs.slice(-5).map((log, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0 }}
-                            >
-                                <span style={{ opacity: 0.5 }}>{new Date().toLocaleTimeString()}</span> {'>'} {log}
-                            </motion.div>
-                        ))}
+                        {logs.map((log, i) => { // Show all logs, let scroll handle visibility
+                            const isCurrentStep = i === logs.length - 1
+                            const duration = isCurrentStep ? currentStepDuration : log.duration
+
+                            return (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                >
+                                    <span style={{ opacity: 0.5 }}>
+                                        {log.timestamp.toLocaleTimeString()}
+                                    </span>
+                                    {' > '}
+                                    {log.label}
+                                    {duration !== undefined && duration > 0 && (
+                                        <span style={{ opacity: 0.7, marginLeft: '8px' }}>
+                                            ({duration}s)
+                                        </span>
+                                    )}
+                                </motion.div>
+                            )
+                        })}
                     </AnimatePresence>
-                    <motion.div
-                        animate={{ opacity: [0, 1, 0] }}
-                        transition={{ repeat: Infinity, duration: 0.8 }}
-                    >
-                        _
-                    </motion.div>
+
+                    {/* Show typing words during first step */}
+                    {activeStep === 0 && typingWordIndex < words.length && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            style={{ color: '#ffbd2e', marginLeft: '16px' }}
+                        >
+                            {words.slice(0, typingWordIndex).map(w => w.spelling).join(', ')}
+                            {typingWordIndex > 0 && ', '}
+                            {words[typingWordIndex]?.spelling.substring(0, typingCharIndex)}
+                            <motion.span
+                                animate={{ opacity: [0, 1, 0] }}
+                                transition={{ repeat: Infinity, duration: 0.8 }}
+                            >
+                                _
+                            </motion.span>
+                        </motion.div>
+                    )}
+
+                    {/* Blinking cursor for other steps */}
+                    {(activeStep !== 0 || typingWordIndex >= words.length) && (
+                        <motion.div
+                            animate={{ opacity: [0, 1, 0] }}
+                            transition={{ repeat: Infinity, duration: 0.8 }}
+                        >
+                            _
+                        </motion.div>
+                    )}
+                    <div ref={logsEndRef} />
                 </Box>
             </Paper>
 

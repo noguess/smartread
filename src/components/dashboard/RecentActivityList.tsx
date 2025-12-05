@@ -8,7 +8,7 @@ interface RecentActivityListProps {
 }
 
 export default function RecentActivityList({ history }: RecentActivityListProps) {
-    const { t } = useTranslation(['home'])
+    const { t, i18n } = useTranslation(['home'])
 
     const getScoreEmoji = (score: number) => {
         if (score >= 90) return '🎉'
@@ -51,7 +51,7 @@ export default function RecentActivityList({ history }: RecentActivityListProps)
                                             {getScoreEmoji(item.userScore)}
                                         </Typography>
                                         <Typography variant="subtitle2" fontWeight="600" sx={{ flex: 1 }}>
-                                            {item.title || `文章 #${item.id}`}
+                                            {item.title || `${t('home:recentActivity.article')} #${item.id}`}
                                         </Typography>
                                     </Box>
                                 }
@@ -64,7 +64,7 @@ export default function RecentActivityList({ history }: RecentActivityListProps)
                                             sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600 }}
                                         />
                                         <Typography variant="caption" color="text.secondary">
-                                            🕒 {new Date(item.date).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
+                                            🕒 {new Date(item.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}
                                         </Typography>
                                     </Box>
                                 }

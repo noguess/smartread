@@ -35,8 +35,15 @@
     },
     "quiz": {
         "title": "Reading Comprehension Quiz",
+        "readingTitle": "Part 1: Reading Comprehension",
+        "readingDesc": "Answer the following questions based on the article.",
+        "vocabTitle": "Part 2: Vocabulary Mastery",
+        "vocabDesc": "Test your mastery of the core words.",
+        "next": "Next Part",
         "submit": "Submit Answers",
-        "back": "Back to Article"
+        "back": "Back to Article",
+        "correct": "Correct",
+        "yourAnswer": "Your Answer"
     },
     "feedback": {
         "title": "Quiz Completed!",
@@ -50,5 +57,8 @@
         "justRight": "Just Right",
         "hard": "Too Hard",
         "complete": "Complete"
+    },
+    "hint": {
+        "clickWord": "💡 Hint: Click on blue words to see definitions and video explanations"
     }
 }

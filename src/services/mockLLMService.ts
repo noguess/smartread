@@ -23,9 +23,35 @@ export interface GeneratedContent {
 }
 
 export const mockLLMService = {
-    async generateArticle(words: Word[], settings?: { difficultyLevel?: 'L1' | 'L2' | 'L3' }): Promise<GeneratedContent> {
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+    async generateArticle(
+        words: Word[],
+        settings?: { difficultyLevel?: 'L1' | 'L2' | 'L3' },
+        onProgress?: (progress: number) => void
+    ): Promise<GeneratedContent> {
+        // Simulate realistic progressive loading (15 seconds total)
+        // Report progress every 500ms to mimic real network download
+        const totalDuration = 15000 // 15 seconds
+        const updateInterval = 500 // Update every 500ms
+        const totalSteps = totalDuration / updateInterval
+
+        let currentProgress = 0
+
+        for (let i = 0; i <= totalSteps; i++) {
+            // Non-linear progress (faster at start, slower at end)
+            if (i < totalSteps * 0.3) {
+                currentProgress = (i / (totalSteps * 0.3)) * 40 // 0-40% in first 30%
+            } else if (i < totalSteps * 0.7) {
+                currentProgress = 40 + ((i - totalSteps * 0.3) / (totalSteps * 0.4)) * 40 // 40-80% in next 40%
+            } else {
+                currentProgress = 80 + ((i - totalSteps * 0.7) / (totalSteps * 0.3)) * 20 // 80-100% in last 30%
+            }
+
+            onProgress?.(Math.min(currentProgress, 100))
+
+            if (i < totalSteps) {
+                await new Promise((resolve) => setTimeout(resolve, updateInterval))
+            }
+        }
 
         const wordList = words.map((w) => w.spelling).join(', ')
         const difficultyLevel = settings?.difficultyLevel || 'L2'

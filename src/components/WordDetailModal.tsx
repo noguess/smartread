@@ -124,7 +124,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                             {wordData.phonetic}
                         </Typography>
                     )}
-                    <IconButton onClick={handleSpeak} size="small" title="Speak">
+                    <IconButton onClick={handleSpeak} size="small" title={t('vocabulary:modal.speak')}>
                         <VolumeUp />
                     </IconButton>
                     {wordData && (
@@ -290,7 +290,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                                         />
                                         {/* Show Recommended Icon for high scores */}
                                         {occ.score && occ.score >= 5 && (
-                                            <Tooltip title={t('vocabulary:modal.recommended') || "Recommended"}>
+                                            <Tooltip title={t('vocabulary:modal.recommended')}>
                                                 <Recommend color="primary" sx={{ ml: 1, fontSize: 20 }} />
                                             </Tooltip>
                                         )}

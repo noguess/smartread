@@ -35,8 +35,15 @@
     },
     "quiz": {
         "title": "阅读理解测验",
+        "readingTitle": "第一部分：阅读理解",
+        "readingDesc": "根据文章内容回答下列问题。",
+        "vocabTitle": "第二部分：词汇掌握",
+        "vocabDesc": "测试你对核心词汇的掌握程度。",
+        "next": "下一部分",
         "submit": "提交答案",
-        "back": "返回文章"
+        "back": "返回文章",
+        "correct": "正确",
+        "yourAnswer": "你的答案"
     },
     "feedback": {
         "title": "测验完成！",
@@ -50,5 +57,8 @@
         "justRight": "刚刚好",
         "hard": "太难了",
         "complete": "完成学习"
+    },
+    "hint": {
+        "clickWord": "💡 提示：点击蓝色单词可查看释义和视频讲解"
     }
 }

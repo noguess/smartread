@@ -41,7 +41,7 @@ export default function QuizView({
     const [readingAnswers, setReadingAnswers] = useState<Record<string, string>>(initialAnswers?.reading || {})
     const [vocabAnswers, setVocabAnswers] = useState<Record<string, string | string[]>>(initialAnswers?.vocabulary || {})
 
-    const steps = ['Reading Comprehension', 'Vocabulary Mastery']
+    const steps = [t('reading:quiz.readingTitle'), t('reading:quiz.vocabTitle')]
 
     const handleReadingChange = (questionId: string, value: string) => {
         setReadingAnswers((prev) => ({ ...prev, [questionId]: value }))
@@ -102,13 +102,13 @@ export default function QuizView({
             <Box sx={{ mb: 4 }}>
                 <Typography variant="h5" fontWeight="bold" gutterBottom>
                     {activeStep === 0
-                        ? t('reading:quiz.readingTitle', 'Part 1: Reading Comprehension')
-                        : t('reading:quiz.vocabTitle', 'Part 2: Vocabulary Mastery')}
+                        ? t('reading:quiz.readingTitle')
+                        : t('reading:quiz.vocabTitle')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                     {activeStep === 0
-                        ? t('reading:quiz.readingDesc', 'Answer the following questions based on the article.')
-                        : t('reading:quiz.vocabDesc', 'Test your mastery of the core words.')}
+                        ? t('reading:quiz.readingDesc')
+                        : t('reading:quiz.vocabDesc')}
                 </Typography>
             </Box>
 
@@ -147,7 +147,7 @@ export default function QuizView({
                                                     control={<Radio color={readOnly && isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary'} />}
                                                     label={
                                                         <Typography color={color} fontWeight={readOnly && isTheCorrectAnswer ? 'bold' : 'normal'}>
-                                                            {opt} {readOnly && isTheCorrectAnswer && '(Correct)'} {readOnly && isSelected && !isCorrect && '(Your Answer)'}
+                                                            {opt} {readOnly && isTheCorrectAnswer && `(${t('reading:quiz.correct')})`} {readOnly && isSelected && !isCorrect && `(${t('reading:quiz.yourAnswer')})`}
                                                         </Typography>
                                                     }
                                                 />
@@ -201,7 +201,7 @@ export default function QuizView({
                         disabled={!readOnly && !isStepComplete()}
                         onClick={handleNext}
                     >
-                        {t('reading:quiz.next', 'Next Part')}
+                        {t('reading:quiz.next')}
                     </Button>
                 ) : (
                     !readOnly && (

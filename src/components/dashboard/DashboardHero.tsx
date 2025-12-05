@@ -1,217 +1,245 @@
-import { Paper, Typography, Button, Box, Stack, Grid, IconButton } from '@mui/material'
-import { AutoAwesome, Tune, LocalFireDepartment, AccessTime, CalendarToday, VolumeUp } from '@mui/icons-material'
+import { Box, Typography, Button, Grid, Paper, CircularProgress } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { GradientButton } from '../common'
+import { AutoAwesome, Tune, VolumeUp, LocalFireDepartment, AccessTime } from '@mui/icons-material'
+import { styled } from '@mui/material/styles'
 import { Word } from '../../services/db'
 
+const StyledCard = styled(Paper)(({ theme }) => ({
+    transition: 'all 0.3s ease-in-out',
+    '&:hover': {
+        transform: 'translateY(-4px)',
+        boxShadow: theme.shadows[8],
+    },
+}))
+
+const GradientButton = styled(Button)({
+    background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
+    '&:hover': {
+        background: 'linear-gradient(135deg, #3A7BC8 0%, #6B58CE 100%)',
+    },
+})
+
 interface DashboardHeroProps {
+    onSmartGenerate: () => void
+    onManualMode: () => void
     consecutiveDays: number
     totalMinutes: number
     lastLearningDate: string
-    recommendedWord: Word | null
-    onSmartGenerate: () => void
-    onManualMode: () => void
+    recommendedWord?: Word | null
 }
 
 export default function DashboardHero({
-    consecutiveDays,
-    totalMinutes,
-    lastLearningDate,
-    recommendedWord,
     onSmartGenerate,
     onManualMode,
+    consecutiveDays,
+    totalMinutes,
+    recommendedWord,
 }: DashboardHeroProps) {
     const { t } = useTranslation(['home'])
-
-    const handlePlayAudio = (e: React.MouseEvent) => {
-        e.stopPropagation()
-        if (recommendedWord) {
+    const playPronunciation = () => {
+        if (recommendedWord?.phonetic) {
             const utterance = new SpeechSynthesisUtterance(recommendedWord.spelling)
             utterance.lang = 'en-US'
+            utterance.rate = 0.8
             window.speechSynthesis.speak(utterance)
         }
     }
 
+    // Calculate progress percentages (example: max 7 days, 60 minutes)
+    const daysProgress = Math.min((consecutiveDays / 7) * 100, 100)
+    const minutesProgress = Math.min((totalMinutes / 60) * 100, 100)
+
     return (
-        <Paper
+        <StyledCard
             elevation={0}
             sx={{
-                p: 3,
-                background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
-                color: 'white',
+                p: 4,
+                bgcolor: 'white',
                 borderRadius: 4,
-                position: 'relative',
-                overflow: 'hidden',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
+                border: '1px solid',
+                borderColor: 'divider',
             }}
         >
-            {/* Decorative background shapes */}
-            <Box
-                sx={{
-                    position: 'absolute',
-                    top: -50,
-                    right: -50,
-                    width: 200,
-                    height: 200,
-                    borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.1)',
-                }}
-            />
-            <Box
-                sx={{
-                    position: 'absolute',
-                    bottom: -30,
-                    left: -30,
-                    width: 150,
-                    height: 150,
-                    borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.08)',
-                }}
-            />
+            <Grid container spacing={3} sx={{ alignItems: 'stretch' }}>
+                {/* Left: Content Column */}
+                <Grid item xs={12} md={8}>
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: '100%',
+                        minHeight: 240 // Ensure enough height for spacing
+                    }}>
+                        {/* 1. Top: Title */}
+                        <Typography variant="h4" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {t('home:hero.greeting')}
+                            <span style={{ fontSize: '2rem' }}>🚀</span>
+                        </Typography>
 
-            <Box sx={{ position: 'relative', zIndex: 1, width: '100%' }}>
-                <Grid container spacing={2} alignItems="center">
-                    {/* Left Content */}
-                    <Grid item xs={12} md={8}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                            <Typography variant="h4" component="span" sx={{ fontSize: '2.2rem' }}>
-                                🚀
-                            </Typography>
-                            <Typography variant="h4" fontWeight="bold">
-                                {t('home:hero.title')}
-                            </Typography>
+                        {/* 2. Middle: Stats (Centered Vertically) */}
+                        <Box sx={{
+                            flex: 1, // Take up remaining space
+                            display: 'flex',
+                            alignItems: 'center', // Vertically center content
+                            py: 2 // Reduced padding
+                        }}>
+                            <Box sx={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                                {/* Consecutive Days */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <LocalFireDepartment sx={{ fontSize: 48, color: '#FF6B6B' }} />
+                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                        <Typography variant="h5" fontWeight="bold" sx={{ lineHeight: 1 }}>
+                                            {consecutiveDays}{t('home:hero.days')}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
+                                            {t('home:hero.streak')}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ position: 'relative', display: 'inline-flex', ml: 2 }}>
+                                        <CircularProgress
+                                            variant="determinate"
+                                            value={100}
+                                            size={56}
+                                            thickness={3}
+                                            sx={{ color: '#E8E8E8' }}
+                                        />
+                                        <CircularProgress
+                                            variant="determinate"
+                                            value={daysProgress}
+                                            size={56}
+                                            thickness={3}
+                                            sx={{
+                                                color: '#4A90E2',
+                                                position: 'absolute',
+                                                left: 0,
+                                            }}
+                                        />
+                                    </Box>
+                                </Box>
+
+                                {/* Divider */}
+                                <Box sx={{ width: '1px', height: 50, bgcolor: '#E0E0E0' }} />
+
+                                {/* Today's Minutes */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <AccessTime sx={{ fontSize: 48, color: '#4A90E2' }} />
+                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                        <Typography variant="h5" fontWeight="bold" sx={{ lineHeight: 1 }}>
+                                            {totalMinutes}{t('home:hero.min')}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
+                                            {t('home:hero.todayAccumulation')}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ position: 'relative', display: 'inline-flex', ml: 2 }}>
+                                        <CircularProgress
+                                            variant="determinate"
+                                            value={100}
+                                            size={56}
+                                            thickness={3}
+                                            sx={{ color: '#E8E8E8' }}
+                                        />
+                                        <CircularProgress
+                                            variant="determinate"
+                                            value={minutesProgress}
+                                            size={56}
+                                            thickness={3}
+                                            sx={{
+                                                color: '#4A90E2',
+                                                position: 'absolute',
+                                                left: 0,
+                                            }}
+                                        />
+                                    </Box>
+                                </Box>
+                            </Box>
                         </Box>
 
-                        {/* Learning Stats Section */}
-                        <Stack direction="row" spacing={3} sx={{ mb: 3 }}>
-                            {consecutiveDays > 0 ? (
-                                <>
-                                    <Box>
-                                        <Typography variant="caption" sx={{ opacity: 0.8, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                            <LocalFireDepartment fontSize="small" /> {t('home:hero.consecutiveDays')}
-                                        </Typography>
-                                        <Typography variant="h4" fontWeight="bold">
-                                            {consecutiveDays} <Typography component="span" variant="h6">{t('home:hero.days')}</Typography>
-                                        </Typography>
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="caption" sx={{ opacity: 0.8, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                            <AccessTime fontSize="small" /> {t('home:hero.totalTime')}
-                                        </Typography>
-                                        <Typography variant="h4" fontWeight="bold">
-                                            {totalMinutes} <Typography component="span" variant="h6">{t('home:hero.min')}</Typography>
-                                        </Typography>
-                                    </Box>
-                                </>
-                            ) : (
-                                <Box>
-                                    <Typography variant="caption" sx={{ opacity: 0.8, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        <CalendarToday fontSize="small" /> {t('home:hero.lastLearning')}
-                                    </Typography>
-                                    <Typography variant="h5" fontWeight="bold" sx={{ mt: 0.5 }}>
-                                        {lastLearningDate || t('home:hero.startToday')}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                                        {t('home:hero.encourage')}
-                                    </Typography>
-                                </Box>
-                            )}
-                        </Stack>
-
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                        {/* 3. Bottom: Buttons */}
+                        <Box sx={{ display: 'flex', gap: 2 }}>
                             <GradientButton
+                                variant="contained"
                                 size="large"
                                 startIcon={<AutoAwesome />}
                                 onClick={onSmartGenerate}
                                 sx={{
-                                    bgcolor: 'white',
-                                    color: '#4A90E2',
-                                    background: 'white !important',
-                                    px: 3,
-                                    py: 1,
+                                    px: 4,
+                                    py: 1.5,
+                                    fontSize: '1.05rem',
                                     fontWeight: 'bold',
-                                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                                    '&:hover': {
-                                        bgcolor: 'rgba(255,255,255,0.95)',
-                                        background: 'rgba(255,255,255,0.95) !important',
-                                        transform: 'translateY(-2px)',
-                                    },
+                                    color: 'white',
+                                    textTransform: 'none',
                                 }}
                             >
                                 {t('home:hero.smartGenerate')}
                             </GradientButton>
 
                             <Button
-                                variant="outlined"
-                                size="large"
+                                variant="text"
                                 startIcon={<Tune />}
                                 onClick={onManualMode}
                                 sx={{
-                                    color: 'white',
-                                    borderColor: 'rgba(255,255,255,0.5)',
-                                    borderWidth: 1.5,
-                                    borderRadius: 3,
-                                    px: 2,
-                                    py: 0.8,
-                                    fontWeight: 600,
-                                    '&:hover': {
-                                        borderColor: 'white',
-                                        bgcolor: 'rgba(255,255,255,0.1)',
-                                        borderWidth: 1.5,
-                                    },
+                                    px: 3,
+                                    py: 1.5,
+                                    fontSize: '1.05rem',
+                                    color: 'text.secondary',
+                                    textTransform: 'none',
                                 }}
                             >
                                 {t('home:hero.customMode')}
                             </Button>
                         </Box>
-                    </Grid>
+                    </Box>
+                </Grid>
 
-                    {/* Right Content: Word of the Moment */}
-                    <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
-                        {recommendedWord && (
-                            <Box
-                                sx={{
-                                    background: 'rgba(255, 255, 255, 0.15)',
-                                    backdropFilter: 'blur(10px)',
-                                    borderRadius: 3,
-                                    p: 2.5,
-                                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                                    textAlign: 'center',
-                                    transition: 'transform 0.2s',
-                                    '&:hover': {
-                                        transform: 'translateY(-4px)',
-                                        background: 'rgba(255, 255, 255, 0.2)',
-                                    }
-                                }}
-                            >
-                                <Typography variant="caption" sx={{ opacity: 0.8, textTransform: 'uppercase', letterSpacing: 1, mb: 1, display: 'block' }}>
-                                    Word of the Moment
-                                </Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
-                                    <Typography variant="h4" fontWeight="bold">
+                {/* Right: Daily Word Card */}
+                <Grid item xs={12} md={4}>
+                    {recommendedWord && (
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 3,
+                                height: '100%',
+                                background: 'linear-gradient(135deg, #56CCF2 0%, #2F80ED 100%)',
+                                color: 'white',
+                                borderRadius: 3,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: 2,
+                            }}
+                        >
+                            <Typography variant="body2" sx={{ opacity: 0.9, alignSelf: 'flex-start' }}>
+                                {t('home:hero.dailyWord')}
+                            </Typography>
+
+                            <Box sx={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'center', mb: 1 }}>
+                                    <Typography variant="h3" fontWeight="bold">
                                         {recommendedWord.spelling}
                                     </Typography>
-                                    <IconButton size="small" onClick={handlePlayAudio} sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.1)' }}>
-                                        <VolumeUp fontSize="small" />
-                                    </IconButton>
+                                    <VolumeUp
+                                        sx={{
+                                            cursor: 'pointer',
+                                            fontSize: 28,
+                                            '&:hover': { opacity: 0.8 },
+                                        }}
+                                        onClick={playPronunciation}
+                                    />
                                 </Box>
-                                {recommendedWord.phonetic && (
-                                    <Typography variant="body2" sx={{ opacity: 0.8, mb: 1.5, fontFamily: 'monospace' }}>
-                                        /{recommendedWord.phonetic}/
-                                    </Typography>
-                                )}
-                                <Typography variant="body1" sx={{ fontWeight: 500, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                    {recommendedWord.meaning}
+
+                                <Typography variant="body1" sx={{ mb: 2, opacity: 0.9 }}>
+                                    {recommendedWord.phonetic || '/word/'}
+                                </Typography>
+
+                                <Typography variant="h6">
+                                    v.{recommendedWord.meaning}
                                 </Typography>
                             </Box>
-                        )}
-                    </Grid>
+                        </Paper>
+                    )}
                 </Grid>
-            </Box>
-        </Paper>
+            </Grid>
+        </StyledCard>
     )
 }

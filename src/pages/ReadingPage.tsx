@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Container, Box, Typography, Button, Grid, Paper, Chip } from '@mui/material'
+import { Container, Box, Typography, Button, Grid, Paper, Chip, Fade } from '@mui/material'
 
 import { Word, History } from '../services/db'
 import { mockLLMService, GeneratedContent } from '../services/mockLLMService'
@@ -47,6 +47,7 @@ export default function ReadingPage() {
     const [viewMode, setViewMode] = useState<'results' | 'retake' | null>(null)
 
     const [error, setError] = useState<string | null>(null)
+    const [realProgress, setRealProgress] = useState(0)
 
     // Study Timer
     const { timeSpent, start: startTimer, pause: pauseTimer } = useStudyTimer(false)
@@ -111,6 +112,7 @@ export default function ReadingPage() {
         try {
             setStep('generating')
             setError(null)
+            setRealProgress(0) // Reset progress
             console.log('Starting content generation for words:', words.map(w => w.spelling))
 
             // Check Settings
@@ -119,13 +121,27 @@ export default function ReadingPage() {
 
             let data: GeneratedContent
             if (settings && settings.apiKey) {
-                // Use Real API
+                // Use Real API with progress callback
                 console.log('Calling Real LLM Service...')
-                data = await llmService.generateArticle(words, settings)
+                data = await llmService.generateArticle(
+                    words,
+                    settings,
+                    (progress) => {
+                        console.log('📊 Real API Download progress:', progress + '%')
+                        setRealProgress(progress)
+                    }
+                )
             } else {
-                // Fallback to Mock
+                // Fallback to Mock with progress callback
                 console.warn('No API Key found. Using Mock Service.')
-                data = await mockLLMService.generateArticle(words)
+                data = await mockLLMService.generateArticle(
+                    words,
+                    settings,
+                    (progress) => {
+                        console.log('🎭 Mock progress:', progress + '%')
+                        setRealProgress(progress)
+                    }
+                )
             }
 
             console.log('Generation successful:', data)
@@ -292,7 +308,7 @@ export default function ReadingPage() {
                             </Box>
                         </Paper>
                     ) : (
-                        <GenerationLoading words={targetWords} />
+                        <GenerationLoading words={targetWords} realProgress={realProgress} />
                     )}
                 </Box>
             </Container>
@@ -305,68 +321,117 @@ export default function ReadingPage() {
 
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 {step === 'reading' && articleData && (
-                    <Grid container spacing={3}>
-                        {/* Left Sidebar - Info Panel (Desktop only) */}
-                        <Grid item xs={12} lg={2} sx={{ display: { xs: 'none', lg: 'block' } }}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                {/* Reading Timer */}
-                                <ReadingTimer />
+                    <Fade in={true} timeout={800}>
+                        <Grid container spacing={3}>
+                            {/* Left Sidebar - Info Panel (Desktop only) */}
+                            <Grid item xs={12} lg={2} sx={{ display: { xs: 'none', lg: 'block' } }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    {/* Reading Timer */}
+                                    <ReadingTimer />
 
-                                {/* Info Panel */}
-                                <Paper
-                                    elevation={2}
-                                    sx={{
-                                        p: 2.5,
-                                        borderRadius: 3,
-                                        position: 'sticky',
-                                        top: 80
-                                    }}
-                                >
-                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                                        {t('reading:sidebar.difficulty')}
-                                    </Typography>
-                                    <Chip
-                                        label={t('reading:sidebar.intermediate')}
-                                        size="small"
-                                        color="primary"
-                                        sx={{ mb: 2 }}
-                                    />
+                                    {/* Info Panel */}
+                                    <Paper
+                                        elevation={2}
+                                        sx={{
+                                            p: 2.5,
+                                            borderRadius: 3,
+                                            position: 'sticky',
+                                            top: 80
+                                        }}
+                                    >
+                                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                            {t('reading:sidebar.difficulty')}
+                                        </Typography>
+                                        <Chip
+                                            label={t('reading:sidebar.intermediate')}
+                                            size="small"
+                                            color="primary"
+                                            sx={{ mb: 2 }}
+                                        />
 
-                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
-                                        {t('reading:sidebar.targetWords')}
-                                    </Typography>
-                                    <Typography variant="h6" color="primary.main" fontWeight="bold">
-                                        {targetWords.length}
-                                    </Typography>
-                                </Paper>
-                            </Box>
-                        </Grid>
+                                        <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
+                                            {t('reading:sidebar.targetWords')}
+                                        </Typography>
+                                        <Typography variant="h6" color="primary.main" fontWeight="bold">
+                                            {targetWords.length}
+                                        </Typography>
+                                    </Paper>
+                                </Box>
+                            </Grid>
 
-                        {/* Center - Article Content */}
-                        <Grid item xs={12} lg={8}>
-                            <ArticleContent
-                                title={articleData.title}
-                                content={articleData.content}
-                                onWordClick={handleWordClick}
-                                fontSize={fontSize}
-                            />
+                            {/* Center - Article Content */}
+                            <Grid item xs={12} lg={9}>
+                                <ArticleContent
+                                    title={articleData.title}
+                                    content={articleData.content}
+                                    onWordClick={handleWordClick}
+                                    fontSize={fontSize}
+                                />
 
-                            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
-                                {isReviewMode ? (
-                                    // Review mode: show two buttons
-                                    <>
+                                <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
+                                    {isReviewMode ? (
+                                        // Review mode: show two buttons
+                                        <>
+                                            <Button
+                                                variant="contained"
+                                                size="large"
+                                                onClick={() => {
+                                                    setViewMode('results')
+                                                    setStep('quiz')
+                                                }}
+                                                sx={{
+                                                    px: 4,
+                                                    py: 1.5,
+                                                    borderRadius: 8,
+                                                    fontSize: '1.1rem',
+                                                    background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
+                                                    boxShadow: '0 4px 20px rgba(74, 144, 226, 0.3)',
+                                                    transition: 'all 0.2s ease',
+                                                    '&:hover': {
+                                                        transform: 'scale(1.02)',
+                                                        boxShadow: '0 6px 24px rgba(74, 144, 226, 0.4)'
+                                                    }
+                                                }}
+                                            >
+                                                {t('reading:buttons.viewAnswers')}
+                                            </Button>
+                                            <Button
+                                                variant="outlined"
+                                                size="large"
+                                                onClick={() => {
+                                                    setViewMode('retake')
+                                                    setQuizAnswers(null) // Clear previous answers for retake
+                                                    setStep('quiz')
+                                                }}
+                                                sx={{
+                                                    px: 4,
+                                                    py: 1.5,
+                                                    borderRadius: 8,
+                                                    fontSize: '1.1rem',
+                                                    borderColor: '#4A90E2',
+                                                    color: '#4A90E2',
+                                                    transition: 'all 0.2s ease',
+                                                    '&:hover': {
+                                                        borderColor: '#7B68EE',
+                                                        backgroundColor: 'rgba(74, 144, 226, 0.05)',
+                                                        transform: 'scale(1.02)'
+                                                    }
+                                                }}
+                                            >
+                                                {t('reading:buttons.retakeQuiz')}
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        // Normal mode: single start button
                                         <Button
                                             variant="contained"
                                             size="large"
-                                            onClick={() => {
-                                                setViewMode('results')
-                                                setStep('quiz')
-                                            }}
+                                            onClick={() => setStep('quiz')}
                                             sx={{
-                                                px: 4,
+                                                px: 6,
                                                 py: 1.5,
                                                 borderRadius: 8,
-                                                fontSize: '1.1rem',
+                                                fontSize: '1.2rem',
                                                 background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
                                                 boxShadow: '0 4px 20px rgba(74, 144, 226, 0.3)',
                                                 transition: 'all 0.2s ease',
@@ -376,78 +441,31 @@ export default function ReadingPage() {
                                                 }
                                             }}
                                         >
-                                            {t('reading:buttons.viewAnswers')}
+                                            {t('reading:buttons.startQuiz')}
                                         </Button>
-                                        <Button
-                                            variant="outlined"
-                                            size="large"
-                                            onClick={() => {
-                                                setViewMode('retake')
-                                                setQuizAnswers(null) // Clear previous answers for retake
-                                                setStep('quiz')
-                                            }}
-                                            sx={{
-                                                px: 4,
-                                                py: 1.5,
-                                                borderRadius: 8,
-                                                fontSize: '1.1rem',
-                                                borderColor: '#4A90E2',
-                                                color: '#4A90E2',
-                                                transition: 'all 0.2s ease',
-                                                '&:hover': {
-                                                    borderColor: '#7B68EE',
-                                                    backgroundColor: 'rgba(74, 144, 226, 0.05)',
-                                                    transform: 'scale(1.02)'
-                                                }
-                                            }}
-                                        >
-                                            {t('reading:buttons.retakeQuiz')}
-                                        </Button>
-                                    </>
-                                ) : (
-                                    // Normal mode: single start button
-                                    <Button
-                                        variant="contained"
-                                        size="large"
-                                        onClick={() => setStep('quiz')}
-                                        sx={{
-                                            px: 6,
-                                            py: 1.5,
-                                            borderRadius: 8,
-                                            fontSize: '1.2rem',
-                                            background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
-                                            boxShadow: '0 4px 20px rgba(74, 144, 226, 0.3)',
-                                            transition: 'all 0.2s ease',
-                                            '&:hover': {
-                                                transform: 'scale(1.02)',
-                                                boxShadow: '0 6px 24px rgba(74, 144, 226, 0.4)'
-                                            }
-                                        }}
-                                    >
-                                        {t('reading:buttons.startQuiz')}
-                                    </Button>
-                                )}
-                            </Box>
-                        </Grid>
+                                    )}
+                                </Box>
+                            </Grid>
 
-                        {/* Right Toolbar */}
-                        <Grid item xs={12} lg={2} sx={{ display: { xs: 'none', lg: 'block' } }}>
-                            <ReadingToolbar
-                                onFontSizeChange={handleFontSizeChange}
-                                currentFontSize={fontSize}
-                            />
-                        </Grid>
-
-                        {/* Mobile Font Size Control */}
-                        <Grid item xs={12} sx={{ display: { xs: 'block', lg: 'none' } }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                            {/* Right Toolbar */}
+                            <Grid item xs={12} lg={1} sx={{ display: { xs: 'none', lg: 'block' } }}>
                                 <ReadingToolbar
                                     onFontSizeChange={handleFontSizeChange}
                                     currentFontSize={fontSize}
                                 />
-                            </Box>
+                            </Grid>
+
+                            {/* Mobile Font Size Control */}
+                            <Grid item xs={12} sx={{ display: { xs: 'block', lg: 'none' } }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                                    <ReadingToolbar
+                                        onFontSizeChange={handleFontSizeChange}
+                                        currentFontSize={fontSize}
+                                    />
+                                </Box>
+                            </Grid>
                         </Grid>
-                    </Grid>
+                    </Fade>
                 )}
 
                 {step === 'quiz' && articleData && (

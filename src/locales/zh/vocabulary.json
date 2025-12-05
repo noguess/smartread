@@ -22,6 +22,7 @@
         "dictionaryDefinition": "词典释义",
         "checkDictionary": "查词典",
         "noDictionaryData": "未找到词典数据",
-        "recommended": "推荐"
+        "recommended": "推荐",
+        "speak": "朗读"
     }
 }

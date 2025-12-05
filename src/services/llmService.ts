@@ -110,7 +110,11 @@ DIFFICULTY-SPECIFIC ARTICLE REQUIREMENTS:
 `
 
 export const llmService = {
-   async generateArticle(words: Word[], settings: Setting): Promise<GeneratedContent> {
+   async generateArticle(
+      words: Word[],
+      settings: Setting,
+      onProgress?: (progress: number) => void
+   ): Promise<GeneratedContent> {
       const apiKey = settings.apiKey
       const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
 
@@ -158,9 +162,16 @@ IMPORTANT REQUIREMENTS:
 
       try {
          console.log('Starting LLM generation...', { baseUrl, difficultyLevel })
+         console.time('⏱️ Total Generation Time')
+
+         const startTime = performance.now()
+         const timings: Record<string, number> = {}
 
          const controller = new AbortController()
          const timeoutId = setTimeout(() => controller.abort(), 60000) // 60s timeout
+
+         console.log('📤 Sending request to API...')
+         const requestStartTime = performance.now()
 
          const response = await fetch(`${baseUrl}/chat/completions`, {
             method: 'POST',
@@ -169,16 +180,20 @@ IMPORTANT REQUIREMENTS:
                'Authorization': `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-               model: 'deepseek-chat', // Or 'deepseek-coder', or user configurable
+               model: 'deepseek-chat',
                messages: [
                   { role: 'system', content: SYSTEM_PROMPT },
                   { role: 'user', content: userPrompt },
                ],
                temperature: 0.7,
-               response_format: { type: 'json_object' }, // If supported, otherwise rely on prompt
+               response_format: { type: 'json_object' },
             }),
             signal: controller.signal
          })
+
+         const responseReceivedTime = performance.now()
+         timings['Request → Response Headers'] = responseReceivedTime - requestStartTime
+         console.log(`✅ Response headers received in ${timings['Request → Response Headers'].toFixed(0)}ms`)
 
          clearTimeout(timeoutId)
 
@@ -188,7 +203,81 @@ IMPORTANT REQUIREMENTS:
             throw new Error(`API Error: ${response.status} ${errorData.error?.message || response.statusText}`)
          }
 
-         const data = await response.json()
+         // Read response with progress tracking
+         console.log('📥 Downloading response body...')
+         const downloadStartTime = performance.now()
+
+         const reader = response.body?.getReader()
+         if (!reader) {
+            throw new Error('Response body is not readable')
+         }
+
+         const contentLength = Number(response.headers.get('Content-Length')) || 50000 // Estimate if not provided
+         console.log(`📊 Expected content length: ${contentLength} bytes`)
+
+         let receivedLength = 0
+         const chunks: Uint8Array[] = []
+         let lastProgressLog = 0
+
+         while (true) {
+            const { done, value } = await reader.read()
+
+            if (done) break
+
+            chunks.push(value)
+            receivedLength += value.length
+
+            // Calculate and report progress (0-99%, saving 100% for parsing)
+            const downloadProgress = Math.min((receivedLength / contentLength) * 99, 99)
+            onProgress?.(downloadProgress)
+
+            // Log progress every 10%
+            if (Math.floor(downloadProgress / 10) > lastProgressLog) {
+               lastProgressLog = Math.floor(downloadProgress / 10)
+               const elapsed = performance.now() - downloadStartTime
+               console.log(`  📦 Downloaded ${Math.round(downloadProgress)}% (${receivedLength} bytes) in ${elapsed.toFixed(0)}ms`)
+            }
+         }
+
+         const downloadEndTime = performance.now()
+         timings['Download Body'] = downloadEndTime - downloadStartTime
+         console.log(`✅ Download completed: ${receivedLength} bytes in ${timings['Download Body'].toFixed(0)}ms`)
+         console.log(`   Average speed: ${(receivedLength / 1024 / (timings['Download Body'] / 1000)).toFixed(2)} KB/s`)
+
+         // Combine chunks
+         console.log('🔧 Combining chunks...')
+         const combineStartTime = performance.now()
+
+         const chunksAll = new Uint8Array(receivedLength)
+         let position = 0
+         for (const chunk of chunks) {
+            chunksAll.set(chunk, position)
+            position += chunk.length
+         }
+
+         const combineEndTime = performance.now()
+         timings['Combine Chunks'] = combineEndTime - combineStartTime
+         console.log(`✅ Chunks combined in ${timings['Combine Chunks'].toFixed(0)}ms`)
+
+         // Decode and parse
+         console.log('🔤 Decoding text...')
+         const decodeStartTime = performance.now()
+
+         const responseText = new TextDecoder('utf-8').decode(chunksAll)
+
+         const decodeEndTime = performance.now()
+         timings['Decode Text'] = decodeEndTime - decodeStartTime
+         console.log(`✅ Text decoded in ${timings['Decode Text'].toFixed(0)}ms`)
+
+         console.log('📋 Parsing outer JSON...')
+         const parseOuterStartTime = performance.now()
+
+         const data = JSON.parse(responseText)
+
+         const parseOuterEndTime = performance.now()
+         timings['Parse Outer JSON'] = parseOuterEndTime - parseOuterStartTime
+         console.log(`✅ Outer JSON parsed in ${timings['Parse Outer JSON'].toFixed(0)}ms`)
+
          const contentStr = data.choices[0]?.message?.content
 
          if (!contentStr) {
@@ -196,20 +285,48 @@ IMPORTANT REQUIREMENTS:
          }
 
          // Parse JSON content
+         console.log('📄 Parsing content JSON...')
+         const parseContentStartTime = performance.now()
+
          try {
             const parsed: GeneratedContent = JSON.parse(contentStr)
+
+            const parseContentEndTime = performance.now()
+            timings['Parse Content JSON'] = parseContentEndTime - parseContentStartTime
+            console.log(`✅ Content JSON parsed in ${timings['Parse Content JSON'].toFixed(0)}ms`)
+
             // Validate structure briefly
             if (!parsed.title || !parsed.content || !Array.isArray(parsed.readingQuestions) || !Array.isArray(parsed.vocabularyQuestions)) {
                throw new Error('Invalid JSON structure: Missing required fields')
             }
+
+            // Report 100% completion
+            onProgress?.(100)
+
+            const totalTime = performance.now() - startTime
+            timings['TOTAL'] = totalTime
+
+            // Summary
+            console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+            console.log('📊 Performance Summary:')
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+            Object.entries(timings).forEach(([stage, time]) => {
+               const percentage = stage === 'TOTAL' ? 100 : (time / totalTime * 100)
+               console.log(`  ${stage.padEnd(25)}: ${time.toFixed(0).padStart(6)}ms (${percentage.toFixed(1)}%)`)
+            })
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n')
+
+            console.timeEnd('⏱️ Total Generation Time')
+
             return parsed
          } catch (parseError) {
-            console.error('JSON Parse Error:', parseError, contentStr)
+            console.error('JSON Parse Error:', parseError, contentStr.substring(0, 500))
             throw new Error('Failed to parse generated content. The AI did not return valid JSON.')
          }
 
       } catch (error: any) {
          console.error('LLM Service Error:', error)
+         console.timeEnd('⏱️ Total Generation Time')
          if (error.name === 'AbortError') {
             throw new Error('Request timed out after 60 seconds')
          }
