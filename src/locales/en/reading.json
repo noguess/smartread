@@ -62,5 +62,6 @@
     },
     "hint": {
         "clickWord": "💡 Hint: Click on blue words to see definitions and video explanations"
-    }
+    },
+    "defaultReviewTitle": "Review: "
 }

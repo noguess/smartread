@@ -23,7 +23,10 @@
         "title": "最近活动",
         "noActivity": "还没有学习记录，开始第一篇文章吧！",
         "points": "分",
-        "article": "文章"
+        "article": "文章",
+        "createdOn": "创建于",
+        "quizOn": "测试于",
+        "unknownArticle": "未知文章"
     },
     "manual": {
         "title": "自定义学习内容",

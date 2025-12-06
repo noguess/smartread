@@ -82,12 +82,32 @@ export class SmartReaderDB extends Dexie {
             settings: '++id',
         })
 
-        // Version 2: Add articles and quizRecords
-        this.version(2).stores({
-            words: '++id, spelling, status, nextReviewAt',
-            history: '++id, date', // Keep for migration
+        // Version 3: Remove duplicates first to allow unique index creation
+        this.version(3).upgrade(async tx => {
+            const articles = await tx.table('articles').toArray()
+            const seen = new Set<string>()
+            const toDelete: number[] = []
+
+            for (const a of articles) {
+                if (seen.has(a.uuid)) {
+                    toDelete.push(a.id!)
+                } else {
+                    seen.add(a.uuid)
+                }
+            }
+
+            if (toDelete.length > 0) {
+                console.warn(`Cleaning up ${toDelete.length} duplicate articles during migration`)
+                await tx.table('articles').bulkDelete(toDelete)
+            }
+        })
+
+        // Version 4: Add unique index to articles.uuid (now safe)
+        this.version(4).stores({
+            words: '++id, spelling, status, nextReviewAt', // Re-declare to be safe
+            history: '++id, date',
             settings: '++id',
-            articles: '++id, uuid, createdAt',
+            articles: '++id, &uuid, createdAt', // & means unique index
             quizRecords: '++id, articleId, date'
         })
     }

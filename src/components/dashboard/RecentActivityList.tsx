@@ -101,7 +101,7 @@ export default function RecentActivityList({ activities }: RecentActivityListPro
                                             sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600 }}
                                         />
                                         <Typography variant="caption" color="text.secondary">
-                                            {item.type === 'article' ? 'Created on' : 'Quiz on'} {new Date(item.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}
+                                            {item.type === 'article' ? t('home:recentActivity.createdOn') : t('home:recentActivity.quizOn')} {new Date(item.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}
                                         </Typography>
                                     </Box>
                                 }

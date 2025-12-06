@@ -19,7 +19,6 @@ export default function HomePage() {
     const navigate = useNavigate()
     const location = useLocation()
     const [allWords, setAllWords] = useState<Word[]>([])
-    const [history, setHistory] = useState<History[]>([])
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMsg, setSnackbarMsg] = useState('')
     const [statusCounts, setStatusCounts] = useState<Record<WordStatus, number>>({
@@ -61,7 +60,6 @@ export default function HomePage() {
         const quizzes = (await quizRecordService.getAll()) || []
 
         setAllWords(words)
-        setHistory(hist)
 
         // Process Activities
         const articleMap = new Map(articles.map(a => [a.uuid, a]))
@@ -79,7 +77,7 @@ export default function HomePage() {
             return {
                 id: q.id!,
                 type: 'quiz',
-                title: article ? article.title : 'Unknown Article',
+                title: article ? article.title : t('home:recentActivity.unknownArticle'),
                 date: q.date,
                 score: q.score
             }
@@ -199,12 +197,17 @@ export default function HomePage() {
                 return
             }
 
+            // Generate UUID here to ensure idempotency (prevent double generation)
+            const { v4: uuidv4 } = await import('uuid')
+            const articleUuid = uuidv4()
+
             // Navigate immediately to reading page with generation parameters
             navigate('/reading', {
                 state: {
                     mode: 'generate',
                     words: words,
-                    settings: settings
+                    settings: settings,
+                    uuid: articleUuid
                 }
             })
         } catch (error) {

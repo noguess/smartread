@@ -62,5 +62,6 @@
     },
     "hint": {
         "clickWord": "💡 提示：点击蓝色单词可查看释义和视频讲解"
-    }
+    },
+    "defaultReviewTitle": "复习: "
 }

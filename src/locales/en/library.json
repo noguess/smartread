@@ -7,10 +7,13 @@
         "button": "Go to Home"
     },
     "card": {
-        "read": "Read"
-    },
-    "delete": {
-        "title": "Delete Article",
-        "message": "Are you sure you want to delete this article? This action cannot be undone."
+        "read": "Read",
+        "best": "Best:",
+        "quiz": "quiz",
+        "quizzes": "quizzes",
+        "delete": {
+            "title": "Delete Article",
+            "message": "Are you sure you want to delete this article? This action cannot be undone."
+        }
     }
 }

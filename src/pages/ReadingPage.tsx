@@ -25,6 +25,9 @@ import { useStudyTimer } from '../hooks/useStudyTimer'
 type Step = 'generating' | 'reading' | 'quiz' | 'feedback'
 type FontSize = 'small' | 'medium' | 'large'
 
+// Track active generations to prevent duplicates in StrictMode
+const generatingUuids = new Set<string>()
+
 export default function ReadingPage() {
     const { t } = useTranslation(['reading'])
     const { id } = useParams<{ id: string }>()
@@ -55,7 +58,6 @@ export default function ReadingPage() {
     // New state for V2.0 support
     const [currentArticle, setCurrentArticle] = useState<Article | null>(null)
     const [quizHistory, setQuizHistory] = useState<QuizRecord[]>([])
-    const [isLoadingArticle, setIsLoadingArticle] = useState(false)
 
     // Study Timer
     const { timeSpent, start: startTimer, pause: pauseTimer } = useStudyTimer(false)
@@ -76,7 +78,53 @@ export default function ReadingPage() {
 
         // Priority 1: Generation Mode (V2.0 new flow - generate on this page)
         if (state?.mode === 'generate' && state?.words && state?.settings) {
-            console.log('✅ Detected generation mode - will generate on this page')
+            const uuid = state.uuid
+            console.log('✅ Detected generation mode. UUID:', uuid)
+
+            // Prevent duplicate generation for certain UUID (StrictMode fix)
+            if (uuid && generatingUuids.has(uuid)) {
+                console.log('🚫 Generation already in progress for this UUID, skipping...')
+                return
+            }
+
+            if (uuid) {
+                // LOCK IMMEDIATELY to prevent StrictMode double-fire
+                generatingUuids.add(uuid)
+
+                // Check if already exists in DB (async check cannot block sync effect, 
+                // but checking generatingUuids handles the immediate double-fire)
+                articleService.getByUuid(uuid).then(existing => {
+                    if (existing) {
+                        console.log('✅ Article already exists, loading instead of generating:', existing)
+                        setCurrentArticle(existing)
+                        setArticleData({
+                            title: existing.title,
+                            content: existing.content,
+                            readingQuestions: [],
+                            vocabularyQuestions: []
+                        })
+
+                        // Load target words
+                        Promise.all(
+                            existing.targetWords.map(spelling => wordService.getWordBySpelling(spelling))
+                        ).then(words => {
+                            setTargetWords(words.filter((w): w is Word => !!w))
+                        })
+
+                        // Remove lock since we are done "generating" (loading existing)
+                        generatingUuids.delete(uuid)
+                        setStep('reading')
+                    } else {
+                        // Proceed with generation if not found
+                        // Note: We already added the lock above, so we pass true to skip re-adding it? 
+                        // Or just rely on set logic.
+                        setTargetWords(state.words)
+                        generateAndSaveNewArticle(state.words, state.settings, uuid)
+                    }
+                })
+                return
+            }
+
             setTargetWords(state.words)
             generateAndSaveNewArticle(state.words, state.settings)
         }
@@ -107,7 +155,6 @@ export default function ReadingPage() {
 
     const loadArticleById = async (articleId: number) => {
         try {
-            setIsLoadingArticle(true)
             setError(null)
             setStep('generating') // Show loading state
             console.log('Loading article by ID:', articleId)
@@ -144,8 +191,6 @@ export default function ReadingPage() {
         } catch (error) {
             console.error('Failed to load article', error)
             setError(error instanceof Error ? error.message : 'Failed to load article')
-        } finally {
-            setIsLoadingArticle(false)
         }
     }
 
@@ -153,7 +198,7 @@ export default function ReadingPage() {
         try {
             // Reconstruct article data
             const data: GeneratedContent = {
-                title: record.title || ('Review: ' + new Date(record.date).toLocaleDateString()),
+                title: record.title || (t('reading:defaultReviewTitle') + new Date(record.date).toLocaleDateString()),
                 content: record.articleContent,
                 readingQuestions: record.questionsJson?.reading || [],
                 vocabularyQuestions: record.questionsJson?.vocabulary || [],
@@ -179,8 +224,15 @@ export default function ReadingPage() {
         }
     }
 
-    const generateAndSaveNewArticle = async (words: Word[], settings: any) => {
+    const generateAndSaveNewArticle = async (words: Word[], settings: any, preGeneratedUuid?: string) => {
+        const uuid = preGeneratedUuid
+
         try {
+            if (uuid) {
+                // Only add if not already added (though Set handles this, strict logic helps clarity)
+                generatingUuids.add(uuid)
+            }
+
             setStep('generating')
             setError(null)
             setRealProgress(0)
@@ -201,8 +253,10 @@ export default function ReadingPage() {
 
             // Save to database
             const { v4: uuidv4 } = await import('uuid')
+            const finalUuid = uuid || uuidv4() // Use passed UUID or generate new one
+
             const article = {
-                uuid: uuidv4(),
+                uuid: finalUuid,
                 title: articleData.title,
                 content: articleData.content,
                 targetWords: articleData.targetWords,
@@ -210,8 +264,21 @@ export default function ReadingPage() {
                 source: 'generated' as const
             }
 
-            const articleId = await articleService.add(article)
-            console.log('Article saved to database with ID:', articleId)
+            let articleId: number
+            try {
+                articleId = await articleService.add(article)
+                console.log('Article saved to database with ID:', articleId)
+            } catch (error) {
+                // Check if it's a constraint error (Dexie error name is 'ConstraintError')
+                if ((error as any).name === 'ConstraintError') {
+                    console.warn('Duplicate article detected (DB constraint). Loading existing one.')
+                    const existing = await articleService.getByUuid(finalUuid)
+                    if (!existing || !existing.id) throw new Error('Could not recover existing article')
+                    articleId = existing.id
+                } else {
+                    throw error
+                }
+            }
 
             // Set current article and article data for display
             setCurrentArticle({ ...article, id: articleId, createdAt: Date.now() })
@@ -229,6 +296,10 @@ export default function ReadingPage() {
         } catch (error) {
             console.error('Failed to generate and save article:', error)
             setError(error instanceof Error ? error.message : 'Failed to generate article')
+        } finally {
+            if (uuid) {
+                generatingUuids.delete(uuid)
+            }
         }
     }
 
@@ -333,7 +404,7 @@ export default function ReadingPage() {
             setStep('quiz')
         } catch (error) {
             console.error('Failed to generate quiz:', error)
-            setError(error instanceof Error ? error.message : 'Failed to generate quiz')
+            setError(error instanceof Error ? error.message : t('reading:error.generationFailed', { error: 'Quiz generation failed' }))
             setStep('reading')
         }
     }

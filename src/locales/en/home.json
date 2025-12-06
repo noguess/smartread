@@ -23,7 +23,10 @@
         "title": "Recent Activity",
         "noActivity": "No learning records yet. Start your first article!",
         "points": "pts",
-        "article": "Article"
+        "article": "Article",
+        "createdOn": "Created on",
+        "quizOn": "Quiz on",
+        "unknownArticle": "Unknown Article"
     },
     "manual": {
         "title": "Customize Your Reading",

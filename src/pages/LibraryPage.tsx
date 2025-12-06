@@ -240,14 +240,14 @@ export default function LibraryPage() {
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                                 <QuizIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                                                 <Typography variant="body2" color="text.secondary">
-                                                    {article.quizCount} {article.quizCount === 1 ? 'quiz' : 'quizzes'}
+                                                    {article.quizCount} {article.quizCount === 1 ? t('library:card.quiz', 'quiz') : t('library:card.quizzes', 'quizzes')}
                                                 </Typography>
                                             </Box>
                                             {article.quizCount > 0 && (
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                                     <EmojiEventsIcon sx={{ fontSize: 18, color: 'warning.main' }} />
                                                     <Typography variant="body2" color="text.secondary">
-                                                        Best: <strong>{article.highestScore}%</strong>
+                                                        {t('library:card.best', 'Best:')} <strong>{article.highestScore}%</strong>
                                                     </Typography>
                                                 </Box>
                                             )}
