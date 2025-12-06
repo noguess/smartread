@@ -19,7 +19,9 @@
     "sidebar": {
         "difficulty": "难度",
         "intermediate": "中等",
-        "targetWords": "目标单词"
+        "targetWords": "目标单词",
+        "quizHistory": "测验历史",
+        "moreRecords": "更多记录"
     },
     "toolbar": {
         "fontSizeLabel": "调整字号"

@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { Container, Box, Typography, Button, Grid, Paper, Chip, Fade } from '@mui/material'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Container, Box, Typography, Button, Grid, Paper, Chip, Fade, Divider } from '@mui/material'
 
-import { Word, History } from '../services/db'
+import { Word, History, Article, QuizRecord } from '../services/db'
 import { mockLLMService, GeneratedContent } from '../services/mockLLMService'
 import { llmService } from '../services/llmService'
 import { settingsService } from '../services/settingsService'
 import { SRSAlgorithm } from '../utils/SRSAlgorithm'
 import { wordService } from '../services/wordService'
 import { historyService } from '../services/historyService'
+import { articleService } from '../services/articleService'
+import { quizRecordService } from '../services/quizRecordService'
 import ArticleContent from '../components/reading/ArticleContent'
 import QuizView from '../components/reading/QuizView'
 import ScoreFeedback from '../components/reading/ScoreFeedback'
@@ -25,6 +27,7 @@ type FontSize = 'small' | 'medium' | 'large'
 
 export default function ReadingPage() {
     const { t } = useTranslation(['reading'])
+    const { id } = useParams<{ id: string }>()
     const location = useLocation()
     const navigate = useNavigate()
     const [step, setStep] = useState<Step>('generating')
@@ -49,6 +52,11 @@ export default function ReadingPage() {
     const [error, setError] = useState<string | null>(null)
     const [realProgress, setRealProgress] = useState(0)
 
+    // New state for V2.0 support
+    const [currentArticle, setCurrentArticle] = useState<Article | null>(null)
+    const [quizHistory, setQuizHistory] = useState<QuizRecord[]>([])
+    const [isLoadingArticle, setIsLoadingArticle] = useState(false)
+
     // Study Timer
     const { timeSpent, start: startTimer, pause: pauseTimer } = useStudyTimer(false)
 
@@ -62,21 +70,84 @@ export default function ReadingPage() {
 
     useEffect(() => {
         const state = location.state as any
+        console.log('🔍 ReadingPage useEffect triggered')
+        console.log('📍 URL id:', id)
+        console.log('📦 Navigation state:', state)
 
-        if (state?.mode === 'review' && state?.historyRecord) {
-            // Review Mode
+        // Priority 1: Generation Mode (V2.0 new flow - generate on this page)
+        if (state?.mode === 'generate' && state?.words && state?.settings) {
+            console.log('✅ Detected generation mode - will generate on this page')
+            setTargetWords(state.words)
+            generateAndSaveNewArticle(state.words, state.settings)
+        }
+        // Priority 2: Load from URL parameter (V2.0 behavior - existing article)
+        else if (id) {
+            console.log('✅ Detected article ID - will load existing article:', id)
+            loadArticleById(Number(id))
+        }
+        // Priority 3: Review Mode (legacy)
+        else if (state?.mode === 'review' && state?.historyRecord) {
+            console.log('✅ Detected review mode')
             const record = state.historyRecord as History
             setIsReviewMode(true)
             loadReviewContent(record)
-        } else if (state?.words && state.words.length > 0) {
-            // Generation Mode
+        }
+        // Priority 4: Generation Mode (legacy - direct word passing)
+        else if (state?.words && state.words.length > 0) {
+            console.log('✅ Detected legacy generation mode')
             setTargetWords(state.words)
             generateContent(state.words)
-        } else {
-            // Fallback
+        }
+        // Fallback: Navigate to home ONLY if we're not already in a loading state
+        else if (step !== 'generating') {
+            console.log('⚠️ No valid state detected - navigating to home')
             navigate('/')
         }
-    }, [location.state, navigate])
+    }, [id, location.state]) // Removed 'navigate' and 'step' from dependencies
+
+    const loadArticleById = async (articleId: number) => {
+        try {
+            setIsLoadingArticle(true)
+            setError(null)
+            setStep('generating') // Show loading state
+            console.log('Loading article by ID:', articleId)
+
+            // Fetch article
+            const article = await articleService.getById(articleId)
+            if (!article) {
+                throw new Error(`Article ${articleId} not found`)
+            }
+
+            console.log('Article loaded:', article)
+            setCurrentArticle(article)
+
+            // Set article data for display (no quiz questions yet)
+            setArticleData({
+                title: article.title,
+                content: article.content,
+                readingQuestions: [],
+                vocabularyQuestions: []
+            })
+
+            // Load target words
+            const words = await Promise.all(
+                article.targetWords.map(spelling => wordService.getWordBySpelling(spelling))
+            )
+            setTargetWords(words.filter((w): w is Word => !!w))
+
+            // Load quiz history for this article
+            const history = await quizRecordService.getRecordsByArticleUuid(article.uuid)
+            setQuizHistory(history)
+            console.log('Quiz history loaded:', history.length, 'records')
+
+            setStep('reading')
+        } catch (error) {
+            console.error('Failed to load article', error)
+            setError(error instanceof Error ? error.message : 'Failed to load article')
+        } finally {
+            setIsLoadingArticle(false)
+        }
+    }
 
     const loadReviewContent = async (record: History) => {
         try {
@@ -107,6 +178,60 @@ export default function ReadingPage() {
             navigate('/history')
         }
     }
+
+    const generateAndSaveNewArticle = async (words: Word[], settings: any) => {
+        try {
+            setStep('generating')
+            setError(null)
+            setRealProgress(0)
+            console.log('Starting V2.0 article generation for words:', words.map(w => w.spelling))
+
+            // Call generateArticleOnly (no quiz generation)
+            const articleData = settings.apiKey
+                ? await llmService.generateArticleOnly(words, settings, (progress) => {
+                    console.log('📊 Real API Download progress:', progress + '%')
+                    setRealProgress(progress)
+                })
+                : await mockLLMService.generateArticleOnly(words, settings, (progress) => {
+                    console.log('🎭 Mock progress:', progress + '%')
+                    setRealProgress(progress)
+                })
+
+            console.log('Article generation successful:', articleData)
+
+            // Save to database
+            const { v4: uuidv4 } = await import('uuid')
+            const article = {
+                uuid: uuidv4(),
+                title: articleData.title,
+                content: articleData.content,
+                targetWords: articleData.targetWords,
+                difficultyLevel: settings.difficultyLevel || 'L2',
+                source: 'generated' as const
+            }
+
+            const articleId = await articleService.add(article)
+            console.log('Article saved to database with ID:', articleId)
+
+            // Set current article and article data for display
+            setCurrentArticle({ ...article, id: articleId, createdAt: Date.now() })
+            setArticleData({
+                title: articleData.title,
+                content: articleData.content,
+                readingQuestions: [],
+                vocabularyQuestions: []
+            })
+
+            // Update URL without navigation (optional - keeps clean URL)
+            window.history.replaceState({}, '', `/read/${articleId}`)
+
+            setStep('reading')
+        } catch (error) {
+            console.error('Failed to generate and save article:', error)
+            setError(error instanceof Error ? error.message : 'Failed to generate article')
+        }
+    }
+
 
     const generateContent = async (words: Word[]) => {
         try {
@@ -355,6 +480,42 @@ export default function ReadingPage() {
                                         <Typography variant="h6" color="primary.main" fontWeight="bold">
                                             {targetWords.length}
                                         </Typography>
+
+                                        {/* Quiz History Section */}
+                                        {quizHistory.length > 0 && (
+                                            <>
+                                                <Divider sx={{ my: 2 }} />
+                                                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                                    {t('reading:sidebar.quizHistory', 'Quiz History')}
+                                                </Typography>
+                                                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                    {quizHistory.slice(0, 3).map((record) => (
+                                                        <Paper
+                                                            key={record.id}
+                                                            variant="outlined"
+                                                            sx={{
+                                                                p: 1.5,
+                                                                borderRadius: 2,
+                                                                bgcolor: 'background.default',
+                                                                cursor: 'default'
+                                                            }}
+                                                        >
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                {new Date(record.date).toLocaleDateString()}
+                                                            </Typography>
+                                                            <Typography variant="body2" fontWeight="bold" color="primary">
+                                                                {record.score}%
+                                                            </Typography>
+                                                        </Paper>
+                                                    ))}
+                                                    {quizHistory.length > 3 && (
+                                                        <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', mt: 0.5 }}>
+                                                            +{quizHistory.length - 3} {t('reading:sidebar.moreRecords', 'more')}
+                                                        </Typography>
+                                                    )}
+                                                </Box>
+                                            </>
+                                        )}
                                     </Paper>
                                 </Box>
                             </Grid>

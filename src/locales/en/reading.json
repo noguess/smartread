@@ -19,7 +19,9 @@
     "sidebar": {
         "difficulty": "Difficulty",
         "intermediate": "Intermediate",
-        "targetWords": "Target Words"
+        "targetWords": "Target Words",
+        "quizHistory": "Quiz History",
+        "moreRecords": "more"
     },
     "toolbar": {
         "fontSizeLabel": "Adjust Font Size"

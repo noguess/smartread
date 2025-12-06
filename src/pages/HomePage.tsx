@@ -3,9 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Box, Grid, Typography, Container, Snackbar, Alert } from '@mui/material'
 import { wordService } from '../services/wordService'
 import { historyService } from '../services/historyService'
-import { articleService } from '../services/articleService'
-import { llmService } from '../services/llmService'
-import { mockLLMService } from '../services/mockLLMService'
 import { settingsService } from '../services/settingsService'
 import { Word, History, WordStatus } from '../services/db'
 import { WordSelector } from '../utils/WordSelector'
@@ -14,7 +11,6 @@ import DashboardStats from '../components/dashboard/DashboardStats'
 import RecentActivityList from '../components/dashboard/RecentActivityList'
 import ManualGenerationDialog from '../components/dashboard/ManualGenerationDialog'
 import { useTranslation } from 'react-i18next'
-import { v4 as uuidv4 } from 'uuid'
 
 export default function HomePage() {
     const { t } = useTranslation(['home'])
@@ -167,26 +163,17 @@ export default function HomePage() {
                 return
             }
 
-            // Call generateArticleOnly (no quiz generation)
-            const articleData = settings.apiKey
-                ? await llmService.generateArticleOnly(words, settings)
-                : await mockLLMService.generateArticleOnly(words, settings)
-
-            // Save to database
-            const articleId = await articleService.add({
-                uuid: uuidv4(),
-                title: articleData.title,
-                content: articleData.content,
-                targetWords: articleData.targetWords,
-                difficultyLevel: settings.difficultyLevel || 'L2',
-                source: 'generated'
+            // Navigate immediately to reading page with generation parameters
+            navigate('/reading', {
+                state: {
+                    mode: 'generate',
+                    words: words,
+                    settings: settings
+                }
             })
-
-            // Navigate to reading page with article ID
-            navigate(`/read/${articleId}`)
         } catch (error) {
-            console.error('Failed to generate article:', error)
-            setSnackbarMsg('Failed to generate article. Please try again.')
+            console.error('Failed to navigate to reading page:', error)
+            setSnackbarMsg('Failed to navigate. Please try again.')
             setSnackbarOpen(true)
         }
     }
