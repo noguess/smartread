@@ -205,6 +205,7 @@ export default function VocabularyQuestionRenderer({
                 )
 
             case 'audio':
+            case 'audioSelection': // Support L1 Audio Selection
             case 'audioDictation': // Support LLM variant
                 // 音频题型 - 音频播放器 + 选择或输入
                 const hasOptions = question.options && question.options.length > 0

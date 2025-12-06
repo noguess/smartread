@@ -7,13 +7,16 @@ import ConfettiEffect from '../common/ConfettiEffect'
 interface ScoreFeedbackProps {
     score: number
     totalQuestions: number
+    customPercentage?: number // Optional weighted percentage
     onComplete: (difficulty: number) => void
 }
 
-export default function ScoreFeedback({ score, totalQuestions, onComplete }: ScoreFeedbackProps) {
+export default function ScoreFeedback({ score, totalQuestions, customPercentage, onComplete }: ScoreFeedbackProps) {
     const { t } = useTranslation(['reading'])
     const [difficulty, setDifficulty] = useState<number | null>(null)
-    const percentage = Math.round((score / totalQuestions) * 100)
+    const percentage = customPercentage !== undefined
+        ? customPercentage
+        : Math.round((score / totalQuestions) * 100)
 
     return (
         <Paper elevation={0} sx={{ p: 6, borderRadius: 4, textAlign: 'center', maxWidth: 600, mx: 'auto' }}>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Container, Box, Typography, Button, Grid, Paper, Chip, Fade, Divider } from '@mui/material'
+import { Container, Box, Typography, Button, Grid, Paper, Chip, Fade, Divider, Snackbar, Alert } from '@mui/material'
 
 import { Word, History, Article, QuizRecord } from '../services/db'
 import { mockLLMService, GeneratedContent } from '../services/mockLLMService'
@@ -11,6 +11,7 @@ import { wordService } from '../services/wordService'
 import { historyService } from '../services/historyService'
 import { articleService } from '../services/articleService'
 import { quizRecordService } from '../services/quizRecordService'
+import { calculateNewDifficulty, DifficultyLevel } from '../utils/difficultyLogic'
 import ArticleContent from '../components/reading/ArticleContent'
 import QuizView from '../components/reading/QuizView'
 import ScoreFeedback from '../components/reading/ScoreFeedback'
@@ -58,6 +59,10 @@ export default function ReadingPage() {
     // New state for V2.0 support
     const [currentArticle, setCurrentArticle] = useState<Article | null>(null)
     const [quizHistory, setQuizHistory] = useState<QuizRecord[]>([])
+
+    // Snackbar Notification State
+    const [snackbarOpen, setSnackbarOpen] = useState(false)
+    const [snackbarMessage, setSnackbarMessage] = useState('')
 
     // Study Timer
     const { timeSpent, start: startTimer, pause: pauseTimer } = useStudyTimer(false)
@@ -520,8 +525,20 @@ export default function ReadingPage() {
     const handleFinish = async (difficulty: number) => {
         if (!articleData || !quizAnswers) return
 
-        const totalQuestions = articleData.readingQuestions.length + articleData.vocabularyQuestions.length
-        const scorePercentage = Math.round((score / totalQuestions) * 100)
+        const readingTotal = articleData.readingQuestions.length
+        const vocabTotal = articleData.vocabularyQuestions.length
+
+        // Calculate Weighted Score
+        // Reading: 40% weight
+        // Vocabulary: 60% weight
+        // Note: score holds total correct count, readingScore holds reading correct count
+        const vocabScore = score - readingScore
+        const readingWeight = readingTotal > 0 ? (readingScore / readingTotal) * 40 : 0
+        const vocabWeight = vocabTotal > 0 ? (vocabScore / vocabTotal) * 60 : 0
+        const weightedScore = Math.round(readingWeight + vocabWeight)
+
+        // Use weighted score for percentage
+        const scorePercentage = weightedScore
 
         // V2.0 Flow: Save to QuizRecord if we have a currentArticle
         if (currentArticle) {
@@ -535,7 +552,7 @@ export default function ReadingPage() {
                     vocabulary: articleData.vocabularyQuestions
                 },
                 userAnswers: quizAnswers,
-                score: scorePercentage,
+                score: scorePercentage, // Weighted score
                 difficultyFeedback: difficulty,
                 timeSpent: timeSpent,
                 wordResults: lastWordResults
@@ -543,6 +560,15 @@ export default function ReadingPage() {
 
             await quizRecordService.saveQuizRecord(quizRecord)
             console.log('Quiz record saved successfully')
+
+            // Auto-adjustment logic for V2
+            // We relaxed the downgrade condition to be more responsive (Feedback >= 4)
+            const adjustMsg = await checkAndAdjustDifficulty(readingScore, difficulty)
+            if (adjustMsg) {
+                console.log(adjustMsg)
+                setSnackbarMessage(adjustMsg)
+                setSnackbarOpen(true)
+            }
 
             // Refresh quiz history
             const updatedHistory = await quizRecordService.getRecordsByArticleUuid(currentArticle.uuid)
@@ -573,7 +599,7 @@ export default function ReadingPage() {
                     reading: articleData.readingQuestions,
                     vocabulary: articleData.vocabularyQuestions
                 },
-                userScore: scorePercentage,
+                userScore: scorePercentage, // Weighted Score
                 difficultyFeedback: difficulty,
                 timeSpent: timeSpent,
                 wordResults: lastWordResults,
@@ -582,30 +608,31 @@ export default function ReadingPage() {
 
             await historyService.saveArticleRecord(historyRecord)
 
-            // Auto-adjustment Logic
-            const settings = await settingsService.getSettings()
-            const currentLevel = settings?.difficultyLevel || 'L2'
-            let newLevel = currentLevel
-            let message = ''
-
-            // Upgrade Condition: Reading 4/4 correct AND Feedback <= 2 (Easy)
-            if (readingScore === 4 && difficulty <= 2) {
-                if (currentLevel === 'L1') newLevel = 'L2'
-                else if (currentLevel === 'L2') newLevel = 'L3'
-            }
-            // Downgrade Condition: Reading < 2 correct AND Feedback = 5 (Too Hard)
-            else if (readingScore < 2 && difficulty === 5) {
-                if (currentLevel === 'L3') newLevel = 'L2'
-                else if (currentLevel === 'L2') newLevel = 'L1'
-            }
-
-            if (newLevel !== currentLevel) {
-                await settingsService.saveSettings({ difficultyLevel: newLevel })
-                message = t('reading:difficultyChanged', `Difficulty adjusted to ${newLevel}`, { level: newLevel })
-            }
-
+            const message = await checkAndAdjustDifficulty(readingScore, difficulty)
             navigate('/', { state: { message } })
         }
+    }
+
+    const checkAndAdjustDifficulty = async (readingCorrectCount: number, feedbackDifficulty: number): Promise<string> => {
+        const settings = await settingsService.getSettings()
+        const currentLevel = settings?.difficultyLevel || 'L2'
+        // Use the pure function for logic
+        const newLevel = calculateNewDifficulty(
+            currentLevel as DifficultyLevel,
+            readingCorrectCount,
+            feedbackDifficulty
+        )
+        let message = ''
+
+        if (newLevel !== currentLevel) {
+            console.log(`🔄 Adjusting difficulty: ${currentLevel} -> ${newLevel}`)
+            await settingsService.saveSettings({ difficultyLevel: newLevel })
+            message = t('reading:difficultyChanged', `Difficulty adjusted to ${newLevel}`, { level: newLevel })
+        } else {
+            console.log('✅ Difficulty remains unchanged')
+        }
+
+        return message
     }
 
     const handleWordClick = (word: string) => {
@@ -852,6 +879,17 @@ export default function ReadingPage() {
                     <ScoreFeedback
                         score={score}
                         totalQuestions={articleData.readingQuestions.length + articleData.vocabularyQuestions.length}
+                        customPercentage={(() => {
+                            const rTotal = articleData.readingQuestions.length
+                            const vTotal = articleData.vocabularyQuestions.length
+                            // score is total correct, readingScore is reading correct
+                            const vScore = score - readingScore
+
+                            const rWeight = rTotal > 0 ? (readingScore / rTotal) * 40 : 0
+                            const vWeight = vTotal > 0 ? (vScore / vTotal) * 60 : 0
+
+                            return Math.round(rWeight + vWeight)
+                        })()}
                         onComplete={handleFinish}
                     />
                 )}
@@ -861,6 +899,22 @@ export default function ReadingPage() {
                     open={isWordModalOpen}
                     onClose={() => setIsWordModalOpen(false)}
                 />
+
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={6000}
+                    onClose={() => setSnackbarOpen(false)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Alert
+                        onClose={() => setSnackbarOpen(false)}
+                        severity="info"
+                        sx={{ width: '100%', boxShadow: 3 }}
+                        variant="filled"
+                    >
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
             </Container>
         </>
     )
