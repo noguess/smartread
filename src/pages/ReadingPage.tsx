@@ -283,6 +283,61 @@ export default function ReadingPage() {
         generateContent(targetWords)
     }
 
+    const handleStartQuiz = async () => {
+        if (!currentArticle || !articleData) {
+            console.error('Cannot start quiz: missing article data')
+            return
+        }
+
+        try {
+            setStep('generating')
+            setError(null)
+            setRealProgress(0)
+            console.log('Starting quiz generation for article:', currentArticle.title)
+
+            const settings = await settingsService.getSettings()
+            if (!settings) {
+                throw new Error('Settings not configured')
+            }
+
+            // Generate quiz for the current article
+            const quizData = settings.apiKey
+                ? await llmService.generateQuizForArticle(
+                    articleData.content,
+                    targetWords,
+                    settings,
+                    (progress) => {
+                        console.log('📊 Quiz generation progress:', progress + '%')
+                        setRealProgress(progress)
+                    }
+                )
+                : await mockLLMService.generateQuizForArticle(
+                    articleData.content,
+                    targetWords,
+                    settings,
+                    (progress) => {
+                        console.log('🎭 Mock quiz progress:', progress + '%')
+                        setRealProgress(progress)
+                    }
+                )
+
+            console.log('Quiz generation successful:', quizData)
+
+            // Update article data with new questions
+            setArticleData({
+                ...articleData,
+                readingQuestions: quizData.readingQuestions,
+                vocabularyQuestions: quizData.vocabularyQuestions
+            })
+
+            setStep('quiz')
+        } catch (error) {
+            console.error('Failed to generate quiz:', error)
+            setError(error instanceof Error ? error.message : 'Failed to generate quiz')
+            setStep('reading')
+        }
+    }
+
     const handleQuizSubmit = async (answers: { reading: Record<string, string>; vocabulary: Record<string, string | string[]> }) => {
         if (!articleData) return
 
@@ -325,10 +380,34 @@ export default function ReadingPage() {
         // Precise SRS Update Logic
         const wordResults: { [spelling: string]: boolean } = {}
 
+        console.log('🔄 Starting SRS updates...')
+        console.log('Target words available:', targetWords.length)
+        console.log('Vocabulary questions:', articleData.vocabularyQuestions.length)
+
         for (const q of articleData.vocabularyQuestions) {
-            // Find the target word object
-            const word = targetWords.find(w => w.spelling === q.targetWord) ||
-                targetWords.find(w => q.stem.includes(w.spelling)) // Fallback matching
+            console.log(`Processing question for targetWord: "${q.targetWord}"`)
+
+            // Enhanced word matching with multiple fallback strategies
+            let word = targetWords.find(w => w.spelling === q.targetWord)
+
+            if (!word) {
+                // Fallback 1: Check if stem contains any target word
+                const stemLower = q.stem.toLowerCase()
+                word = targetWords.find(w => stemLower.includes(w.spelling.toLowerCase()))
+
+                if (word) {
+                    console.log(`   Found via stem match: "${word.spelling}"`)
+                }
+            }
+
+            if (!word && q.answer && typeof q.answer === 'string') {
+                // Fallback 2: Check if answer matches any target word
+                word = targetWords.find(w => w.spelling.toLowerCase() === (q.answer as string).toLowerCase())
+
+                if (word) {
+                    console.log(`   Found via answer match: "${word.spelling}"`)
+                }
+            }
 
             if (word && word.id) {
                 const userAnswer = answers.vocabulary[q.id]
@@ -339,66 +418,123 @@ export default function ReadingPage() {
                     isCorrect = correctAnswer.length === userAnswer.length &&
                         correctAnswer.every((val, index) => val === userAnswer[index])
                 } else {
-                    isCorrect = userAnswer === correctAnswer
+                    // Case-insensitive comparison for string answers
+                    const userAnsLower = typeof userAnswer === 'string' ? userAnswer.toLowerCase() : userAnswer
+                    const correctAnsLower = typeof correctAnswer === 'string' ? correctAnswer.toLowerCase() : correctAnswer
+                    isCorrect = userAnsLower === correctAnsLower
                 }
 
                 wordResults[word.spelling] = isCorrect
 
+                console.log(`✅ Word "${word.spelling}" (ID: ${word.id}): ${isCorrect ? 'Correct' : 'Wrong'}`)
+
                 // Update SRS based on specific question result
                 const updates = SRSAlgorithm.calculateNextReview(word, isCorrect)
+                console.log(`   SRS updates for "${word.spelling}":`, updates)
                 await wordService.updateWord(word.id, updates)
+                console.log(`   ✓ Word status updated`)
+            } else {
+                console.warn(`⚠️ Could not find word object for targetWord: "${q.targetWord}"`)
+                console.warn(`   Question stem:`, q.stem)
+                console.warn(`   Available words:`, targetWords.map(w => w.spelling))
             }
         }
+
+        console.log('✅ SRS updates complete. Word results:', wordResults)
 
         // Store word results for history saving
         setLastWordResults(wordResults)
     }
 
     const handleFinish = async (difficulty: number) => {
-        if (!articleData) return
+        if (!articleData || !quizAnswers) return
 
-        // Save History
-        const historyRecord: Omit<History, 'id'> = {
-            date: Date.now(),
-            title: articleData.title,
-            articleContent: articleData.content,
-            targetWords: targetWords.map(w => w.spelling),
-            questionsJson: {
-                reading: articleData.readingQuestions,
-                vocabulary: articleData.vocabularyQuestions
-            },
-            userScore: Math.round((score / (articleData.readingQuestions.length + articleData.vocabularyQuestions.length)) * 100),
-            difficultyFeedback: difficulty,
-            timeSpent: timeSpent,
-            wordResults: lastWordResults,
-            userAnswers: quizAnswers || undefined
+        const totalQuestions = articleData.readingQuestions.length + articleData.vocabularyQuestions.length
+        const scorePercentage = Math.round((score / totalQuestions) * 100)
+
+        // V2.0 Flow: Save to QuizRecord if we have a currentArticle
+        if (currentArticle) {
+            console.log('Saving quiz record for V2.0 article:', currentArticle.uuid)
+
+            const quizRecord: Omit<QuizRecord, 'id'> = {
+                articleId: currentArticle.uuid,
+                date: Date.now(),
+                questions: {
+                    reading: articleData.readingQuestions,
+                    vocabulary: articleData.vocabularyQuestions
+                },
+                userAnswers: quizAnswers,
+                score: scorePercentage,
+                difficultyFeedback: difficulty,
+                timeSpent: timeSpent,
+                wordResults: lastWordResults
+            }
+
+            await quizRecordService.saveQuizRecord(quizRecord)
+            console.log('Quiz record saved successfully')
+
+            // Refresh quiz history
+            const updatedHistory = await quizRecordService.getRecordsByArticleUuid(currentArticle.uuid)
+            setQuizHistory(updatedHistory)
+            console.log('Quiz history refreshed:', updatedHistory.length, 'records')
+
+            // Clear quiz data for next round
+            setArticleData({
+                title: articleData.title,
+                content: articleData.content,
+                readingQuestions: [],
+                vocabularyQuestions: []
+            })
+
+            // Return to reading page
+            setStep('reading')
         }
+        // Legacy Flow: Save to History table for backward compatibility
+        else {
+            console.log('Saving to legacy History table')
 
-        await historyService.saveArticleRecord(historyRecord)
+            const historyRecord: Omit<History, 'id'> = {
+                date: Date.now(),
+                title: articleData.title,
+                articleContent: articleData.content,
+                targetWords: targetWords.map(w => w.spelling),
+                questionsJson: {
+                    reading: articleData.readingQuestions,
+                    vocabulary: articleData.vocabularyQuestions
+                },
+                userScore: scorePercentage,
+                difficultyFeedback: difficulty,
+                timeSpent: timeSpent,
+                wordResults: lastWordResults,
+                userAnswers: quizAnswers
+            }
 
-        // Auto-adjustment Logic
-        const settings = await settingsService.getSettings()
-        const currentLevel = settings?.difficultyLevel || 'L2'
-        let newLevel = currentLevel
-        let message = ''
+            await historyService.saveArticleRecord(historyRecord)
 
-        // Upgrade Condition: Reading 4/4 correct AND Feedback <= 2 (Easy)
-        if (readingScore === 4 && difficulty <= 2) {
-            if (currentLevel === 'L1') newLevel = 'L2'
-            else if (currentLevel === 'L2') newLevel = 'L3'
+            // Auto-adjustment Logic
+            const settings = await settingsService.getSettings()
+            const currentLevel = settings?.difficultyLevel || 'L2'
+            let newLevel = currentLevel
+            let message = ''
+
+            // Upgrade Condition: Reading 4/4 correct AND Feedback <= 2 (Easy)
+            if (readingScore === 4 && difficulty <= 2) {
+                if (currentLevel === 'L1') newLevel = 'L2'
+                else if (currentLevel === 'L2') newLevel = 'L3'
+            }
+            // Downgrade Condition: Reading < 2 correct AND Feedback = 5 (Too Hard)
+            else if (readingScore < 2 && difficulty === 5) {
+                if (currentLevel === 'L3') newLevel = 'L2'
+                else if (currentLevel === 'L2') newLevel = 'L1'
+            }
+
+            if (newLevel !== currentLevel) {
+                await settingsService.saveSettings({ difficultyLevel: newLevel })
+                message = t('reading:difficultyChanged', `Difficulty adjusted to ${newLevel}`, { level: newLevel })
+            }
+
+            navigate('/', { state: { message } })
         }
-        // Downgrade Condition: Reading < 2 correct AND Feedback = 5 (Too Hard)
-        else if (readingScore < 2 && difficulty === 5) {
-            if (currentLevel === 'L3') newLevel = 'L2'
-            else if (currentLevel === 'L2') newLevel = 'L1'
-        }
-
-        if (newLevel !== currentLevel) {
-            await settingsService.saveSettings({ difficultyLevel: newLevel })
-            message = t('reading:difficultyChanged', `Difficulty adjusted to ${newLevel}`, { level: newLevel })
-        }
-
-        navigate('/', { state: { message } })
     }
 
     const handleWordClick = (word: string) => {
@@ -587,7 +723,8 @@ export default function ReadingPage() {
                                         <Button
                                             variant="contained"
                                             size="large"
-                                            onClick={() => setStep('quiz')}
+                                            onClick={handleStartQuiz}
+                                            disabled={!currentArticle}
                                             sx={{
                                                 px: 6,
                                                 py: 1.5,

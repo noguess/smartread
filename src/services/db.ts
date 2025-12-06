@@ -51,6 +51,7 @@ export interface QuizRecord {
     score: number
     difficultyFeedback: number
     timeSpent?: number
+    wordResults?: { [spelling: string]: boolean } // For SRS algorithm
 }
 
 export interface Setting {

@@ -2,7 +2,7 @@ import { Word } from './db'
 
 export interface Question {
     id: string
-    type: 'cloze' | 'definition' | 'spelling' | 'contextual' | 'audio' | 'wordForm' | 'synonym' | 'matching'
+    type: 'cloze' | 'definition' | 'spelling' | 'contextual' | 'audio' | 'wordForm' | 'synonym' | 'matching' | 'spellingInput' | 'synonymAntonym' | 'audioDictation'
     targetWord?: string
     stem: string
     options?: string[]

@@ -40,21 +40,28 @@ export default function VocabularyQuestionRenderer({
 
     // Handle audio playback
     const handlePlayAudio = () => {
-        if (question.targetWord && ttsService.isSupported()) {
+        // For audio questions, the word to play is either targetWord or the answer itself
+        const wordToPlay = question.targetWord || (typeof question.answer === 'string' ? question.answer : '')
+
+        if (wordToPlay && ttsService.isSupported()) {
             setIsPlaying(true)
-            ttsService.playWord(question.targetWord, question.phonetic)
+            ttsService.playWord(wordToPlay, question.phonetic)
             // Reset playing state after 1 second
             setTimeout(() => setIsPlaying(false), 1000)
+        } else if (!ttsService.isSupported()) {
+            console.warn('TTS not supported in this browser')
+        } else {
+            console.warn('No word to play for this audio question')
         }
     }
 
     // Render based on question type
     const renderQuestionInput = () => {
         switch (question.type) {
-            case 'cloze':
             case 'definition':
             case 'contextual':
             case 'synonym':
+            case 'synonymAntonym': // Support LLM variant
                 // 选择题类型 - 使用 RadioGroup
                 return (
                     <FormControl fullWidth disabled={readOnly}>
@@ -95,7 +102,80 @@ export default function VocabularyQuestionRenderer({
                     </FormControl>
                 )
 
+            case 'cloze':
+                // Cloze can be either multiple choice OR fill-in-blank
+                // Check if options exist
+                if (question.options && question.options.length > 0) {
+                    // Multiple choice cloze
+                    return (
+                        <FormControl fullWidth disabled={readOnly}>
+                            <RadioGroup
+                                value={(answer as string) || ''}
+                                onChange={(e) => onChange(e.target.value)}
+                            >
+                                {question.options.map((opt) => {
+                                    const isSelected = (answer as string) === opt
+                                    const isTheCorrectAnswer = (correctAnswer as string) === opt
+
+                                    let color = 'text.primary'
+                                    if (readOnly) {
+                                        if (isTheCorrectAnswer) color = 'success.main'
+                                        else if (isSelected && !isCorrect) color = 'error.main'
+                                    }
+
+                                    return (
+                                        <FormControlLabel
+                                            key={opt}
+                                            value={opt}
+                                            control={<Radio color={readOnly && isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary'} />}
+                                            label={
+                                                <Typography color={color} fontWeight={readOnly && isTheCorrectAnswer ? 'bold' : 'normal'}>
+                                                    {opt} {readOnly && isTheCorrectAnswer && '(Correct)'} {readOnly && isSelected && !isCorrect && '(Your Answer)'}
+                                                </Typography>
+                                            }
+                                            sx={{
+                                                mb: 0.5,
+                                                '& .MuiFormControlLabel-label': {
+                                                    fontSize: '1rem',
+                                                },
+                                            }}
+                                        />
+                                    )
+                                })}
+                            </RadioGroup>
+                        </FormControl>
+                    )
+                } else {
+                    // Fill-in-blank cloze (no options provided)
+                    return (
+                        <Box>
+                            <TextField
+                                fullWidth
+                                variant="outlined"
+                                placeholder="Fill in the blank..."
+                                value={(answer as string) || ''}
+                                onChange={(e) => onChange(e.target.value)}
+                                disabled={readOnly}
+                                error={readOnly && !isCorrect}
+                                sx={{
+                                    mt: 2,
+                                    '& .MuiOutlinedInput-root': {
+                                        fontSize: '1.1rem',
+                                        borderRadius: 2,
+                                    },
+                                }}
+                            />
+                            {readOnly && !isCorrect && (
+                                <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>
+                                    Correct Answer: {correctAnswer as string}
+                                </Typography>
+                            )}
+                        </Box>
+                    )
+                }
+
             case 'spelling':
+            case 'spellingInput': // Support LLM variant
             case 'wordForm':
                 // 输入题类型 - 使用 TextField
                 return (
@@ -125,6 +205,7 @@ export default function VocabularyQuestionRenderer({
                 )
 
             case 'audio':
+            case 'audioDictation': // Support LLM variant
                 // 音频题型 - 音频播放器 + 选择或输入
                 const hasOptions = question.options && question.options.length > 0
                 return (

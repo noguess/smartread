@@ -4,10 +4,8 @@ import {
     Container,
     Box,
     Typography,
-    Grid,
-    Card,
-    CardContent,
-    CardActions,
+    List,
+    ListItem,
     Button,
     Chip,
     IconButton,
@@ -16,21 +14,32 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
-    CircularProgress
+    CircularProgress,
+    Paper,
+    Stack,
+    Divider
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AutoStoriesIcon from '@mui/icons-material/AutoStories'
+import QuizIcon from '@mui/icons-material/Quiz'
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import { articleService } from '../services/articleService'
+import { quizRecordService } from '../services/quizRecordService'
 import { Article } from '../services/db'
 import { useTranslation } from 'react-i18next'
+
+interface ArticleWithStats extends Article {
+    quizCount: number
+    highestScore: number
+}
 
 export default function LibraryPage() {
     const { t } = useTranslation(['library', 'common'])
     const navigate = useNavigate()
-    const [articles, setArticles] = useState<Article[]>([])
+    const [articles, setArticles] = useState<ArticleWithStats[]>([])
     const [loading, setLoading] = useState(true)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-    const [articleToDelete, setArticleToDelete] = useState<Article | null>(null)
+    const [articleToDelete, setArticleToDelete] = useState<ArticleWithStats | null>(null)
 
     useEffect(() => {
         loadArticles()
@@ -40,7 +49,25 @@ export default function LibraryPage() {
         try {
             setLoading(true)
             const data = await articleService.getAll()
-            setArticles(data)
+
+            // Load quiz statistics for each article
+            const articlesWithStats = await Promise.all(
+                data.map(async (article) => {
+                    const quizRecords = await quizRecordService.getRecordsByArticleUuid(article.uuid)
+                    const quizCount = quizRecords.length
+                    const highestScore = quizRecords.length > 0
+                        ? Math.max(...quizRecords.map(r => r.score))
+                        : 0
+
+                    return {
+                        ...article,
+                        quizCount,
+                        highestScore
+                    }
+                })
+            )
+
+            setArticles(articlesWithStats)
         } catch (error) {
             console.error('Failed to load articles:', error)
         } finally {
@@ -48,13 +75,13 @@ export default function LibraryPage() {
         }
     }
 
-    const handleRead = (article: Article) => {
+    const handleRead = (article: ArticleWithStats) => {
         if (article.id) {
             navigate(`/read/${article.id}`)
         }
     }
 
-    const handleDeleteClick = (article: Article) => {
+    const handleDeleteClick = (article: ArticleWithStats) => {
         setArticleToDelete(article)
         setDeleteDialogOpen(true)
     }
@@ -130,83 +157,126 @@ export default function LibraryPage() {
                     </Button>
                 </Box>
             ) : (
-                <Grid container spacing={3}>
-                    {articles.map((article) => (
-                        <Grid item xs={12} sm={6} md={4} key={article.id}>
-                            <Card
-                                sx={{
-                                    height: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    transition: 'all 0.2s',
-                                    '&:hover': {
-                                        transform: 'translateY(-4px)',
-                                        boxShadow: 4
-                                    }
-                                }}
-                            >
-                                <CardContent sx={{ flexGrow: 1 }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                                        <Chip
-                                            label={article.difficultyLevel}
-                                            size="small"
-                                            color={getDifficultyColor(article.difficultyLevel)}
-                                        />
-                                        <Typography variant="caption" color="text.secondary">
-                                            {formatDate(article.createdAt)}
+                <Paper elevation={1}>
+                    <List sx={{ p: 0 }}>
+                        {articles.map((article, index) => (
+                            <Box key={article.id}>
+                                <ListItem
+                                    sx={{
+                                        py: 3,
+                                        px: 3,
+                                        display: 'flex',
+                                        alignItems: 'flex-start',
+                                        gap: 2,
+                                        '&:hover': {
+                                            bgcolor: 'action.hover'
+                                        }
+                                    }}
+                                >
+                                    {/* Icon */}
+                                    <AutoStoriesIcon
+                                        sx={{
+                                            fontSize: 40,
+                                            color: 'primary.main',
+                                            mt: 0.5
+                                        }}
+                                    />
+
+                                    {/* Main Content */}
+                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                        {/* Title */}
+                                        <Typography
+                                            variant="h6"
+                                            sx={{
+                                                fontWeight: 600,
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                mb: 0.5
+                                            }}
+                                        >
+                                            {article.title}
                                         </Typography>
+
+                                        {/* Difficulty and Date with target words */}
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                                            <Chip
+                                                label={article.difficultyLevel}
+                                                size="small"
+                                                color={getDifficultyColor(article.difficultyLevel)}
+                                            />
+                                            <Typography variant="body2" color="text.secondary">
+                                                •
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {formatDate(article.createdAt)}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                •
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                {article.targetWords.slice(0, 3).map((word, idx) => (
+                                                    <Chip
+                                                        key={idx}
+                                                        label={word}
+                                                        size="small"
+                                                        variant="outlined"
+                                                        sx={{ height: 20, fontSize: '0.7rem' }}
+                                                    />
+                                                ))}
+                                                {article.targetWords.length > 3 && (
+                                                    <Chip
+                                                        label={`+${article.targetWords.length - 3}`}
+                                                        size="small"
+                                                        variant="outlined"
+                                                        sx={{ height: 20, fontSize: '0.7rem' }}
+                                                    />
+                                                )}
+                                            </Box>
+                                        </Box>
+
+                                        {/* Quiz statistics */}
+                                        <Box sx={{ display: 'flex', gap: 2 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                <QuizIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {article.quizCount} {article.quizCount === 1 ? 'quiz' : 'quizzes'}
+                                                </Typography>
+                                            </Box>
+                                            {article.quizCount > 0 && (
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <EmojiEventsIcon sx={{ fontSize: 18, color: 'warning.main' }} />
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Best: <strong>{article.highestScore}%</strong>
+                                                    </Typography>
+                                                </Box>
+                                            )}
+                                        </Box>
                                     </Box>
 
-                                    <Typography variant="h6" gutterBottom sx={{
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: 2,
-                                        WebkitBoxOrient: 'vertical',
-                                        minHeight: '3.6em'
-                                    }}>
-                                        {article.title}
-                                    </Typography>
-
-                                    <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                        {article.targetWords.slice(0, 5).map((word, idx) => (
-                                            <Chip
-                                                key={idx}
-                                                label={word}
-                                                size="small"
-                                                variant="outlined"
-                                            />
-                                        ))}
-                                        {article.targetWords.length > 5 && (
-                                            <Chip
-                                                label={`+${article.targetWords.length - 5}`}
-                                                size="small"
-                                                variant="outlined"
-                                            />
-                                        )}
-                                    </Box>
-                                </CardContent>
-
-                                <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-                                    <Button
-                                        size="small"
-                                        variant="contained"
-                                        onClick={() => handleRead(article)}
-                                    >
-                                        {t('library:card.read', 'Read')}
-                                    </Button>
-                                    <IconButton
-                                        size="small"
-                                        color="error"
-                                        onClick={() => handleDeleteClick(article)}
-                                    >
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </CardActions>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
+                                    {/* Actions - vertically centered */}
+                                    <Stack direction="row" spacing={1} sx={{ alignSelf: 'center' }}>
+                                        <Button
+                                            variant="contained"
+                                            size="small"
+                                            onClick={() => handleRead(article)}
+                                        >
+                                            {t('library:card.read', 'Read')}
+                                        </Button>
+                                        <IconButton
+                                            size="small"
+                                            color="error"
+                                            onClick={() => handleDeleteClick(article)}
+                                        >
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </Stack>
+                                </ListItem>
+                                {index < articles.length - 1 && <Divider />}
+                            </Box>
+                        ))}
+                    </List>
+                </Paper>
             )}
 
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>

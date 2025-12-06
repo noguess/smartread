@@ -8,7 +8,9 @@ import { Word, History, WordStatus } from '../services/db'
 import { WordSelector } from '../utils/WordSelector'
 import DashboardHero from '../components/dashboard/DashboardHero'
 import DashboardStats from '../components/dashboard/DashboardStats'
-import RecentActivityList from '../components/dashboard/RecentActivityList'
+import { articleService } from '../services/articleService'
+import { quizRecordService } from '../services/quizRecordService'
+import RecentActivityList, { DashboardActivity } from '../components/dashboard/RecentActivityList'
 import ManualGenerationDialog from '../components/dashboard/ManualGenerationDialog'
 import { useTranslation } from 'react-i18next'
 
@@ -35,6 +37,8 @@ export default function HomePage() {
     })
     const [recommendedWord, setRecommendedWord] = useState<Word | null>(null)
 
+    const [activities, setActivities] = useState<DashboardActivity[]>([])
+
     useEffect(() => {
         loadData()
 
@@ -51,8 +55,41 @@ export default function HomePage() {
     const loadData = async () => {
         const words = (await wordService.getAllWords()) || []
         const hist = (await historyService.getHistory()) || []
+
+        // Load V2 Data
+        const articles = (await articleService.getAll()) || []
+        const quizzes = (await quizRecordService.getAll()) || []
+
         setAllWords(words)
         setHistory(hist)
+
+        // Process Activities
+        const articleMap = new Map(articles.map(a => [a.uuid, a]))
+
+        const articleActivities: DashboardActivity[] = articles.map(a => ({
+            id: a.id!,
+            type: 'article',
+            title: a.title,
+            date: a.createdAt,
+            difficultyLevel: a.difficultyLevel
+        }))
+
+        const quizActivities: DashboardActivity[] = quizzes.map(q => {
+            const article = articleMap.get(q.articleId)
+            return {
+                id: q.id!,
+                type: 'quiz',
+                title: article ? article.title : 'Unknown Article',
+                date: q.date,
+                score: q.score
+            }
+        })
+
+        // Merge and Sort
+        const allActivities = [...articleActivities, ...quizActivities]
+            .sort((a, b) => b.date - a.date)
+
+        setActivities(allActivities)
 
         const counts = {
             New: 0,
@@ -66,9 +103,11 @@ export default function HomePage() {
         setStatusCounts(counts)
 
         // Calculate Stats
-        calculateStats(hist)
+        // Merge legacy history with new quiz records for stats calculation if needed
+        // For now, we prefer V2 stats but keep V1 compatibility
+        calculateStats(hist, quizzes)
 
-        // Select Recommended Word (Prioritize Review > Learning > New)
+        // Select Recommended Word
         if (words.length > 0) {
             const reviewWords = words.filter(w => w.status === 'Review')
             const learningWords = words.filter(w => w.status === 'Learning')
@@ -86,37 +125,34 @@ export default function HomePage() {
         }
     }
 
-    const calculateStats = (hist: History[]) => {
-        if (!hist || hist.length === 0) {
-            setStats({ consecutiveDays: 0, totalMinutes: 0, lastLearningDate: '' })
-            return
-        }
+    const calculateStats = (hist: History[], quizzes: any[]) => {
+        // Construct a unified timeline for stats
+        const relevantDates = [
+            ...hist.map(h => h.date),
+            ...quizzes.map(q => q.date)
+        ].sort((a, b) => b - a)
 
-        // Sort by date descending
-        const sorted = [...hist].sort((a, b) => b.date - a.date)
-
-        // Total Minutes (Estimate 5 mins per article if timeSpent is missing)
-        const totalSeconds = sorted.reduce((acc, curr) => acc + (curr.timeSpent || 300), 0)
-        const totalMinutes = Math.floor(totalSeconds / 60)
+        // Total Minutes
+        const v1Seconds = hist.reduce((acc, curr) => acc + (curr.timeSpent || 300), 0)
+        const v2Seconds = quizzes.reduce((acc, curr) => acc + (curr.timeSpent || 300), 0)
+        const totalMinutes = Math.floor((v1Seconds + v2Seconds) / 60)
 
         // Consecutive Days
         let consecutive = 0
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
-        // Get unique dates from history
-        const uniqueDates = Array.from(new Set(sorted.map(h => {
-            const d = new Date(h.date)
+        const uniqueDates = Array.from(new Set(relevantDates.map(ts => {
+            const d = new Date(ts)
             d.setHours(0, 0, 0, 0)
             return d.getTime()
-        }))).sort((a, b) => b - a) // Descending
+        }))).sort((a, b) => b - a)
 
         if (uniqueDates.length > 0) {
             const lastDate = new Date(uniqueDates[0])
             const diffTime = Math.abs(today.getTime() - lastDate.getTime())
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-            // If last learning was today or yesterday, start counting
             if (diffDays <= 1) {
                 consecutive = 1
                 let currentDate = lastDate
@@ -209,7 +245,7 @@ export default function HomePage() {
 
                     {/* Recent Activity Section */}
                     <Grid item xs={12}>
-                        <RecentActivityList history={history} />
+                        <RecentActivityList activities={activities} />
                     </Grid>
                 </Grid>
 
