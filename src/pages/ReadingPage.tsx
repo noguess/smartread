@@ -738,7 +738,7 @@ export default function ReadingPage() {
                                                                 {new Date(record.date).toLocaleDateString()}
                                                             </Typography>
                                                             <Typography variant="body2" fontWeight="bold" color="primary">
-                                                                {record.score}%
+                                                                {record.score}
                                                             </Typography>
                                                         </Paper>
                                                     ))}

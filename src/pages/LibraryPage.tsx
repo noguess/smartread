@@ -247,7 +247,7 @@ export default function LibraryPage() {
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                                     <EmojiEventsIcon sx={{ fontSize: 18, color: 'warning.main' }} />
                                                     <Typography variant="body2" color="text.secondary">
-                                                        {t('library:card.best', 'Best:')} <strong>{article.highestScore}%</strong>
+                                                        {t('library:card.best', 'Best:')} <strong>{article.highestScore}</strong>
                                                     </Typography>
                                                 </Box>
                                             )}

@@ -30,7 +30,7 @@ export default function ScoreFeedback({ score, totalQuestions, customPercentage,
             </Box>
 
             <Typography variant="h3" fontWeight="bold" gutterBottom>
-                {percentage}%
+                {percentage}
             </Typography>
             <Typography variant="h6" color="text.secondary" gutterBottom>
                 {t('reading:feedback.scoreDesc', { score, total: totalQuestions })}

@@ -6,7 +6,6 @@ import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ReadingPage from './pages/ReadingPage'
 import LibraryPage from './pages/LibraryPage'
-import HistoryPage from './pages/HistoryPage'
 import VocabularyPage from './pages/VocabularyPage'
 import StatisticsPage from './pages/StatisticsPage'
 import SettingsPage from './pages/SettingsPage'
@@ -38,11 +37,6 @@ function AnimatedRoutes() {
                 <Route path="/library" element={
                     <PageTransition>
                         <LibraryPage />
-                    </PageTransition>
-                } />
-                <Route path="/history" element={
-                    <PageTransition>
-                        <HistoryPage />
                     </PageTransition>
                 } />
                 <Route path="/vocabulary" element={
