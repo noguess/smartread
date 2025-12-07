@@ -34,6 +34,8 @@
         "success": "成功",
         "warning": "警告",
         "total": "总计",
-        "score": "得分"
+        "score": "得分",
+        "time": "耗时",
+        "unknownArticle": "未知文章"
     }
 }

@@ -118,7 +118,7 @@ export default function QuizHistoryPage() {
                     {t('history:title', 'Learning History')}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                    {t('history:subtitle', `${enhancedRecords.length} records found`)}
+                    {t('history:subtitle', { count: enhancedRecords.length })}
                 </Typography>
             </Box>
 
@@ -126,10 +126,10 @@ export default function QuizHistoryPage() {
                 <Box sx={{ p: 8, textAlign: 'center', borderRadius: 2, border: '2px dashed', borderColor: 'divider' }}>
                     <HistoryIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
                     <Typography variant="h6" color="text.secondary" gutterBottom>
-                        {t('history:noRecords', 'No learning records yet')}
+                        {t('history:noRecords')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                        {t('history:startPrompt', 'Go read some articles and take quizzes!')}
+                        {t('history:startPrompt')}
                     </Typography>
                 </Box>
             ) : (
@@ -196,7 +196,7 @@ export default function QuizHistoryPage() {
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                                 <EmojiEvents sx={{ fontSize: 18, color: 'warning.main' }} />
                                                 <Typography variant="body2" color="text.secondary">
-                                                    {t('common:score', 'Score')}:
+                                                    {t('common:score')}:
                                                     <Box component="span" sx={{ fontWeight: 900, color: getScoreColor(record.score), ml: 0.5 }}>
                                                         {record.score}
                                                     </Box>
@@ -205,7 +205,7 @@ export default function QuizHistoryPage() {
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                                 <HistoryIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                                                 <Typography variant="body2" color="text.secondary">
-                                                    {t('history:attempt', 'Take #{{count}}', { count: record.attemptNumber })}
+                                                    {t('history:attempt', { count: record.attemptNumber })}
                                                 </Typography>
                                             </Box>
                                         </Box>
@@ -218,7 +218,7 @@ export default function QuizHistoryPage() {
                                             size="small"
                                             onClick={() => navigate(`/history/${record.id}`)}
                                         >
-                                            {t('history:review', 'Review')}
+                                            {t('history:review')}
                                         </Button>
                                     </Stack>
                                 </ListItem>

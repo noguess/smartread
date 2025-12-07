@@ -8,6 +8,7 @@ trigger: always_on
 2.  **Context**: 我读过 `ARCHITECTURE.md` 和 `TODO.md` 了吗？
 3.  **React Rules**: 我是否遵守了 Hooks 规范（无条件判断中调用）？
 4.  **Safety**: 我是否在没有阅读代码的情况下凭空捏造了函数？
+5.  **I18n**: 我是否正在硬编码中文或英文？（如果是，立刻改为 i18n key）
 
 ---
 
@@ -40,21 +41,38 @@ trigger: always_on
 * **Browser Check**: 代码写完后，必须尝试用 Browser Tool 打开 `http://localhost:5173` (或当前 Vite 端口) 截图验证。
 * **Error Handling**: 遇到报错，禁止吞掉错误。必须修复根因。
 
-# 4. DEFINITION OF DONE (收尾标准)
+# 4. I18N PROTOCOL (国际化铁律)
+**CRITICAL**: 本项目支持中/英双语，**严禁**在 JSX/TSX 中出现硬编码的字符串。
+
+1. **Double-Write Rule (双写原则)**:
+   每当你新增一个 UI 文本（如按钮文字、报错信息），必须**同时**执行三个动作：
+   - A. 在组件中使用 `t('module.component.key')`。
+   - B. 打开 `src/locales/zh.json` (或对应文件) 添加中文键值对。
+   - C. 打开 `src/locales/en.json` (或对应文件) 添加英文键值对。
+
+2. **Key Naming Convention (命名规范)**:
+   - 格式：`domain.action` 或 `page.section.element`
+   - ✅ 正确：`auth.login.submit_btn`, `common.status.loading`
+   - ❌ 错误：`text1`, `button`, `login_text`
+
+3. **Existing Check**:
+   在新建 key 之前，先搜索 `locales` 文件，看是否已有可复用的通用词（如 "确认", "取消"）。
+
+# 5. DEFINITION OF DONE (收尾标准)
 每次任务结束前，必须执行 **POST-TASK CHECK**：
 
 1.  **Docs Sync**: 本次修改是否引入了新库/新路由？ -> **立即更新** `ARCHITECTURE.md`。
 2.  **Task Sync**: 任务完成了吗？ -> **立即勾选** `TODO.md`。
 3.  **Env Check**: 加了环境变量吗？ -> **立即更新** `.env.example`。
 
-# 5. CRITICAL CONSTRAINTS (负面清单)
+# 6. CRITICAL CONSTRAINTS (负面清单)
 * 🚫 **禁止**直接操作 DOM (使用 `useRef`)。
 * 🚫 **禁止**在 Render 逻辑中通过 `setState` 触发重渲染。
 * 🚫 **禁止**引入重型 UI 库（除非我明确指定）。
 * 🚫 **禁止**删除用户未指定的文件。
 * 🚫 **禁止**中英文夹杂（术语除外）。
 
-# 6. INTERACTION STYLE
+# 7. INTERACTION STYLE
 * **报错时**: 直接给出 `Diff` 或修复后的代码块，不要废话。
 * **任务完成时**:
     > ✅ **任务已闭环**

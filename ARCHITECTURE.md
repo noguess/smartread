@@ -121,8 +121,16 @@ interface ApiResponse<T> {
   "timestamp": 1709880000123
 }
 ```
+## 4. Internationalization (I18n)
+- **Library**: react-i18next
+- **Locale Files**:
+  - `src/locales/zh-CN.json` (或对应文件)
+  - `src/locales/en-US.json` (或对应文件)
+- **Usage**:
+  - Hooks: `const { t } = useTranslation();`
+  - Keys: Nested JSON structure preferred.
 
-## 4. 技术栈约定 (Tech Stack)
+## 5. 技术栈约定 (Tech Stack)
 
 | 领域 | 选型 | 规范说明 |
 | :--- | :--- | :--- |

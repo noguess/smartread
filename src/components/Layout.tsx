@@ -21,6 +21,7 @@ import {
     Search as SearchIcon,
     BarChart as BarChartIcon,
     AutoStories as LibraryIcon,
+    History as HistoryIcon,
 } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 
@@ -44,6 +45,7 @@ export default function Layout({ children }: LayoutProps) {
     const menuItems = [
         { text: t('common:nav.home'), icon: <HomeIcon />, path: '/' },
         { text: t('common:nav.library'), icon: <LibraryIcon />, path: '/library' },
+        { text: t('common:nav.history'), icon: <HistoryIcon />, path: '/history' },
         { text: t('common:nav.vocabulary'), icon: <VocabularyIcon />, path: '/vocabulary' },
         { text: t('common:nav.statistics'), icon: <BarChartIcon />, path: '/statistics' },
         { text: t('common:nav.settings'), icon: <SettingsIcon />, path: '/settings' },

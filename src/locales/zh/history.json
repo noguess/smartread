@@ -1,5 +1,10 @@
 {
     "title": "学习记录",
+    "subtitle": "共找到 {{count}} 条记录",
+    "noRecords": "还没有学习记录",
+    "startPrompt": "快去阅读文章并完成测试吧！",
+    "attempt": "第 {{count}} 次练习",
+    "review": "复习",
     "emptyState": {
         "title": "还没有学习记录",
         "description": "完成第一篇文章阅读后，记录会显示在这里"

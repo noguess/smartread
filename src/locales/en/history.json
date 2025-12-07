@@ -1,5 +1,10 @@
 {
     "title": "Learning History",
+    "subtitle": "{{count}} records found",
+    "noRecords": "No learning records yet",
+    "startPrompt": "Go read some articles and take quizzes!",
+    "attempt": "Take #{{count}}",
+    "review": "Review",
     "emptyState": {
         "title": "No learning records yet",
         "description": "Records will appear here after you complete your first article"

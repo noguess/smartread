@@ -34,6 +34,8 @@
         "success": "Success",
         "warning": "Warning",
         "total": "Total",
-        "score": "Score"
+        "score": "Score",
+        "time": "Duration",
+        "unknownArticle": "Unknown Article"
     }
 }
