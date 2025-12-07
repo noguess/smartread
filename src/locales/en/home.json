@@ -8,7 +8,9 @@
         "days": "days",
         "todayAccumulation": "Today's Accumulation",
         "min": "min",
-        "dailyWord": "Daily Word"
+        "dailyWord": "Daily Word",
+        "lastStudy": "Last Study",
+        "keepGoing": "Keep Going!"
     },
     "stats": {
         "title": "Memory Status",

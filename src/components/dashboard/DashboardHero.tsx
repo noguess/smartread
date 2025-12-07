@@ -33,6 +33,7 @@ export default function DashboardHero({
     onManualMode,
     consecutiveDays,
     totalMinutes,
+    lastLearningDate,
     recommendedWord,
 }: DashboardHeroProps) {
     const { t } = useTranslation(['home'])
@@ -83,16 +84,29 @@ export default function DashboardHero({
                             py: 2 // Reduced padding
                         }}>
                             <Box sx={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-                                {/* Consecutive Days */}
+                                {/* Consecutive Days / Last Study */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <LocalFireDepartment sx={{ fontSize: 48, color: '#FF6B6B' }} />
+                                    <LocalFireDepartment sx={{ fontSize: 48, color: consecutiveDays > 0 ? '#FF6B6B' : '#BDBDBD' }} />
                                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                        <Typography variant="h5" fontWeight="bold" sx={{ lineHeight: 1 }}>
-                                            {consecutiveDays}{t('home:hero.days')}
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
-                                            {t('home:hero.streak')}
-                                        </Typography>
+                                        {consecutiveDays > 0 ? (
+                                            <>
+                                                <Typography variant="h5" fontWeight="bold" sx={{ lineHeight: 1 }}>
+                                                    {consecutiveDays}{t('home:hero.days')}
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
+                                                    {t('home:hero.streak')}
+                                                </Typography>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Typography variant="body1" fontWeight="bold" sx={{ lineHeight: 1, fontSize: '1rem' }}>
+                                                    {lastLearningDate || '--'}
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
+                                                    {lastLearningDate ? t('home:hero.lastStudy') : t('home:hero.keepGoing')}
+                                                </Typography>
+                                            </>
+                                        )}
                                     </Box>
                                     <Box sx={{ position: 'relative', display: 'inline-flex', ml: 2 }}>
                                         <CircularProgress
@@ -108,7 +122,7 @@ export default function DashboardHero({
                                             size={56}
                                             thickness={3}
                                             sx={{
-                                                color: '#4A90E2',
+                                                color: consecutiveDays > 0 ? '#4A90E2' : '#BDBDBD',
                                                 position: 'absolute',
                                                 left: 0,
                                             }}
