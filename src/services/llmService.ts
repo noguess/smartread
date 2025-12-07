@@ -29,11 +29,19 @@ The JSON structure must be:
       "type": "contextual",
       "stem": "Question text?",
       "options": ["A", "B", "C", "D"],
-      "answer": "Correct Option"
+      "answer": "Correct Option",
+      "explanation": "Brief explanation of why this answer is correct."
     }
   ],
   "vocabularyQuestions": [
-    // Standard vocabulary question structure as defined in configuration
+    {
+      "id": "v1",
+      "type": "definition",
+      "stem": "Word definition/context",
+      "options": ["word1", "word2", "word3", "word4"],
+      "answer": "word1",
+      "explanation": "Brief explanation of the word meaning/usage."
+    }
   ]
 }
 `
@@ -127,6 +135,7 @@ REQUIREMENTS:
 - For audio questions, always include "phonetic" field with IPA notation.
 - For matching questions, use "pairs" array.
 - For spelling/wordForm questions, do NOT include "options" field.
+- Always include "explanation" field.
 `
 
       const userPrompt = `

@@ -15,7 +15,8 @@ src/
 ├── features/               # 业务功能模块 (推荐)
 │   ├── reading/            # 阅读相关 (ReaderView, ArticleGenerator)
 │   ├── words/              # 单词本相关 (WordList, WordCard)
-│   └── quiz/               # 测试相关 (QuizForm, ResultChart)
+│   ├── quiz/               # 测试相关 (QuizForm, ResultChart)
+│   └── history/            # 学习记录 (QuizHistory, QuizResult)
 ├── hooks/                  # 全局自定义 Hooks (useTheme, useDebounce)
 ├── pages/                  # 路由页面 (Home, Library, Settings)
 ├── services/               # 数据服务层 (API & DB)
@@ -130,4 +131,5 @@ interface ApiResponse<T> {
 | **路由** | **React Router V6** | 使用 `useNavigate` 跳转，不使用 `<a>` 标签。 |
 | **状态管理** | **Context + Hooks** | 避免引入 Redux。简单状态用 `useState`，全局配置用 `Context`。 |
 | **持久化** | **Dexie.js** | 所有的用户数据必须存入 IndexedDB，不使用 LocalStorage 存大量数据。 |
+| **测试** | **Vitest + RTL** | 使用 `vitest` 做单元测试，`happy-dom` 模拟环境。 |
 | **图标** | **MUI Icons** | 统一使用 `@mui/icons-material`。 |

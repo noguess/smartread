@@ -11,6 +11,8 @@ import StatisticsPage from './pages/StatisticsPage'
 import SettingsPage from './pages/SettingsPage'
 import { ThemeProvider as CustomThemeProvider, useThemeMode } from './theme/ThemeContext'
 import { themes } from './theme'
+import QuizHistoryPage from './features/history/QuizHistoryPage'
+import QuizResultPage from './features/history/QuizResultPage'
 import PageTransition from './components/common/PageTransition'
 
 function AnimatedRoutes() {
@@ -42,6 +44,16 @@ function AnimatedRoutes() {
                 <Route path="/vocabulary" element={
                     <PageTransition>
                         <VocabularyPage />
+                    </PageTransition>
+                } />
+                <Route path="/history" element={
+                    <PageTransition>
+                        <QuizHistoryPage />
+                    </PageTransition>
+                } />
+                <Route path="/history/:id" element={
+                    <PageTransition>
+                        <QuizResultPage />
                     </PageTransition>
                 } />
                 <Route path="/statistics" element={
