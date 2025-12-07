@@ -26,7 +26,7 @@
 ## 2. 组件重构 (拆分大文件)
 以下组件超过 300 行，建议进行拆解：
 
-- **[关键] src/pages/ReadingPage.tsx** (921 行) - *急需重构*。
+- **[关键] src/pages/ReadingPage.tsx** (~950 行) - *急需重构*。
 - **src/components/reading/VocabularyQuestionRenderer.tsx** (409 行)
 - **src/components/reading/GenerationLoading.tsx** (361 行)
 - **src/pages/SettingsPage.tsx** (360 行)
@@ -43,3 +43,9 @@
 
 ## 4. 遗留代码
 - **类组件**: 未发现。 (干得好！)
+
+## 5. 近期已完成任务 (Recently Completed)
+- [x] 重构 `QuizHistoryPage` 列表样式，与 Library 保持一致
+- [x] 优化 `ReadingPage` 侧边栏历史记录显示 (单行布局、时间格式优化)
+- [x] 修复 `QuizResultPage` 返回按钮逻辑 (`navigate(-1)`)
+- [x] 优化 `ReadingPage` 加载体验 (引入 `initializing` 状态，消除已有文章的 Loading 闪烁)

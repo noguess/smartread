@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Container, Box, Typography, Button, Grid, Paper, Chip, Fade, Divider, Snackbar, Alert } from '@mui/material'
+import { Container, Box, Typography, Button, Grid, Paper, Chip, Fade, Divider, Snackbar, Alert, CircularProgress } from '@mui/material'
 
 import { Word, History, Article, QuizRecord } from '../services/db'
 import { mockLLMService, GeneratedContent } from '../services/mockLLMService'
@@ -23,7 +23,7 @@ import GenerationLoading from '../components/reading/GenerationLoading'
 import { useTranslation } from 'react-i18next'
 import { useStudyTimer } from '../hooks/useStudyTimer'
 
-type Step = 'generating' | 'reading' | 'quiz' | 'feedback'
+type Step = 'initializing' | 'generating' | 'reading' | 'quiz' | 'feedback'
 type FontSize = 'small' | 'medium' | 'large'
 
 // Track active generations to prevent duplicates in StrictMode
@@ -34,7 +34,7 @@ export default function ReadingPage() {
     const { id } = useParams<{ id: string }>()
     const location = useLocation()
     const navigate = useNavigate()
-    const [step, setStep] = useState<Step>('generating')
+    const [step, setStep] = useState<Step>('initializing')
     const [fontSize, setFontSize] = useState<FontSize>(() => {
         return (localStorage.getItem('reading_font_size') as FontSize) || 'medium'
     })
@@ -83,6 +83,7 @@ export default function ReadingPage() {
 
         // Priority 1: Generation Mode (V2.0 new flow - generate on this page)
         if (state?.mode === 'generate' && state?.words && state?.settings) {
+            setStep('generating') // Explicitly switch to generation UI
             const uuid = state.uuid
             console.log('✅ Detected generation mode. UUID:', uuid)
 
@@ -98,7 +99,7 @@ export default function ReadingPage() {
 
                 // Check if already exists in DB (async check cannot block sync effect, 
                 // but checking generatingUuids handles the immediate double-fire)
-                articleService.getByUuid(uuid).then(existing => {
+                articleService.getByUuid(uuid).then(async (existing) => {
                     if (existing) {
                         console.log('✅ Article already exists, loading instead of generating:', existing)
                         setCurrentArticle(existing)
@@ -110,19 +111,17 @@ export default function ReadingPage() {
                         })
 
                         // Load target words
-                        Promise.all(
+                        const words = await Promise.all(
                             existing.targetWords.map(spelling => wordService.getWordBySpelling(spelling))
-                        ).then(words => {
-                            setTargetWords(words.filter((w): w is Word => !!w))
-                        })
+                        )
+                        setTargetWords(words.filter((w): w is Word => !!w))
 
                         // Remove lock since we are done "generating" (loading existing)
                         generatingUuids.delete(uuid)
+
                         setStep('reading')
                     } else {
                         // Proceed with generation if not found
-                        // Note: We already added the lock above, so we pass true to skip re-adding it? 
-                        // Or just rely on set logic.
                         setTargetWords(state.words)
                         generateAndSaveNewArticle(state.words, state.settings, uuid)
                     }
@@ -136,6 +135,7 @@ export default function ReadingPage() {
         // Priority 2: Load from URL parameter (V2.0 behavior - existing article)
         else if (id) {
             console.log('✅ Detected article ID - will load existing article:', id)
+            // Keep state as 'initializing' to avoid showing generation UI
             loadArticleById(Number(id))
         }
         // Priority 3: Review Mode (legacy)
@@ -148,20 +148,21 @@ export default function ReadingPage() {
         // Priority 4: Generation Mode (legacy - direct word passing)
         else if (state?.words && state.words.length > 0) {
             console.log('✅ Detected legacy generation mode')
+            setStep('generating')
             setTargetWords(state.words)
             generateContent(state.words)
         }
         // Fallback: Navigate to home ONLY if we're not already in a loading state
-        else if (step !== 'generating') {
+        else if (step !== 'generating' && step !== 'initializing') {
             console.log('⚠️ No valid state detected - navigating to home')
             navigate('/')
         }
-    }, [id, location.state]) // Removed 'navigate' and 'step' from dependencies
+    }, [id, location.state])
 
     const loadArticleById = async (articleId: number) => {
         try {
             setError(null)
-            setStep('generating') // Show loading state
+            // Do NOT set 'generating' here, assume 'initializing' or current state handles spinner
             console.log('Loading article by ID:', articleId)
 
             // Fetch article
@@ -196,8 +197,13 @@ export default function ReadingPage() {
         } catch (error) {
             console.error('Failed to load article', error)
             setError(error instanceof Error ? error.message : 'Failed to load article')
+            // If error, we might want to show error UI, which is currently bound to 'generating' step block
+            // So we might need to setStep('generating') to show the error or handle error separately
+            setStep('generating')
         }
     }
+
+
 
     const loadReviewContent = async (record: History) => {
         try {
@@ -645,6 +651,14 @@ export default function ReadingPage() {
         localStorage.setItem('reading_font_size', newSize)
     }
 
+    if (step === 'initializing') {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+                <CircularProgress />
+            </Box>
+        )
+    }
+
     if (step === 'generating') {
         return (
             <Container maxWidth="md" sx={{ py: 8 }}>
@@ -727,15 +741,29 @@ export default function ReadingPage() {
                                                         <Paper
                                                             key={record.id}
                                                             variant="outlined"
+                                                            onClick={() => navigate(`/history/${record.id}`)}
                                                             sx={{
                                                                 p: 1.5,
                                                                 borderRadius: 2,
                                                                 bgcolor: 'background.default',
-                                                                cursor: 'default'
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'center',
+                                                                transition: 'all 0.2s',
+                                                                '&:hover': {
+                                                                    borderColor: 'primary.main',
+                                                                    bgcolor: 'action.hover'
+                                                                }
                                                             }}
                                                         >
                                                             <Typography variant="caption" color="text.secondary">
-                                                                {new Date(record.date).toLocaleDateString()}
+                                                                {new Date(record.date).toLocaleDateString(undefined, {
+                                                                    month: 'numeric',
+                                                                    day: 'numeric',
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit'
+                                                                })}
                                                             </Typography>
                                                             <Typography variant="body2" fontWeight="bold" color="primary">
                                                                 {record.score}

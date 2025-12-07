@@ -54,10 +54,10 @@ export default function QuizResultPage() {
         <Container maxWidth="md" sx={{ py: 4 }}>
             <Button
                 startIcon={<ArrowBack />}
-                onClick={() => navigate('/history')}
+                onClick={() => navigate(-1)}
                 sx={{ mb: 2 }}
             >
-                {t('common:back')}
+                {t('common:button.back', 'Back')}
             </Button>
 
             {/* Header / Summary Card */}
