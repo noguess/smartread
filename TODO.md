@@ -1,5 +1,13 @@
 # 代码质量改进项 (Code Quality TODOs)
 
+## [New Feature] 查词自动加入单词本 / Auto-Add Searched Words
+- [x] Task 1: 改造 `WordDetailModal.tsx` 数据加载流程
+  - 当本地无此单词数据时，自动优先调用 `dictionaryService` 获取释义。
+  - 获取成功后，自动构造 `Word` 对象并存入数据库 (状态: `Learning`)。
+- [x] Task 2: 实现状态自动更新与反馈
+  - [x] 当本地已有单词但状态为 `New` 时，自动更新为 `Learning`。
+  - [x] 添加 `Snackbar` 提示用户操作结果（"已加入单词本" / "状态更新为学习中"）。
+
 ## 1. 类型安全改进 (移除 `any`)
 发现 **14** 处使用了 `any`，应使用适当的 TypeScript 接口进行优化：
 

@@ -20,7 +20,7 @@ import { videoIndexService, VideoOccurrence } from '../services/videoIndexServic
 import { wordService } from '../services/wordService'
 import { dictionaryService, DictionaryEntry } from '../services/dictionaryService'
 import { VolumeUp, MenuBook } from '@mui/icons-material'
-import { Button, CircularProgress } from '@mui/material'
+import { Button, CircularProgress, Snackbar, Alert } from '@mui/material'
 
 interface WordDetailModalProps {
     word: string
@@ -40,11 +40,19 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
     const [loadingDictionary, setLoadingDictionary] = useState(false)
     const [showDictionary, setShowDictionary] = useState(false)
 
+    const [snackbarOpen, setSnackbarOpen] = useState(false)
+    const [snackbarMessage, setSnackbarMessage] = useState('')
+
     useEffect(() => {
         if (open && word) {
             loadWordData()
         }
     }, [open, word])
+
+    const showToast = (message: string) => {
+        setSnackbarMessage(message)
+        setSnackbarOpen(true)
+    }
 
     const loadWordData = async () => {
         setLoading(true)
@@ -53,11 +61,32 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
         setShowDictionary(false)
 
         try {
-            // Load word from database
-            const dbWord = await wordService.getWordBySpelling(word.toLowerCase())
+            // 1. Try to get word from DB
+            let dbWord = await wordService.getWordBySpelling(word.toLowerCase())
+
+            // 2. If not found in DB, fetch from Dictionary API and auto-save
+            if (!dbWord) {
+                try {
+                    const apiData = await dictionaryService.getDefinition(word)
+                    if (apiData && apiData.length > 0) {
+                        setDictionaryData(apiData) // Cache it for dictionary view
+                        dbWord = await saveWordFromDictionary(word, apiData[0])
+                        showToast(t('vocabulary:modal.toast.autoAdded', { word }))
+                        console.log('Auto-added word to DB:', dbWord)
+                    }
+                } catch (err) {
+                    console.warn('Auto-fetch dictionary failed:', err)
+                }
+            } else if (dbWord.status === 'New') {
+                // Task 2: If word exists but is 'New', upgrade to 'Learning'
+                await wordService.updateWordStatus(dbWord.id!, 'Learning', Date.now(), 1)
+                dbWord.status = 'Learning' // Update local object
+                showToast(t('vocabulary:modal.toast.statusUpdated', { word }))
+            }
+
             setWordData(dbWord)
 
-            // Search for video occurrences
+            // 3. Search for video occurrences
             const results = await videoIndexService.searchWord(word)
 
             // Sort results: Score DESC, then Page ASC, then Time ASC
@@ -75,8 +104,6 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                 setSelectedOccurrence(results[0]) // Auto-select first
             } else {
                 setSelectedOccurrence(null)
-                // Auto-load dictionary if no video found
-                handleCheckDictionary()
             }
         } catch (error) {
             console.error('Failed to load word data:', error)
@@ -85,11 +112,36 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
         }
     }
 
+    const saveWordFromDictionary = async (spelling: string, entry: DictionaryEntry) => {
+        // Format meaning: "n. definition; v. definition"
+        const meaning = entry.meanings.slice(0, 2).map(m =>
+            `${m.partOfSpeech}. ${m.definitions[0].definition}`
+        ).join('; ')
+
+        const phonetic = entry.phonetic || entry.phonetics.find(p => p.text)?.text || ''
+
+        const newWord = {
+            spelling,
+            meaning,
+            phonetic,
+            status: 'Learning' as const,
+            nextReviewAt: Date.now(),
+            interval: 1,
+            repetitionCount: 0,
+            lastSeenAt: Date.now()
+        }
+
+        const id = await wordService.addWord(newWord)
+        return { ...newWord, id }
+    }
+
     const handleCheckDictionary = async () => {
         setShowDictionary(true)
         if (!dictionaryData && !loadingDictionary) {
             setLoadingDictionary(true)
             try {
+                // If we already auto-fetched it in loadWordData but failed to save or something, retry
+                // Or if we failed to fetch in loadWordData, we retry here.
                 const data = await dictionaryService.getDefinition(word)
                 setDictionaryData(data)
             } catch (error) {
@@ -113,194 +165,207 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
     }
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        {word}
-                    </Typography>
-                    {wordData && wordData.phonetic && (
-                        <Typography variant="h6" color="text.secondary" sx={{ fontFamily: '"Arial Unicode MS", sans-serif' }}>
-                            {wordData.phonetic}
+        <>
+            <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography variant="h5" fontWeight="bold">
+                            {word}
                         </Typography>
-                    )}
-                    <IconButton onClick={handleSpeak} size="small" title={t('vocabulary:modal.speak')}>
-                        <VolumeUp />
-                    </IconButton>
-                    {wordData && (
-                        <Chip
-                            label={wordData.status}
-                            size="small"
-                            color={
-                                wordData.status === 'Mastered' ? 'success' :
-                                    wordData.status === 'Review' ? 'warning' :
-                                        'default'
-                            }
-                        />
-                    )}
-                </Box>
-                <IconButton onClick={onClose}>
-                    <Close />
-                </IconButton>
-            </DialogTitle>
-
-            <DialogContent>
-                {/* Word Info */}
-                {wordData && (
-                    <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: '#F5F5F5' }}>
-                        <Typography variant="body1" color="text.secondary">
-                            {wordData.meaning}
-                        </Typography>
-                    </Paper>
-                )}
-
-                {/* Video Player */}
-                {selectedOccurrence ? (
-                    <Box sx={{ mb: 3 }}>
-                        <Typography variant="subtitle1" gutterBottom fontWeight="bold">
-                            {t('vocabulary:modal.videoExplanation')}
-                        </Typography>
-                        <Box sx={{
-                            position: 'relative',
-                            paddingBottom: '56.25%', // 16:9 aspect ratio
-                            height: 0,
-                            overflow: 'hidden',
-                            borderRadius: 2,
-                            bgcolor: '#000'
-                        }}>
-                            <iframe
-                                src={`//player.bilibili.com/player.html?bvid=${selectedOccurrence.bvid}&page=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}&high_quality=1&autoplay=1`}
-                                scrolling="no"
-                                frameBorder="0"
-                                allowFullScreen={true}
-                                style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    width: '100%',
-                                    height: '100%'
-                                }}
-                            />
-                        </Box>
-                        <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant="caption" color="text.secondary">
-                                {t('vocabulary:modal.source')}: {selectedOccurrence.title} (P{selectedOccurrence.page})
-                            </Typography>
-                        </Box>
-                        <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic', borderLeft: '3px solid #1976d2', pl: 1 }}>
-                            "{selectedOccurrence.context}"
-                        </Typography>
-                    </Box>
-                ) : (
-                    <Paper
-                        variant="outlined"
-                        sx={{
-                            p: 4,
-                            textAlign: 'center',
-                            bgcolor: '#FAFAFA',
-                            borderRadius: 2,
-                            mb: 3,
-                        }}
-                    >
-                        <Typography color="text.secondary">
-                            {loading ? t('common:loading') : t('vocabulary:modal.noVideo')}
-                        </Typography>
-                    </Paper>
-                )}
-
-                {/* Dictionary Section */}
-                {showDictionary ? (
-                    <Box sx={{ mt: 3, mb: 3 }}>
-                        <Typography variant="subtitle1" gutterBottom fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <MenuBook fontSize="small" /> {t('vocabulary:modal.dictionaryDefinition')}
-                        </Typography>
-                        {loadingDictionary ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                                <CircularProgress size={24} />
-                            </Box>
-                        ) : dictionaryData ? (
-                            <Box>
-                                {dictionaryData.map((entry, idx) => (
-                                    <Box key={idx} sx={{ mb: 2 }}>
-                                        {entry.phonetic && (
-                                            <Typography variant="body2" color="text.secondary" sx={{ fontFamily: '"Arial Unicode MS", sans-serif', mb: 1 }}>
-                                                {entry.phonetic}
-                                            </Typography>
-                                        )}
-                                        {entry.meanings.map((meaning, mIdx) => (
-                                            <Box key={mIdx} sx={{ mb: 1 }}>
-                                                <Typography variant="subtitle2" sx={{ fontStyle: 'italic', color: 'primary.main' }}>
-                                                    {meaning.partOfSpeech}
-                                                </Typography>
-                                                <List dense disablePadding>
-                                                    {meaning.definitions.slice(0, 3).map((def, dIdx) => (
-                                                        <ListItem key={dIdx} disablePadding sx={{ display: 'block', mb: 1 }}>
-                                                            <Typography variant="body2">
-                                                                • {def.definition}
-                                                            </Typography>
-                                                            {def.example && (
-                                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', ml: 2, fontStyle: 'italic' }}>
-                                                                    "{def.example}"
-                                                                </Typography>
-                                                            )}
-                                                        </ListItem>
-                                                    ))}
-                                                </List>
-                                            </Box>
-                                        ))}
-                                    </Box>
-                                ))}
-                            </Box>
-                        ) : (
-                            <Typography variant="body2" color="text.secondary">
-                                {t('vocabulary:modal.noDictionaryData')}
+                        {wordData && wordData.phonetic && (
+                            <Typography variant="h6" color="text.secondary" sx={{ fontFamily: '"Arial Unicode MS", sans-serif' }}>
+                                {wordData.phonetic}
                             </Typography>
                         )}
+                        <IconButton onClick={handleSpeak} size="small" title={t('vocabulary:modal.speak')}>
+                            <VolumeUp />
+                        </IconButton>
+                        {wordData && (
+                            <Chip
+                                label={wordData.status}
+                                size="small"
+                                color={
+                                    wordData.status === 'Mastered' ? 'success' :
+                                        wordData.status === 'Review' ? 'warning' :
+                                            'default'
+                                }
+                            />
+                        )}
                     </Box>
-                ) : (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-                        <Button
-                            startIcon={<MenuBook />}
-                            onClick={handleCheckDictionary}
-                            variant="outlined"
-                            size="small"
-                        >
-                            {t('vocabulary:modal.checkDictionary')}
-                        </Button>
-                    </Box>
-                )}
+                    <IconButton onClick={onClose}>
+                        <Close />
+                    </IconButton>
+                </DialogTitle>
 
-                {/* Occurrence List */}
-                {occurrences.length > 1 && (
-                    <Box>
-                        <Typography variant="subtitle1" gutterBottom fontWeight="bold">
-                            {t('vocabulary:modal.otherOccurrences')} ({occurrences.length})
-                        </Typography>
-                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
-                            {occurrences.map((occ, index) => (
-                                <ListItem key={index} disablePadding>
-                                    <ListItemButton
-                                        selected={selectedOccurrence === occ}
-                                        onClick={() => handleOccurrenceClick(occ)}
-                                    >
-                                        <PlayArrow sx={{ mr: 1, fontSize: 20 }} />
-                                        <ListItemText
-                                            primary={occ.title}
-                                            secondary={`P${occ.page} - ${occ.startTime}s - "${occ.context.substring(0, 40)}..."`}
-                                        />
-                                        {/* Show Recommended Icon for high scores */}
-                                        {occ.score && occ.score >= 5 && (
-                                            <Tooltip title={t('vocabulary:modal.recommended')}>
-                                                <Recommend color="primary" sx={{ ml: 1, fontSize: 20 }} />
-                                            </Tooltip>
-                                        )}
-                                    </ListItemButton>
-                                </ListItem>
-                            ))}
-                        </List>
-                    </Box>
-                )}
-            </DialogContent>
-        </Dialog>
+                <DialogContent>
+                    {/* Word Info */}
+                    {wordData && (
+                        <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: '#F5F5F5' }}>
+                            <Typography variant="body1" color="text.secondary">
+                                {wordData.meaning}
+                            </Typography>
+                        </Paper>
+                    )}
+
+                    {/* Video Player */}
+                    {selectedOccurrence ? (
+                        <Box sx={{ mb: 3 }}>
+                            <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                                {t('vocabulary:modal.videoExplanation')}
+                            </Typography>
+                            <Box sx={{
+                                position: 'relative',
+                                paddingBottom: '56.25%', // 16:9 aspect ratio
+                                height: 0,
+                                overflow: 'hidden',
+                                borderRadius: 2,
+                                bgcolor: '#000'
+                            }}>
+                                <iframe
+                                    src={`//player.bilibili.com/player.html?bvid=${selectedOccurrence.bvid}&page=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}&high_quality=1&autoplay=1`}
+                                    scrolling="no"
+                                    frameBorder="0"
+                                    allowFullScreen={true}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%'
+                                    }}
+                                />
+                            </Box>
+                            <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography variant="caption" color="text.secondary">
+                                    {t('vocabulary:modal.source')}: {selectedOccurrence.title} (P{selectedOccurrence.page})
+                                </Typography>
+                            </Box>
+                            <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic', borderLeft: '3px solid #1976d2', pl: 1 }}>
+                                "{selectedOccurrence.context}"
+                            </Typography>
+                        </Box>
+                    ) : (
+                        <Paper
+                            variant="outlined"
+                            sx={{
+                                p: 4,
+                                textAlign: 'center',
+                                bgcolor: '#FAFAFA',
+                                borderRadius: 2,
+                                mb: 3,
+                            }}
+                        >
+                            <Typography color="text.secondary">
+                                {loading ? t('common:loading') : t('vocabulary:modal.noVideo')}
+                            </Typography>
+                        </Paper>
+                    )}
+
+                    {/* Dictionary Section */}
+                    {showDictionary ? (
+                        <Box sx={{ mt: 3, mb: 3 }}>
+                            <Typography variant="subtitle1" gutterBottom fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <MenuBook fontSize="small" /> {t('vocabulary:modal.dictionaryDefinition')}
+                            </Typography>
+                            {loadingDictionary ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                                    <CircularProgress size={24} />
+                                </Box>
+                            ) : dictionaryData ? (
+                                <Box>
+                                    {dictionaryData.map((entry, idx) => (
+                                        <Box key={idx} sx={{ mb: 2 }}>
+                                            {entry.phonetic && (
+                                                <Typography variant="body2" color="text.secondary" sx={{ fontFamily: '"Arial Unicode MS", sans-serif', mb: 1 }}>
+                                                    {entry.phonetic}
+                                                </Typography>
+                                            )}
+                                            {entry.meanings.map((meaning, mIdx) => (
+                                                <Box key={mIdx} sx={{ mb: 1 }}>
+                                                    <Typography variant="subtitle2" sx={{ fontStyle: 'italic', color: 'primary.main' }}>
+                                                        {meaning.partOfSpeech}
+                                                    </Typography>
+                                                    <List dense disablePadding>
+                                                        {meaning.definitions.slice(0, 3).map((def, dIdx) => (
+                                                            <ListItem key={dIdx} disablePadding sx={{ display: 'block', mb: 1 }}>
+                                                                <Typography variant="body2">
+                                                                    • {def.definition}
+                                                                </Typography>
+                                                                {def.example && (
+                                                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', ml: 2, fontStyle: 'italic' }}>
+                                                                        "{def.example}"
+                                                                    </Typography>
+                                                                )}
+                                                            </ListItem>
+                                                        ))}
+                                                    </List>
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    ))}
+                                </Box>
+                            ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                    {t('vocabulary:modal.noDictionaryData')}
+                                </Typography>
+                            )}
+                        </Box>
+                    ) : (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                            <Button
+                                startIcon={<MenuBook />}
+                                onClick={handleCheckDictionary}
+                                variant="outlined"
+                                size="small"
+                            >
+                                {t('vocabulary:modal.checkDictionary')}
+                            </Button>
+                        </Box>
+                    )}
+
+                    {/* Occurrence List */}
+                    {occurrences.length > 1 && (
+                        <Box>
+                            <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                                {t('vocabulary:modal.otherOccurrences')} ({occurrences.length})
+                            </Typography>
+                            <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
+                                {occurrences.map((occ, index) => (
+                                    <ListItem key={index} disablePadding>
+                                        <ListItemButton
+                                            selected={selectedOccurrence === occ}
+                                            onClick={() => handleOccurrenceClick(occ)}
+                                        >
+                                            <PlayArrow sx={{ mr: 1, fontSize: 20 }} />
+                                            <ListItemText
+                                                primary={occ.title}
+                                                secondary={`P${occ.page} - ${occ.startTime}s - "${occ.context.substring(0, 40)}..."`}
+                                            />
+                                            {/* Show Recommended Icon for high scores */}
+                                            {occ.score && occ.score >= 5 && (
+                                                <Tooltip title={t('vocabulary:modal.recommended')}>
+                                                    <Recommend color="primary" sx={{ ml: 1, fontSize: 20 }} />
+                                                </Tooltip>
+                                            )}
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Box>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
+        </>
     )
 }

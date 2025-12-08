@@ -14,13 +14,13 @@ vi.mock('../../services/db', () => ({
     }
 }))
 vi.mock('react-i18next', () => ({
-    useTranslation: () => ({ t: (key: string) => key })
+    useTranslation: () => ({ t: (key: string, fallback?: string) => fallback || key })
 }))
 
 // Wrapper to provide router with params
-const renderWithRouter = (id: string = '1') => {
+const renderWithRouter = (id: string = '1', initialEntries?: string[]) => {
     return render(
-        <MemoryRouter initialEntries={[`/history/${id}`]}>
+        <MemoryRouter initialEntries={initialEntries || [`/history/${id}`]}>
             <Routes>
                 <Route path="/history/:id" element={<QuizResultPage />} />
                 <Route path="/history" element={<div>History List</div>} />
@@ -69,7 +69,7 @@ describe('QuizResultPage', () => {
         renderWithRouter('1')
 
         await waitFor(() => {
-            expect(screen.getByText('history:quizResult')).toBeInTheDocument()
+            expect(screen.getByText('Quiz Result')).toBeInTheDocument()
             expect(screen.getByText('90')).toBeInTheDocument()
             expect(screen.getByText('2m 0s')).toBeInTheDocument()
             expect(screen.getByText('Reading Q1')).toBeInTheDocument()
@@ -95,7 +95,6 @@ describe('QuizResultPage', () => {
 
         await waitFor(() => {
             expect(screen.getByText('Question 1 Stem')).toBeInTheDocument()
-            // Check for wrong answer indication
             expect(screen.getByText(/Correct Answer/)).toBeInTheDocument()
             expect(screen.getByText(/Your Answer/)).toBeInTheDocument()
         })
@@ -103,7 +102,7 @@ describe('QuizResultPage', () => {
 
     it('navigates back to history list', async () => {
         vi.mocked(db.quizRecords.get).mockResolvedValue(undefined)
-        renderWithRouter('999')
+        renderWithRouter('999', ['/history', '/history/999'])
 
         await waitFor(() => {
             expect(screen.getByText('Record not found')).toBeInTheDocument()

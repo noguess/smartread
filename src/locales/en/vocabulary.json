@@ -23,6 +23,10 @@
         "checkDictionary": "Check Dictionary",
         "noDictionaryData": "No dictionary data found",
         "recommended": "Recommended",
-        "speak": "Speak"
+        "speak": "Speak",
+        "toast": {
+            "autoAdded": "Added '{{word}}' to vocabulary",
+            "statusUpdated": "Updated '{{word}}' to Learning status"
+        }
     }
 }
