@@ -19,7 +19,8 @@
         "next": "Next",
         "submit": "Submit",
         "search": "Search",
-        "reset": "Reset"
+        "reset": "Reset",
+        "study": "Deep Dive"
     },
     "status": {
         "new": "New",

@@ -28,9 +28,11 @@ trigger: always_on
 
 ## Phase 1: Context & Plan (准备)
 * **Architecture First**: **必须**始终读取 `ARCHITECTURE.md` (技术宪法)。
+
 * **PRD Policy (按需读取)**:
   - **IF** 任务是“开发新功能” (New Feature) 或 “修改核心业务逻辑”: -> **必须读取** `PRD.md` 以确保符合产品定义。
   - **IF** 任务是“修复 Bug”、“UI调整”或“重构”: -> **不要读取** `PRD.md`，以现有代码逻辑为准 (Code is Truth)。
+
 * **依赖嗅探**: 必须先读取 `package.json` 和 `vite.config.ts`。确认是 TS/JS？Tailwind/CSS Modules？
 * **风格对齐**: 读取一个现有的 `.tsx` 组件，模仿其命名和 Hooks 写法。
 * **原子拆解**: 凡是涉及 >2 个文件的任务，必须先列出 `Step-by-Step` 计划。
