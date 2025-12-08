@@ -65,7 +65,7 @@ trigger: always_on
 * **NO PLACEHOLDERS**: 严禁留下 `// ...rest code`，必须输出完整代码。
 
 ## Phase 3: Verification (验证)
-* **Browser Check**: 代码写完后，必须尝试用 Browser Tool 打开 `http://localhost:5173` (或当前 Vite 端口) 截图验证。
+* **Browser Check**: 代码写完后，必须尝试用 Browser Tool 打开 `http://localhost:3000` (或当前 Vite 端口) 截图验证。
 * **Error Handling**: 遇到报错，禁止吞掉错误。必须修复根因。
 * **非UI修改的后端或服务代码，尽量写单元测试进行验证
 

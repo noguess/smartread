@@ -8,6 +8,7 @@ interface ArticleContentProps {
     title: string
     content: string
     onWordClick?: (word: string) => void
+    onSelection?: (word: string, position: { top: number, left: number }) => void
     fontSize: 'small' | 'medium' | 'large'
 }
 
@@ -17,7 +18,7 @@ const fontSizeMap = {
     large: '19px'
 }
 
-export default function ArticleContent({ title, content, onWordClick, fontSize }: ArticleContentProps) {
+export default function ArticleContent({ title, content, onWordClick, onSelection, fontSize }: ArticleContentProps) {
     const { t } = useTranslation(['reading'])
     const [showHint, setShowHint] = useState(false)
 
@@ -39,6 +40,30 @@ export default function ArticleContent({ title, content, onWordClick, fontSize }
         const word = e.currentTarget.textContent || ''
         if (onWordClick) {
             onWordClick(word)
+        }
+    }
+
+    const handleSelection = () => {
+        if (!onSelection) return
+
+        const selection = window.getSelection()
+        if (!selection || selection.rangeCount === 0) return
+
+        const text = selection.toString().trim()
+
+        // Simple heuristic: Only trigger for single words or short phrases (no spaces ideally for single word lookup)
+        // But let's allow single word selection.
+        if (text && text.length > 1 && !text.includes(' ')) {
+            const range = selection.getRangeAt(0)
+            const rect = range.getBoundingClientRect()
+
+            // Calculate absolute position
+            // We pass the position relative to the viewport (client coordinates)
+            // logic in Popover will use anchorReference="anchorPosition" with client coordinates
+            onSelection(text, {
+                top: rect.bottom, // Show below the selection
+                left: rect.left + rect.width / 2 // Center horizontally
+            })
         }
     }
 
@@ -111,6 +136,7 @@ export default function ArticleContent({ title, content, onWordClick, fontSize }
                 {/* Content */}
                 <Box
                     className={styles.articleContent}
+                    onMouseUp={handleSelection} // Trigger on mouse up
                     sx={{
                         mt: 4,
                         fontSize: fontSizeMap[fontSize],

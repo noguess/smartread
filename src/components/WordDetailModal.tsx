@@ -19,6 +19,8 @@ import { useTranslation } from 'react-i18next'
 import { videoIndexService, VideoOccurrence } from '../services/videoIndexService'
 import { wordService } from '../services/wordService'
 import { dictionaryService, DictionaryEntry } from '../services/dictionaryService'
+import { chineseDictionaryService } from '../services/chineseDictionaryService'
+import { getLemma } from '../utils/textUtils'
 import { VolumeUp, MenuBook } from '@mui/icons-material'
 import { Button, CircularProgress, Snackbar, Alert } from '@mui/material'
 
@@ -61,33 +63,54 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
         setShowDictionary(false)
 
         try {
-            // 1. Try to get word from DB
-            let dbWord = await wordService.getWordBySpelling(word.toLowerCase())
+            // 0. Normalize to Lemma
+            const lemma = getLemma(word)
+
+            // 1. Try to get word (Lemma) from DB
+            let dbWord = await wordService.getWordBySpelling(lemma)
 
             // 2. If not found in DB, fetch from Dictionary API and auto-save
             if (!dbWord) {
                 try {
-                    const apiData = await dictionaryService.getDefinition(word)
-                    if (apiData && apiData.length > 0) {
-                        setDictionaryData(apiData) // Cache it for dictionary view
-                        dbWord = await saveWordFromDictionary(word, apiData[0])
-                        showToast(t('vocabulary:modal.toast.autoAdded', { word }))
-                        console.log('Auto-added word to DB:', dbWord)
+                    // Priority 1: Chinese Dictionary (Youdao Proxy)
+                    const chineseDef = await chineseDictionaryService.getDefinition(lemma)
+
+                    if (chineseDef) {
+                        // Found Chinese Definition
+                        dbWord = await saveNewWord(lemma, chineseDef.definition, chineseDef.phonetic)
+                        showToast(t('vocabulary:modal.toast.autoAdded', { word: lemma }))
+                    } else {
+                        // Priority 2: Fallback to English Dictionary
+                        const apiData = await dictionaryService.getDefinition(lemma)
+                        if (apiData && apiData.length > 0) {
+                            setDictionaryData(apiData) // Cache for display
+                            // Format English meaning
+                            const enMeaning = apiData[0].meanings.slice(0, 2).map(m =>
+                                `${m.partOfSpeech}. ${m.definitions[0].definition}`
+                            ).join('; ')
+                            const enPhonetic = apiData[0].phonetic || apiData[0].phonetics.find(p => p.text)?.text || ''
+
+                            dbWord = await saveNewWord(lemma, enMeaning, enPhonetic)
+                            showToast(t('vocabulary:modal.toast.autoAdded', { word: lemma }))
+                        }
                     }
                 } catch (err) {
                     console.warn('Auto-fetch dictionary failed:', err)
                 }
             } else if (dbWord.status === 'New') {
                 // Task 2: If word exists but is 'New', upgrade to 'Learning'
+                // Note: We are updating the LEMMA's status
                 await wordService.updateWordStatus(dbWord.id!, 'Learning', Date.now(), 1)
                 dbWord.status = 'Learning' // Update local object
-                showToast(t('vocabulary:modal.toast.statusUpdated', { word }))
+                showToast(t('vocabulary:modal.toast.statusUpdated', { word: lemma }))
             }
 
             setWordData(dbWord)
 
-            // 3. Search for video occurrences
-            const results = await videoIndexService.searchWord(word)
+            // 3. Search for video occurrences (Use original word for exact context match, or lemma?)
+            // Let's use Lemma to find more results, as 'decided' -> 'decide' is likely desired.
+            const results = await videoIndexService.searchWord(lemma)
+
 
             // Sort results: Score DESC, then Page ASC, then Time ASC
             results.sort((a, b) => {
@@ -112,18 +135,11 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
         }
     }
 
-    const saveWordFromDictionary = async (spelling: string, entry: DictionaryEntry) => {
-        // Format meaning: "n. definition; v. definition"
-        const meaning = entry.meanings.slice(0, 2).map(m =>
-            `${m.partOfSpeech}. ${m.definitions[0].definition}`
-        ).join('; ')
-
-        const phonetic = entry.phonetic || entry.phonetics.find(p => p.text)?.text || ''
-
+    const saveNewWord = async (spelling: string, meaning: string, phonetic?: string) => {
         const newWord = {
             spelling,
             meaning,
-            phonetic,
+            phonetic: phonetic || '',
             status: 'Learning' as const,
             nextReviewAt: Date.now(),
             interval: 1,

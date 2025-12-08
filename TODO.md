@@ -1,6 +1,17 @@
 # 代码质量改进项 (Code Quality TODOs)
 
-## [New Feature] 查词自动加入单词本 / Auto-Add Searched Words
+## [Feature] Auto-Add Lemma with Chinese Definition
+- [x] Task 1: Refactor `loadWordData` in `WordDetailModal`
+  - Use `getLemma` to normalize the input word before DB check.
+  - If word is not in DB, use the lemma for processing.
+- [x] Task 2: Implement Chinese Definition Fetching
+  - Prioritize `chineseDictionaryService` (Youdao) to get Chinese meaning.
+  - Fallback to `llmService.getChineseDefinition` if Youdao fails.
+  - Only fallback to English `dictionaryService` as a last resort.
+- [x] Task 3: Save Strategy Update
+  - Ensure the saved word is the **Lemma**.
+  - Ensure the saved meaning is **Chinese**.
+
 - [x] Task 1: 改造 `WordDetailModal.tsx` 数据加载流程
   - 当本地无此单词数据时，自动优先调用 `dictionaryService` 获取释义。
   - 获取成功后，自动构造 `Word` 对象并存入数据库 (状态: `Learning`)。

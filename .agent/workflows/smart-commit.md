@@ -26,6 +26,7 @@ description: "智能提交：自动同步架构文档、勾选任务并生成 Co
 只有在完成上述两步后，基于修改内容生成 Git Commit Message。
 - **格式要求**: 遵循 Conventional Commits (feat/fix/docs/refactor)。
 - **语言要求**: 使用**中文**编写 Commit 的描述部分。
+- **调起终端进行提交
 
 ---
 

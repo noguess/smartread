@@ -20,6 +20,7 @@ import ReadingProgressBar from '../components/reading/ReadingProgressBar'
 import ReadingToolbar from '../components/reading/ReadingToolbar'
 import ReadingTimer from '../components/reading/ReadingTimer'
 import GenerationLoading from '../components/reading/GenerationLoading'
+import DefinitionPopover from '../components/reading/DefinitionPopover'
 import { useTranslation } from 'react-i18next'
 import { useStudyTimer } from '../hooks/useStudyTimer'
 
@@ -63,6 +64,30 @@ export default function ReadingPage() {
     // Snackbar Notification State
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
+
+    // Definition Popover State
+    const [popoverState, setPopoverState] = useState<{
+        word: string
+        position: { top: number; left: number }
+    } | null>(null)
+
+    const handleSelection = (word: string, position: { top: number; left: number }) => {
+        // Close if selecting a new word or clearing
+        if (!word) {
+            setPopoverState(null)
+            return
+        }
+        setPopoverState({ word, position })
+    }
+
+    const handleDeepDive = (word: string) => {
+        setPopoverState(null) // Close popover
+        handleWordClick(word) // Open full modal
+    }
+
+    const handleClosePopover = () => {
+        setPopoverState(null)
+    }
 
     // Study Timer
     const { timeSpent, start: startTimer, pause: pauseTimer } = useStudyTimer(false)
@@ -788,7 +813,15 @@ export default function ReadingPage() {
                                     title={articleData.title}
                                     content={articleData.content}
                                     onWordClick={handleWordClick}
+                                    onSelection={handleSelection} // Pass selection handler
                                     fontSize={fontSize}
+                                />
+
+                                <DefinitionPopover
+                                    word={popoverState?.word || ''}
+                                    anchorPosition={popoverState ? popoverState.position : null}
+                                    onClose={handleClosePopover}
+                                    onDeepDive={handleDeepDive}
                                 />
 
                                 <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>

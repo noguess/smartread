@@ -141,3 +141,4 @@ interface ApiResponse<T> {
 | **持久化** | **Dexie.js** | 所有的用户数据必须存入 IndexedDB，不使用 LocalStorage 存大量数据。 |
 | **测试** | **Vitest + RTL** | 使用 `vitest` 做单元测试，`happy-dom` 模拟环境。 |
 | **图标** | **MUI Icons** | 统一使用 `@mui/icons-material`。 |
+| **NLP** | **compromise** | 轻量级客户端自然语言处理 (Lemmatization) |

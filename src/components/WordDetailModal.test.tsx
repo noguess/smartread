@@ -3,17 +3,25 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import WordDetailModal from './WordDetailModal'
 import { wordService } from '../services/wordService'
 import { dictionaryService } from '../services/dictionaryService'
+import { chineseDictionaryService } from '../services/chineseDictionaryService'
 
 // Mock dependencies
 vi.mock('../services/wordService', () => ({
     wordService: {
         getWordBySpelling: vi.fn(),
-        addWord: vi.fn()
+        addWord: vi.fn(),
+        updateWordStatus: vi.fn()
     }
 }))
 
 vi.mock('../services/dictionaryService', () => ({
     dictionaryService: {
+        getDefinition: vi.fn()
+    }
+}))
+
+vi.mock('../services/chineseDictionaryService', () => ({
+    chineseDictionaryService: {
         getDefinition: vi.fn()
     }
 }))
@@ -122,5 +130,70 @@ describe('WordDetailModal', () => {
         })
         // Should eventually stop loading (we could verify loading state gone, but usually we verify no crash)
         expect(screen.queryByText('API Error')).not.toBeInTheDocument() // Ensure we don't flash raw error
+    })
+    it('uses lemma for DB lookup and saving', async () => {
+        // Input: "decided" (Conjugated)
+        // Expected Lemma: "decide"
+
+        // Mock DB: "decide" not found initially
+        vi.mocked(wordService.getWordBySpelling).mockResolvedValue(undefined)
+
+        // Mock Dictionary: Returns data for "decide"
+        const mockDictEntry = {
+            word: 'decide',
+            phonetics: [{ text: '/dɪˈsaɪd/' }],
+            meanings: [{ partOfSpeech: 'v', definitions: [{ definition: 'To choose' }] }],
+            sourceUrls: []
+        }
+        vi.mocked(dictionaryService.getDefinition).mockResolvedValue([mockDictEntry as any])
+        vi.mocked(wordService.addWord).mockResolvedValue(999)
+
+        render(<WordDetailModal word="decided" open={true} onClose={mockOnClose} />)
+
+        await waitFor(() => {
+            // Should verify that we looked up 'decide' (Lemma), NOT 'decided'
+            expect(wordService.getWordBySpelling).toHaveBeenCalledWith('decide')
+        })
+
+        await waitFor(() => {
+            // Should fetch dictionary for 'decide'
+            expect(dictionaryService.getDefinition).toHaveBeenCalledWith('decide')
+        })
+
+        await waitFor(() => {
+            // Should save 'decide'
+            expect(wordService.addWord).toHaveBeenCalledWith(expect.objectContaining({
+                spelling: 'decide'
+            }))
+        })
+    })
+
+    it('prioritizes Chinese dictionary and saves with Chinese definition', async () => {
+        // Mock DB miss
+        vi.mocked(wordService.getWordBySpelling).mockResolvedValue(undefined)
+
+        // Mock Chinese Dict Hit
+        vi.mocked(chineseDictionaryService.getDefinition).mockResolvedValue({
+            definition: '测试释义',
+            phonetic: '/test-chn/'
+        })
+        vi.mocked(wordService.addWord).mockResolvedValue(1001)
+
+        render(<WordDetailModal word="test" open={true} onClose={mockOnClose} />)
+
+        expect(screen.getByRole('dialog')).toBeInTheDocument()
+
+        await waitFor(() => {
+            expect(chineseDictionaryService.getDefinition).toHaveBeenCalledWith('test')
+        })
+
+        await waitFor(() => {
+            // Should save with Chinese info
+            expect(wordService.addWord).toHaveBeenCalledWith(expect.objectContaining({
+                spelling: 'test',
+                meaning: '测试释义',
+                phonetic: '/test-chn/'
+            }))
+        })
     })
 })

@@ -150,6 +150,28 @@ Generate 4 Reading Comprehension questions and ${config.total} Vocabulary questi
       return this._callDeepSeek(apiKey, baseUrl, fullSystemPrompt, userPrompt, onProgress)
    },
 
+   async getChineseDefinition(
+      word: string,
+      settings: Setting
+   ): Promise<{ definition: string; phonetic: string }> {
+      const apiKey = settings.apiKey
+      const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
+
+      if (!apiKey) throw new Error('API Key is missing')
+
+      const systemPrompt = `
+You are a helpful English-Chinese dictionary assistant.
+Return a JSON object with:
+{
+  "definition": "Concise Chinese definition (max 15 chars)",
+  "phonetic": "IPA phonetic symbol"
+}
+`
+      const userPrompt = `Define the word: "${word}"`
+
+      return this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt)
+   },
+
    async _callDeepSeek(apiKey: string, baseUrl: string, systemPrompt: string, userPrompt: string, onProgress?: (p: number) => void): Promise<any> {
       console.log('Starting LLM generation...')
       const controller = new AbortController()
