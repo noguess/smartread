@@ -172,6 +172,29 @@ Return a JSON object with:
       return this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt)
    },
 
+   async analyzeSentence(
+      sentence: string,
+      settings: Setting
+   ): Promise<{ translation: string; grammar: string[] }> {
+      const apiKey = settings.apiKey
+      const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
+
+      if (!apiKey) throw new Error('API Key is missing')
+
+      const systemPrompt = `
+You are an expert English grammar teacher.
+Analyze the following English sentence.
+Return a JSON object with:
+{
+  "translation": "Natural, fluent Chinese translation",
+  "grammar": ["Point 1: explanation", "Point 2: explanation"] (List 1-3 key grammatical points)
+}
+`
+      const userPrompt = `Analyze this sentence: "${sentence}"`
+
+      return this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt)
+   },
+
    async _callDeepSeek(apiKey: string, baseUrl: string, systemPrompt: string, userPrompt: string, onProgress?: (p: number) => void): Promise<any> {
       console.log('Starting LLM generation...')
       const controller = new AbortController()

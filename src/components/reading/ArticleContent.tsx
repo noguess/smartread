@@ -51,9 +51,8 @@ export default function ArticleContent({ title, content, onWordClick, onSelectio
 
         const text = selection.toString().trim()
 
-        // Simple heuristic: Only trigger for single words or short phrases (no spaces ideally for single word lookup)
-        // But let's allow single word selection.
-        if (text && text.length > 1 && !text.includes(' ')) {
+        // Allow any selection longer than 1 char (single words or sentences)
+        if (text && text.length > 1) {
             const range = selection.getRangeAt(0)
             const rect = range.getBoundingClientRect()
 

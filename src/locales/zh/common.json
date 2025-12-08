@@ -20,13 +20,22 @@
         "submit": "提交",
         "search": "搜索",
         "reset": "重置",
-        "study": "深入学习"
+        "study": "深入学习",
+        "analyze": "分析"
     },
     "status": {
         "new": "新词",
         "learning": "学习中",
         "review": "复习",
-        "mastered": "已掌握"
+        "mastered": "已掌握",
+        "sentenceAnalysis": "长句分析"
+    },
+    "msg": {
+        "clickToAnalyze": "点击分析语法和翻译"
+    },
+    "label": {
+        "translation": "参考翻译",
+        "grammar": "语法要点"
     },
     "common": {
         "loading": "加载中...",

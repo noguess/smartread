@@ -17,13 +17,28 @@ description: "自动提取 TODO.md 中的下一项任务并执行"
 ## Step 2: Context Loading
 根据该任务内容，智能决定需要读取哪些文件作为 Context。
 
-## Step 3: Execution (遵循系统规则)
-执行代码修改。
-*注意：严格遵守 `.agent/rules/system-instructions.md` 中的所有规范*
+## Step 3: 编写测试
+1. 在 tests/ 目录下为新功能创建测试文件。
 
-## Step 4: Verification
-遵守`.agent/rules/system-instructions.md`中的要求，进行验证
+2. 编写单元测试和集成测试，定义新功能的预期行为和边界条件。
 
-## Step 5: Update Status
+3. 运行测试，并确认测试失败（这是预期的，因为功能尚未实现）。
+
+4. 向用户展示失败的测试结果截图或日志。
+
+## Step 4: 实现功能
+1. 编写最小量的业务代码，以通过上述测试。
+
+2. 在编写代码时，严格遵守 .agent/rules/ 中的所有规则。
+
+## Step 5: 验证与重构
+1. 遵守`.agent/rules/`中的要求，进行验证
+2. 再次运行测试，确保所有测试通过。
+3. 如果测试失败，修复代码直到通过。
+4. 检查代码是否存在坏味道（Code Smells），进行必要的重构。
+5. 运行全量测试套件，确保没有引入回归错误（Regression）。
+
+
+## Step 6: Update Status
 **询问用户**: "任务是否通过验证？"
 - 如果用户说 "Yes/OK": 自动将 `TODO.md` 中该项打钩 `[x]`，并提示可以进行 `/smart-commit` 或继续 `/next`。

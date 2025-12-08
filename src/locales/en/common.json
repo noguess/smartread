@@ -20,13 +20,22 @@
         "submit": "Submit",
         "search": "Search",
         "reset": "Reset",
-        "study": "Deep Dive"
+        "study": "Deep Dive",
+        "analyze": "Analyze"
     },
     "status": {
         "new": "New",
         "learning": "Learning",
         "review": "Review",
-        "mastered": "Mastered"
+        "mastered": "Mastered",
+        "sentenceAnalysis": "Sentence Analysis"
+    },
+    "msg": {
+        "clickToAnalyze": "Click to analyze grammar & translation"
+    },
+    "label": {
+        "translation": "Translation",
+        "grammar": "Grammar Points"
     },
     "common": {
         "loading": "Loading...",

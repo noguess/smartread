@@ -21,6 +21,7 @@ import ReadingToolbar from '../components/reading/ReadingToolbar'
 import ReadingTimer from '../components/reading/ReadingTimer'
 import GenerationLoading from '../components/reading/GenerationLoading'
 import DefinitionPopover from '../components/reading/DefinitionPopover'
+import SentenceAnalysisPopover from '../components/reading/SentenceAnalysisPopover'
 import { useTranslation } from 'react-i18next'
 import { useStudyTimer } from '../hooks/useStudyTimer'
 
@@ -65,19 +66,33 @@ export default function ReadingPage() {
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
 
-    // Definition Popover State
+    // Settings State
+    const [settings, setSettings] = useState<any>(null)
+
+    // Definition/Sentence Analysis Popover State
     const [popoverState, setPopoverState] = useState<{
-        word: string
+        text: string
+        type: 'word' | 'sentence'
         position: { top: number; left: number }
     } | null>(null)
 
-    const handleSelection = (word: string, position: { top: number; left: number }) => {
+    useEffect(() => {
+        // Load settings independently
+        settingsService.getSettings().then(setSettings)
+    }, [])
+
+    const handleSelection = (text: string, position: { top: number; left: number }) => {
         // Close if selecting a new word or clearing
-        if (!word) {
+        if (!text) {
             setPopoverState(null)
             return
         }
-        setPopoverState({ word, position })
+
+        // Determine if it's a word or sentence
+        // Heuristic: If it has spaces or is very long, treat as sentence
+        const type = (text.trim().includes(' ') || text.length > 20) ? 'sentence' : 'word'
+
+        setPopoverState({ text, type, position })
     }
 
     const handleDeepDive = (word: string) => {
@@ -817,12 +832,25 @@ export default function ReadingPage() {
                                     fontSize={fontSize}
                                 />
 
-                                <DefinitionPopover
-                                    word={popoverState?.word || ''}
-                                    anchorPosition={popoverState ? popoverState.position : null}
-                                    onClose={handleClosePopover}
-                                    onDeepDive={handleDeepDive}
-                                />
+                                {/* Word Definition Popover */}
+                                {popoverState?.type === 'word' && (
+                                    <DefinitionPopover
+                                        word={popoverState.text}
+                                        anchorPosition={popoverState.position}
+                                        onClose={handleClosePopover}
+                                        onDeepDive={handleDeepDive}
+                                    />
+                                )}
+
+                                {/* Sentence Analysis Popover */}
+                                {popoverState?.type === 'sentence' && settings && (
+                                    <SentenceAnalysisPopover
+                                        sentence={popoverState.text}
+                                        anchorPosition={popoverState.position}
+                                        onClose={handleClosePopover}
+                                        settings={settings}
+                                    />
+                                )}
 
                                 <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
                                     {isReviewMode ? (

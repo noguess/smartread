@@ -88,21 +88,14 @@ trigger: always_on
 3. **Existing Check**:
    在新建 key 之前，先搜索 `locales` 文件，看是否已有可复用的通用词（如 "确认", "取消"）。
 
-# 5. DEFINITION OF DONE (收尾标准)
-每次任务结束前，必须执行 **POST-TASK CHECK**：
-
-1.  **Docs Sync**: 本次修改是否引入了新库/新路由？ -> **立即更新** `ARCHITECTURE.md`。
-2.  **Task Sync**: 任务完成了吗？ -> **立即勾选** `TODO.md`。
-3.  **Env Check**: 加了环境变量吗？ -> **立即更新** `.env.example`。
-
-# 6. CRITICAL CONSTRAINTS (负面清单)
+# 5. CRITICAL CONSTRAINTS (负面清单)
 * 🚫 **禁止**直接操作 DOM (使用 `useRef`)。
 * 🚫 **禁止**在 Render 逻辑中通过 `setState` 触发重渲染。
 * 🚫 **禁止**引入重型 UI 库（除非我明确指定）。
 * 🚫 **禁止**删除用户未指定的文件。
 * 🚫 **禁止**中英文夹杂（术语除外）。
 
-# 7. INTERACTION STYLE
+# 6. INTERACTION STYLE
 * **报错时**: 直接给出 `Diff` 或修复后的代码块，不要废话。
 * **任务完成时**:
     > ✅ **任务已闭环**

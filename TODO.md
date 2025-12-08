@@ -19,6 +19,11 @@
   - [x] 当本地已有单词但状态为 `New` 时，自动更新为 `Learning`。
   - [x] 添加 `Snackbar` 提示用户操作结果（"已加入单词本" / "状态更新为学习中"）。
 
+## [Feature] Sentence Analysis (长难句分析)
+- [x] Task 1: Implement `analyzeSentence` in `llmService` (API & Prompt).
+- [x] Task 2: Create `SentenceAnalysisPopover` component with Translation & Grammar sections.
+- [x] Task 3: Update `ReadingPage` to support sentence/phrase selection toggle between definitions and analysis.
+
 ## 1. 类型安全改进 (移除 `any`)
 发现 **14** 处使用了 `any`，应使用适当的 TypeScript 接口进行优化：
 
