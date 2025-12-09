@@ -93,5 +93,45 @@ describe('ReadingPage', () => {
         })
     })
 
-    // Add more tests as needed
+    it('renders Word Study info in Sidebar when data is available', async () => {
+        const mockArticle = {
+            id: 2,
+            uuid: 'uuid-2',
+            title: 'Word Study Article',
+            content: 'Content...',
+            targetWords: ['light'],
+            wordCtxMeanings: [
+                { word: 'light', part_of_speech: 'v.', meaning_in_context: '点燃' }
+            ]
+        }
+        vi.mocked(articleService.getById).mockResolvedValue(mockArticle as any)
+
+        renderWithRouter('/read/2')
+
+        await waitFor(() => {
+            // Check content is rendered (now in Sidebar)
+            expect(screen.getByText('点燃')).toBeInTheDocument()
+            expect(screen.getByText('light')).toBeInTheDocument()
+            expect(screen.getByText('v.')).toBeInTheDocument()
+        })
+    })
+
+    it('displays correct difficulty label based on article data', async () => {
+        const mockArticle = {
+            id: 3,
+            uuid: 'uuid-3',
+            title: 'Difficulty Test',
+            content: 'Content...',
+            targetWords: [],
+            difficultyLevel: 'L3'
+        }
+        vi.mocked(articleService.getById).mockResolvedValue(mockArticle as any)
+
+        renderWithRouter('/read/3')
+
+        await waitFor(() => {
+            expect(screen.getByText('reading:sidebar.advanced')).toBeInTheDocument()
+        })
+    })
+
 })

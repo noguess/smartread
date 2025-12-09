@@ -31,6 +31,12 @@ export interface History {
     }
 }
 
+export interface WordStudyItem {
+    word: string
+    part_of_speech: string
+    meaning_in_context: string
+}
+
 export interface Article {
     id?: number
     uuid: string // v4 uuid
@@ -40,6 +46,7 @@ export interface Article {
     difficultyLevel: 'L1' | 'L2' | 'L3'
     createdAt: number
     source: 'generated' | 'imported'
+    wordCtxMeanings?: WordStudyItem[]
 }
 
 export interface QuizRecord {

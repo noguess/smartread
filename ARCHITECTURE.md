@@ -59,6 +59,7 @@ erDiagram
         enum difficultyLevel "L1 | L2 | L3"
         enum source "generated | imported"
         int createdAt "Timestamp"
+        json wordCtxMeanings "Contextual Meanings (Array)"
     }
 
     QUIZ_RECORDS {

@@ -312,7 +312,8 @@ export default function ReadingPage() {
                 content: articleData.content,
                 targetWords: articleData.targetWords,
                 difficultyLevel: settings.difficultyLevel || 'L2',
-                source: 'generated' as const
+                source: 'generated' as const,
+                wordCtxMeanings: articleData.word_study
             }
 
             let articleId: number
@@ -341,7 +342,7 @@ export default function ReadingPage() {
             })
 
             // Update URL without navigation (optional - keeps clean URL)
-            window.history.replaceState({}, '', `/read/${articleId}`)
+            window.history.replaceState({}, '', `/ read / ${articleId} `)
 
             setStep('reading')
         } catch (error) {
@@ -548,17 +549,17 @@ export default function ReadingPage() {
 
                 wordResults[word.spelling] = isCorrect
 
-                console.log(`✅ Word "${word.spelling}" (ID: ${word.id}): ${isCorrect ? 'Correct' : 'Wrong'}`)
+                console.log(`✅ Word "${word.spelling}"(ID: ${word.id}): ${isCorrect ? 'Correct' : 'Wrong'} `)
 
                 // Update SRS based on specific question result
                 const updates = SRSAlgorithm.calculateNextReview(word, isCorrect)
-                console.log(`   SRS updates for "${word.spelling}":`, updates)
+                console.log(`   SRS updates for "${word.spelling}": `, updates)
                 await wordService.updateWord(word.id, updates)
                 console.log(`   ✓ Word status updated`)
             } else {
                 console.warn(`⚠️ Could not find word object for targetWord: "${q.targetWord}"`)
-                console.warn(`   Question stem:`, q.stem)
-                console.warn(`   Available words:`, targetWords.map(w => w.spelling))
+                console.warn(`   Question stem: `, q.stem)
+                console.warn(`   Available words: `, targetWords.map(w => w.spelling))
             }
         }
 
@@ -671,9 +672,9 @@ export default function ReadingPage() {
         let message = ''
 
         if (newLevel !== currentLevel) {
-            console.log(`🔄 Adjusting difficulty: ${currentLevel} -> ${newLevel}`)
+            console.log(`🔄 Adjusting difficulty: ${currentLevel} -> ${newLevel} `)
             await settingsService.saveSettings({ difficultyLevel: newLevel })
-            message = t('reading:difficultyChanged', `Difficulty adjusted to ${newLevel}`, { level: newLevel })
+            message = t('reading:difficultyChanged', `Difficulty adjusted to ${newLevel} `, { level: newLevel })
         } else {
             console.log('✅ Difficulty remains unchanged')
         }
@@ -756,7 +757,10 @@ export default function ReadingPage() {
                                             {t('reading:sidebar.difficulty')}
                                         </Typography>
                                         <Chip
-                                            label={t('reading:sidebar.intermediate')}
+                                            label={t(`reading:sidebar.${currentArticle?.difficultyLevel === 'L1' ? 'beginner' :
+                                                    currentArticle?.difficultyLevel === 'L3' ? 'advanced' :
+                                                        'intermediate'
+                                                }`)}
                                             size="small"
                                             color="primary"
                                             sx={{ mb: 2 }}
@@ -765,9 +769,23 @@ export default function ReadingPage() {
                                         <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
                                             {t('reading:sidebar.targetWords')}
                                         </Typography>
-                                        <Typography variant="h6" color="primary.main" fontWeight="bold">
-                                            {targetWords.length}
-                                        </Typography>
+                                        {currentArticle?.wordCtxMeanings && currentArticle.wordCtxMeanings.length > 0 ? (
+                                            <Box sx={{ mt: 1, maxHeight: 'calc(100vh - 300px)', overflowY: 'auto', pr: 0.5 }}>
+                                                {currentArticle.wordCtxMeanings.map((item, idx) => (
+                                                    <Box key={idx} sx={{ mb: 1, pb: 0.5, borderBottom: '1px dashed #eee' }}>
+                                                        <Typography variant="body2" sx={{ lineHeight: 1.4 }}>
+                                                            <Box component="span" fontWeight="bold" color="primary.main">{item.word}</Box>
+                                                            <Box component="span" color="text.secondary" sx={{ mx: 0.5, fontSize: '0.75em' }}>{item.part_of_speech}</Box>
+                                                            <Box component="span" color="text.primary">{item.meaning_in_context}</Box>
+                                                        </Typography>
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        ) : (
+                                            <Typography variant="h6" color="primary.main" fontWeight="bold">
+                                                {targetWords.length}
+                                            </Typography>
+                                        )}
 
                                         {/* Quiz History Section */}
                                         {quizHistory.length > 0 && (
@@ -781,7 +799,7 @@ export default function ReadingPage() {
                                                         <Paper
                                                             key={record.id}
                                                             variant="outlined"
-                                                            onClick={() => navigate(`/history/${record.id}`)}
+                                                            onClick={() => navigate(`/ history / ${record.id} `)}
                                                             sx={{
                                                                 p: 1.5,
                                                                 borderRadius: 2,

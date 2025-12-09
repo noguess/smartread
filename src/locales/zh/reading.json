@@ -18,7 +18,9 @@
     },
     "sidebar": {
         "difficulty": "难度",
+        "beginner": "初级",
         "intermediate": "中等",
+        "advanced": "高级",
         "targetWords": "目标单词",
         "quizHistory": "测验历史",
         "moreRecords": "更多记录"
@@ -63,5 +65,8 @@
     "hint": {
         "clickWord": "💡 提示：点击蓝色单词可查看释义和视频讲解"
     },
-    "defaultReviewTitle": "复习: "
+    "defaultReviewTitle": "复习: ",
+    "wordStudy": {
+        "title": "核心词汇解析"
+    }
 }

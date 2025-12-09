@@ -1,4 +1,4 @@
-import { Word } from './db'
+import { Word, WordStudyItem } from './db'
 
 export interface Question {
     id: string
@@ -17,6 +17,7 @@ export interface GeneratedContent {
     content: string
     readingQuestions: Question[]
     vocabularyQuestions: Question[]
+    word_study?: WordStudyItem[]
 }
 
 export const mockLLMService = {
@@ -33,7 +34,8 @@ export const mockLLMService = {
             title: article.title,
             content: article.content,
             readingQuestions: quiz.readingQuestions,
-            vocabularyQuestions: quiz.vocabularyQuestions
+            vocabularyQuestions: quiz.vocabularyQuestions,
+            word_study: article.word_study
         }
     },
 
@@ -41,7 +43,7 @@ export const mockLLMService = {
         words: Word[],
         settings?: { difficultyLevel?: 'L1' | 'L2' | 'L3' },
         onProgress?: (progress: number) => void
-    ): Promise<{ title: string; content: string; targetWords: string[] }> {
+    ): Promise<{ title: string; content: string; targetWords: string[]; word_study?: WordStudyItem[] }> {
         // Simulate progressive loading
         await this._simulateProgress(onProgress)
 
@@ -56,7 +58,12 @@ The content is designed to help you prepare for exams.
 
 Current Word List: ${wordList}.
 `,
-            targetWords: words.map(w => w.spelling)
+            targetWords: words.map(w => w.spelling),
+            word_study: words.map(w => ({
+                word: w.spelling,
+                part_of_speech: 'n.', // Mock data
+                meaning_in_context: `(Contextual Meaning of ${w.spelling})`
+            }))
         }
     },
 

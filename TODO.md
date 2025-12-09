@@ -27,6 +27,12 @@
 - [x] Task 5: Refactor `SentenceAnalysisPopover` to display rich analysis (Markdown).
 - [x] Task 6: Update I18n keys for new analysis sections.
 
+## [Feature] Word Study Integration
+- [x] Task 1: Update `Article` schema in `db.ts` to include `wordCtxMeanings`.
+- [x] Task 2: Enhance `llmService` prompt to generate contextual word meanings (Word Study).
+- [x] Task 3: Display detailed Word Study info (POS, Meaning) in `ReadingPage` sidebar.
+- [x] Task 4: Fix difficulty label display bug (dynamic Beginner/Intermediate/Advanced).
+
 ## 1. 类型安全改进 (移除 `any`)
 发现 **14** 处使用了 `any`，应使用适当的 TypeScript 接口进行优化：
 

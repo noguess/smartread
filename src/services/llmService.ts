@@ -1,4 +1,4 @@
-import { Word, Setting } from './db'
+import { Word, Setting, WordStudyItem } from './db'
 import { GeneratedContent } from './mockLLMService'
 
 const SYSTEM_PROMPT_ARTICLE = `
@@ -46,7 +46,17 @@ The JSON structure must be:
 }
 `
 
+export interface GeneratedArticleData {
+   title: string
+   topic?: string
+   difficulty_assessed?: string
+   content: string
+   targetWords: string[]
+   word_study?: WordStudyItem[]
+}
+
 export const llmService = {
+
    /**
     * @deprecated This method is kept for backward compatibility. 
     * It internally calls generateArticleOnly and generateQuizForArticle.
@@ -55,7 +65,7 @@ export const llmService = {
       words: Word[],
       settings: Setting,
       onProgress?: (progress: number) => void
-   ): Promise<GeneratedContent> {
+   ): Promise<GeneratedContent & { word_study?: WordStudyItem[] }> {
       // Split progress: 50% for article, 50% for quiz
       const handleProgress = (base: number, p: number) => {
          onProgress?.(base + (p * 0.5))
@@ -74,15 +84,18 @@ export const llmService = {
          title: articleData.title,
          content: articleData.content,
          readingQuestions: quizData.readingQuestions,
-         vocabularyQuestions: quizData.vocabularyQuestions
+         vocabularyQuestions: quizData.vocabularyQuestions,
+         word_study: articleData.word_study
       }
    },
 
+
+   // ... (inside generateArticleOnly)
    async generateArticleOnly(
       words: Word[],
       settings: Setting,
       onProgress?: (progress: number) => void
-   ): Promise<{ title: string; content: string; targetWords: string[] }> {
+   ): Promise<GeneratedArticleData> {
       const apiKey = settings.apiKey
       const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
 
@@ -91,18 +104,97 @@ export const llmService = {
       const wordList = words.map((w) => w.spelling).join(', ')
       const lengthPrompt = settings.articleLenPref === 'short' ? '400 words' : settings.articleLenPref === 'long' ? '800 words' : '600 words'
       const difficultyLevel = settings.difficultyLevel || 'L2'
-      const cefrLevel = difficultyLevel === 'L1' ? 'A1' : difficultyLevel === 'L2' ? 'A2' : 'B1'
+      const cefrLevel = difficultyLevel === 'L1' ? 'A1' : difficultyLevel === 'L2' ? 'A2' : 'B1';
+
+      const difficultyMap = {
+         'L1': `Beginner Level (Grade 7 / CEFR A1). 
+               - Sentence Structure: Short, simple sentences (Subject + Verb + Object). 
+               - Vocabulary: High-frequency basic words only. 
+               - Goal: Build confidence for beginners.`,
+
+         'L2': `Standard Zhongkao Level (Grade 8-9 / CEFR A2). 
+               - Sentence Structure: Mix of simple and compound sentences. Introduction of basic clauses (time, if-clauses).
+               - Vocabulary: Standard Zhongkao core vocabulary.
+               - Goal: Match the difficulty of standard reading tasks in the exam.`,
+
+         'L3': `Advanced/Distinction Level (High School Prep / CEFR B1). 
+               - Sentence Structure: Complex sentences with embedded clauses (relative clauses, participle phrases). 
+               - Vocabulary: Richer vocabulary including abstract concepts.
+               - Goal: Challenge the student, aimed at getting full marks in the hardest exam questions.`
+      };
+
+      const levelDescription = difficultyMap[difficultyLevel] || difficultyMap['L2'];
 
       const userPrompt = `
-Please write an article using the following target words: ${wordList}.
-Difficulty Level: ${difficultyLevel} (CEFR ${cefrLevel})
-Target length: approximately ${lengthPrompt}.
+         # Role
+         You are an expert English Teacher specializing in **China's Senior High School Entrance Examination (Zhongkao)**.
+         You adhere to the **"New Curriculum Standard"** values.
 
-IMPORTANT requirements:
-1. Ensure all target words are wrapped in **double asterisks** like **word**
-2. Return ONLY valid JSON with title, content, and targetWords.
-`
-      return this._callDeepSeek(apiKey, baseUrl, SYSTEM_PROMPT_ARTICLE, userPrompt, onProgress)
+         # Parameters
+         - **Target Words**: [${wordList}]
+         - **Target Length**: Approx. ${lengthPrompt} words
+         - **Difficulty Level**: ${difficultyLevel} (${cefrLevel})
+
+         # Instructions
+
+         1. **Topic Selection**
+            - Select a topic aligned with Zhongkao themes (School Life, Personal Growth, Chinese Culture, Science).
+
+         2. **Difficulty & Complexity Control** (CRITICAL)
+            - **Constraint**: ${levelDescription}
+            - You must STRICTLY adjust your sentence structures and abstraction level according to the description above.
+            - Do not make it too hard for ${difficultyLevel} students, and do not make it too childish for ${difficultyLevel} students.
+
+         3. **Vocabulary Control**
+            - **Target Words**: Integrate them naturally. Wrap them in **double asterisks**.
+            - **Other Words**: Keep strictly within the **${cefrLevel}** vocabulary range.
+
+         4. **Values**
+            - Convey positive, educational values suitable for Chinese teenagers.
+
+         5. **Word Study Analysis** (CRITICAL)
+            - For the "word_study" array in JSON, you MUST analyze each **Target Word** used in your article.
+            - **Meaning in Context**: Provide the specific Chinese meaning *as used in the article*.
+            - **Example**: If "light" is used as a verb ("ignite"), the meaning MUST be "点燃" (v.), NOT "光线" (n.).
+
+         # Output Format
+         Return valid JSON only:
+         {
+         "title": "Title",
+         "topic": "Theme",
+         "difficulty_assessed": "${difficultyLevel}",
+         "content": "Article content...",
+         "word_study": [ { "word": "target word 1", "part_of_speech": "n./v./adj.", "meaning_in_context": "Brief Chinese meaning fitting this article" } ]
+         }
+         `;
+
+      const rawData = await this._callDeepSeek(apiKey, baseUrl, SYSTEM_PROMPT_ARTICLE, userPrompt, onProgress)
+
+      // Adaptation layer for new format
+      let finalTargetWords: string[] = []
+
+      // Strategy 1: Use 'targetWords' (from old format or if AI is smart enough to include it)
+      if (Array.isArray(rawData.targetWords)) {
+         finalTargetWords = rawData.targetWords
+      }
+      // Strategy 2: Extract from 'word_study' if available and valid
+      else if (Array.isArray(rawData.word_study)) {
+         finalTargetWords = rawData.word_study.map((item: any) => item.word).filter((w: any) => typeof w === 'string')
+      }
+      // Strategy 3: Fallback to input words (worst case, might not match generated content strictly)
+      else {
+         console.warn('LLM did not return targetWords or word_study. Falling back to requested words.')
+         finalTargetWords = words.map(w => w.spelling)
+      }
+
+      return {
+         title: rawData.title,
+         content: rawData.content,
+         targetWords: finalTargetWords,
+         topic: rawData.topic,
+         difficulty_assessed: rawData.difficulty_assessed,
+         word_study: rawData.word_study
+      }
    },
 
    async generateQuizForArticle(

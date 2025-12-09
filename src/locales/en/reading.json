@@ -18,7 +18,9 @@
     },
     "sidebar": {
         "difficulty": "Difficulty",
+        "beginner": "Beginner",
         "intermediate": "Intermediate",
+        "advanced": "Advanced",
         "targetWords": "Target Words",
         "quizHistory": "Quiz History",
         "moreRecords": "more"
@@ -63,5 +65,8 @@
     "hint": {
         "clickWord": "💡 Hint: Click on blue words to see definitions and video explanations"
     },
-    "defaultReviewTitle": "Review: "
+    "defaultReviewTitle": "Review: ",
+    "wordStudy": {
+        "title": "Vocabulary Analysis"
+    }
 }

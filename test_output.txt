@@ -1,0 +1,394 @@
+
+ RUN  v4.0.14 /Users/noguess/work/english_study
+
+stdout | src/services/llmService.test.ts > llmService > analyzeSentence sends correct 5-step analysis prompt
+Starting LLM generation...
+
+stdout | src/services/llmService.test.ts > llmService > generateArticleOnly sends prompt with Word Study instructions
+Starting LLM generation...
+
+ ✓ src/services/llmService.test.ts (2 tests) 5ms
+stdout | src/pages/ReadingPage.test.tsx > ReadingPage > shows initializing spinner initially for ID route
+🔍 ReadingPage useEffect triggered
+📍 URL id: 123
+📦 Navigation state: [1mnull[22m
+✅ Detected article ID - will load existing article: 123
+Loading article by ID: [33m123[39m
+
+stderr | src/pages/ReadingPage.test.tsx > ReadingPage > shows initializing spinner initially for ID route
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stdout | src/pages/ReadingPage.test.tsx > ReadingPage > shows initializing spinner initially for ID route
+Article loaded: {
+  id: [33m123[39m,
+  uuid: [32m'uuid-123'[39m,
+  title: [32m'Test Title'[39m,
+  content: [32m'Test Content'[39m,
+  targetWords: []
+}
+
+stdout | src/pages/ReadingPage.test.tsx > ReadingPage > shows initializing spinner initially for ID route
+Quiz history loaded: [33m0[39m records
+
+stdout | src/pages/ReadingPage.test.tsx > ReadingPage > renders sidebar history correctly
+🔍 ReadingPage useEffect triggered
+📍 URL id: 1
+📦 Navigation state: [1mnull[22m
+✅ Detected article ID - will load existing article: 1
+Loading article by ID: [33m1[39m
+
+stdout | src/pages/ReadingPage.test.tsx > ReadingPage > renders sidebar history correctly
+Article loaded: {
+  id: [33m1[39m,
+  uuid: [32m'a-uuid-1'[39m,
+  title: [32m'Title'[39m,
+  content: [32m'Content'[39m,
+  targetWords: [ [32m'word1'[39m ]
+}
+
+stdout | src/pages/ReadingPage.test.tsx > ReadingPage > renders sidebar history correctly
+Quiz history loaded: [33m1[39m records
+
+stdout | src/pages/ReadingPage.test.tsx > ReadingPage > renders Word Study section when data is available
+🔍 ReadingPage useEffect triggered
+📍 URL id: 2
+📦 Navigation state: [1mnull[22m
+✅ Detected article ID - will load existing article: 2
+Loading article by ID: [33m2[39m
+
+stdout | src/pages/ReadingPage.test.tsx > ReadingPage > renders Word Study section when data is available
+Article loaded: {
+  id: [33m2[39m,
+  uuid: [32m'uuid-2'[39m,
+  title: [32m'Word Study Article'[39m,
+  content: [32m'Content...'[39m,
+  targetWords: [ [32m'light'[39m ],
+  wordCtxMeanings: [ { word: [32m'light'[39m, part_of_speech: [32m'v.'[39m, meaning_in_context: [32m'点燃'[39m } ]
+}
+
+stdout | src/pages/ReadingPage.test.tsx > ReadingPage > renders Word Study section when data is available
+Quiz history loaded: [33m0[39m records
+
+ ❯ src/pages/ReadingPage.test.tsx (3 tests | 1 failed) 1177ms
+     ✓ shows initializing spinner initially for ID route 113ms
+     ✓ renders sidebar history correctly 53ms
+     × renders Word Study section when data is available 1011ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/pages/ReadingPage.test.tsx > ReadingPage > renders Word Study section when data is available
+TestingLibraryElementError: Found multiple elements with the text: 点燃
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<p[39m
+  [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-r40f8v-MuiTypography-root"[39m
+[36m>[39m
+  [0m点燃[0m
+[36m</p>[39m
+
+Ignored nodes: comments, script, style
+[36m<p[39m
+  [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-r40f8v-MuiTypography-root"[39m
+[36m>[39m
+  [0m点燃[0m
+[36m</p>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mdata-testid[39m=[32m"progress-bar"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"MuiContainer-root MuiContainer-maxWidthXl css-4i30i7-MuiContainer-root"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-3 css-zow5z4-MuiGrid-root"[39m
+        [33mstyle[39m=[32m"opacity: 1; transition: opacity 800ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-lg-2 css-39dfqa-MuiGrid-root"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-yd8sa2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mdata-testid[39m=[32m"reading-timer"[39m
+            [36m/>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation2 css-1tov0k2-MuiPaper-root"[39m
+            [36m>[39m
+              [36m<h6[39m
+                [33mclass[39m=[32m"MuiTypography-root MuiTypography-subtitle2 MuiTypography-gutterBottom css-11cn0eh-MuiTypography-root"[39m
+              [36m>[39m
+                [0mreading:sidebar.difficulty[0m
+              [36m</h6>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiChip-root MuiChip-filled MuiChip-sizeSmall MuiChip-colorPrimary MuiChip-filledPrimary css-117cywp-MuiChip-root"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"MuiChip-label MuiChip-labelSmall css-wjsjww-MuiChip-label"[39m
+                [36m>[39m
+                  [0mreading:sidebar.intermediate[0m
+                [36m</span>[39m
+              [36m</div>[39m
+              [36m<h6[39m
+                [33mclass[39m=[32m"MuiTypography-root MuiTypography-subtitle2 MuiTypography-gutterBottom css-1xcbnml-MuiTypography-root"[39m
+              [36m>[39m
+                [0mreading:sidebar.targetWords[0m
+              [36m</h6>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-1k6z00o"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1ewh41e-MuiPaper-root"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"MuiBox-root css-f53sor"[39m
+                  [36m>[39m
+                    [36m<h6[39m
+                      [33mclass[39m=[32m"MuiTypography-root MuiTypography-subtitle2 css-clq9j2-MuiTypography-root"[39m
+                    [36m>[39m
+                      [0mlight[0m
+                    [36m</h6>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"MuiChip-root MuiChip-outlined MuiChip-sizeSmall MuiChip-colorDefault MuiChip-outlinedDefault css-19vkaf2-MuiChip-root"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"MuiChip-label MuiChip-labelSmall css-rrn746-MuiChip-label"[39m
+                      [36m>[39m
+                        [0mv.[0m
+                      [36m</span>[39m
+                    [36m</div>[39m
+                  [36m</div>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-r40f8v-MuiTypography-root"[39m
+                  [36m>[39m
+                    [0m点燃[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-lg-9 css-1bb61b6-MuiGrid-root"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mdata-testid[39m=[32m"article-content"[39m
+          [36m>[39m
+            [0mArticle Content[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-zsiyfv-MuiPaper-root"[39m
+            [33mdata-testid[39m=[32m"word-study-section"[39m
+          [36m>[39m
+            [36m<h6[39m
+              [33mclass[39m=[32m"MuiTypography-root MuiTypography-h6 MuiTypography-gutterBottom css-1ufjlcv-MuiTypography-root"[39m
+            [36m>[39m
+              [0m📚 [0m
+              [0mreading:wordStudy.title[0m
+            [36m</h6>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-6 MuiGrid-grid-md-4 css-11l5t4l-MuiGrid-root"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiBox-root css-16ag3z9"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"MuiBox-root css-picroj"[39m
+                  [36m>[39m
+                    [36m<h6[39m
+                      [33mclass[39m=[32m"MuiTypography-root MuiTypography-subtitle1 css-cshsdh-MuiTypography-root"[39m
+                    [36m>[39m
+                      [0mlight[0m
+                    [36m</h6>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"MuiChip-root MuiChip-outlined MuiChip-sizeSmall MuiChip-colorDefault MuiChip-outlinedDefault css-1l8425f-MuiChip-root"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"MuiChip-label MuiChip-labelSmall css-rrn746-MuiChip-label"[39m
+                      [36m>[39m
+                        [0mv.[0m
+                      [36m</span>[39m
+                    [36m</div>[39m
+                  [36m</div>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-r40f8v-MuiTypography-root"[39m
+                  [36m>[39m
+                    [0m点燃[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-1nh9fqj"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeLarge MuiButton-containedSizeLarge MuiButton-colorPrimary MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeLarge MuiButton-containedSizeLarge MuiButton-colorPrimary css-1n9hu27-MuiButtonBase-r...
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mdata-testid[39m=[32m"progress-bar"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"MuiContainer-root MuiContainer-maxWidthXl css-4i30i7-MuiContainer-root"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-3 css-zow5z4-MuiGrid-root"[39m
+          [33mstyle[39m=[32m"opacity: 1; transition: opacity 800ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-lg-2 css-39dfqa-MuiGrid-root"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiBox-root css-yd8sa2"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mdata-testid[39m=[32m"reading-timer"[39m
+              [36m/>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation2 css-1tov0k2-MuiPaper-root"[39m
+              [36m>[39m
+                [36m<h6[39m
+                  [33mclass[39m=[32m"MuiTypography-root MuiTypography-subtitle2 MuiTypography-gutterBottom css-11cn0eh-MuiTypography-root"[39m
+                [36m>[39m
+                  [0mreading:sidebar.difficulty[0m
+                [36m</h6>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiChip-root MuiChip-filled MuiChip-sizeSmall MuiChip-colorPrimary MuiChip-filledPrimary css-117cywp-MuiChip-root"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"MuiChip-label MuiChip-labelSmall css-wjsjww-MuiChip-label"[39m
+                  [36m>[39m
+                    [0mreading:sidebar.intermediate[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+                [36m<h6[39m
+                  [33mclass[39m=[32m"MuiTypography-root MuiTypography-subtitle2 MuiTypography-gutterBottom css-1xcbnml-MuiTypography-root"[39m
+                [36m>[39m
+                  [0mreading:sidebar.targetWords[0m
+                [36m</h6>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiBox-root css-1k6z00o"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1ewh41e-MuiPaper-root"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"MuiBox-root css-f53sor"[39m
+                    [36m>[39m
+                      [36m<h6[39m
+                        [33mclass[39m=[32m"MuiTypography-root MuiTypography-subtitle2 css-clq9j2-MuiTypography-root"[39m
+                      [36m>[39m
+                        [0mlight[0m
+                      [36m</h6>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"MuiChip-root MuiChip-outlined MuiChip-sizeSmall MuiChip-colorDefault MuiChip-outlinedDefault css-19vkaf2-MuiChip-root"[39m
+                      [36m>[39m
+                        [36m<span[39m
+                          [33mclass[39m=[32m"MuiChip-label MuiChip-labelSmall css-rrn746-MuiChip-label"[39m
+                        [36m>[39m
+                          [0mv.[0m
+                        [36m</span>[39m
+                      [36m</div>[39m
+                    [36m</div>[39m
+                    [36m<p[39m
+                      [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-r40f8v-MuiTypography-root"[39m
+                    [36m>[39m
+                      [0m点燃[0m
+                    [36m</p>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-lg-9 css-1bb61b6-MuiGrid-root"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mdata-testid[39m=[32m"article-content"[39m
+            [36m>[39m
+              [0mArticle Content[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-zsiyfv-MuiPaper-root"[39m
+              [33mdata-testid[39m=[32m"word-study-section"[39m
+            [36m>[39m
+              [36m<h6[39m
+                [33mclass[39m=[32m"MuiTypography-root MuiTypography-h6 MuiTypography-gutterBottom css-1ufjlcv-MuiTypography-root"[39m
+              [36m>[39m
+                [0m📚 [0m
+                [0mreading:wordStudy.title[0m
+              [36m</h6>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-6 MuiGrid-grid-md-4 css-11l5t4l-MuiGrid-root"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"MuiBox-root css-16ag3z9"[39m
+                  [36m>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"MuiBox-root css-picroj"[39m
+                    [36m>[39m
+                      [36m<h6[39m
+                        [33mclass[39m=[32m"MuiTypography-root MuiTypography-subtitle1 css-cshsdh-MuiTypography-root"[39m
+                      [36m>[39m
+                        [0mlight[0m
+                      [36m</h6>[39m
+                      [36m<div[39m
+                        [33mclass[39m=[32m"MuiChip-root MuiChip-outlined MuiChip-sizeSmall MuiChip-colorDefault MuiChip-outlinedDefault css-1l8425f-MuiChip-root"[39m
+                      [36m>[39m
+                        [36m<span[39m
+                          [33mclass[39m=[32m"MuiChip-label MuiChip-labelSmall css-rrn746-MuiChip-label"[39m
+                        [36m>[39m
+                          [0mv.[0m
+                        [36m</span>[39m
+                      [36m</div>[39m
+                    [36m</div>[39m
+                    [36m<p[39m
+                      [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-r40f8v-MuiTypography-root"[39m
+                    [36m>[39m
+                      [0m点燃[0m
+                    [36m</p>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiBox-root css-1nh9fqj"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"MuiB...
+ ❯ Proxy.waitFor node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ src/pages/ReadingPage.test.tsx:111:15
+    109|         renderWithRouter('/read/2')
+    110| 
+    111|         await waitFor(() => {
+       |               ^
+    112|             // Check for Section Title
+    113|             // expect(screen.getByTestId('word-study-section')).toBeIn…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 4 passed (5)
+   Start at  12:44:06
+   Duration  4.41s (transform 482ms, setup 129ms, import 2.96s, tests 1.18s, environment 292ms)
+
