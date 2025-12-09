@@ -35,7 +35,7 @@ describe('QuizResultPage', () => {
     })
 
     it('renders loading state initially', () => {
-        vi.mocked(db.quizRecords.get).mockReturnValue(new Promise(() => { }))
+        vi.mocked(db.quizRecords.get).mockReturnValue(new Promise(() => { }) as any)
         renderWithRouter('1')
         expect(screen.getByRole('progressbar')).toBeInTheDocument()
     })

@@ -41,6 +41,7 @@ describe('SentenceAnalysisPopover', () => {
                 anchorPosition={{ top: 100, left: 100 }}
                 onClose={mockClose}
                 settings={mockSettings}
+                articleId="test-uuid"
             />
         )
 
@@ -67,6 +68,7 @@ describe('SentenceAnalysisPopover', () => {
                 anchorPosition={{ top: 100, left: 100 }}
                 onClose={mockClose}
                 settings={mockSettings}
+                articleId="test-uuid"
             />
         )
 
