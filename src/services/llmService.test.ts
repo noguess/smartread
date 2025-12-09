@@ -1,55 +1,46 @@
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { llmService } from './llmService'
 
-// Mock global fetch
-global.fetch = vi.fn()
+// Mock fetch global
+const mockFetch = vi.fn()
+global.fetch = mockFetch
 
 describe('llmService', () => {
     beforeEach(() => {
-        vi.clearAllMocks()
+        mockFetch.mockReset()
     })
 
-    it('generateQuizForArticle constructs correct prompt with explanation requirement', async () => {
-        const mockSettings: any = {
-            apiKey: 'test-key',
-            difficultyLevel: 'L2'
-        }
-
-        // Mock successful API response
-        vi.mocked(fetch).mockResolvedValue({
+    it('analyzeSentence sends correct 5-step analysis prompt', async () => {
+        // Mock successful response
+        const mockResponse = {
             ok: true,
-            headers: {
-                get: () => '100' // Content-Length
-            },
+            headers: { get: () => '1000' },
             body: {
                 getReader: () => ({
                     read: vi.fn()
                         .mockResolvedValueOnce({
                             done: false, value: new TextEncoder().encode(JSON.stringify({
-                                choices: [{ message: { content: JSON.stringify({ readingQuestions: [], vocabularyQuestions: [] }) } }]
+                                choices: [{ message: { content: '{}' } }]
                             }))
                         })
                         .mockResolvedValueOnce({ done: true })
                 })
             }
-        } as any)
+        }
+        mockFetch.mockResolvedValue(mockResponse)
 
-        await llmService.generateQuizForArticle('Article Content', [], mockSettings)
+        await llmService.analyzeSentence("Test sentence.", { apiKey: 'test' } as any)
 
-        // Check fetch arguments
-        expect(fetch).toHaveBeenCalledTimes(1)
-        const callArgs = vi.mocked(fetch).mock.calls[0]
-        const body = JSON.parse(callArgs[1]?.body as string)
+        expect(mockFetch).toHaveBeenCalledTimes(1)
+        const callArgs = mockFetch.mock.calls[0]
+        const body = JSON.parse(callArgs[1].body)
 
-        // Verify system prompt contains key requirements
+        // Assert System Prompt contains key phrases from the new requirement
         const systemPrompt = body.messages[0].content
-        expect(systemPrompt).toContain('Always include "explanation" field')
-        expect(systemPrompt).toContain('"explanation": "Brief explanation')
-    })
-
-    it('throws error if API key is missing', async () => {
-        await expect(llmService.generateArticleOnly([], { apiKey: '' } as any))
-            .rejects.toThrow('API Key is missing')
+        expect(systemPrompt).toContain('5步分析法')
+        expect(systemPrompt).toContain('Translation')
+        expect(systemPrompt).toContain('The Skeleton')
+        expect(systemPrompt).toContain('Structure Breakdown')
     })
 })

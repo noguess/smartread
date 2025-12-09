@@ -21,14 +21,16 @@
         "search": "Search",
         "reset": "Reset",
         "study": "Deep Dive",
-        "analyze": "Analyze"
+        "analyze": "Analyze",
+        "retry": "Retry"
     },
     "status": {
         "new": "New",
         "learning": "Learning",
         "review": "Review",
         "mastered": "Mastered",
-        "sentenceAnalysis": "Sentence Analysis"
+        "sentenceAnalysis": "Sentence Analysis",
+        "analyzing": "AI is analyzing..."
     },
     "msg": {
         "clickToAnalyze": "Click to analyze grammar & translation"

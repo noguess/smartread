@@ -6,14 +6,10 @@ import {
     CircularProgress,
     Button,
     IconButton,
-    Divider,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText
 } from '@mui/material'
-import { Close, Translate, AutoFixHigh, Circle } from '@mui/icons-material'
+import { Close, AutoFixHigh } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
+import ReactMarkdown from 'react-markdown'
 import { llmService } from '../../services/llmService'
 import { Setting } from '../../services/db'
 
@@ -24,11 +20,6 @@ interface SentenceAnalysisPopoverProps {
     settings: Setting
 }
 
-interface AnalysisResult {
-    translation: string
-    grammar: string[]
-}
-
 export default function SentenceAnalysisPopover({
     sentence,
     anchorPosition,
@@ -37,8 +28,14 @@ export default function SentenceAnalysisPopover({
 }: SentenceAnalysisPopoverProps) {
     const { t } = useTranslation(['common'])
     const [loading, setLoading] = useState(false)
-    const [result, setResult] = useState<AnalysisResult | null>(null)
+    const [result, setResult] = useState<string | null>(null)
     const [error, setError] = useState(false)
+
+    // Reset state when popover opens/closes or sentence changes
+    // But since this component is likely unmounted/remounted or controlled by parent,
+    // we rely on local state. Ideally, we should reset if sentence changes while open,
+    // but the current usage pattern likely destroys the popover on close.
+    // If props change while open, we might want to reset result, but let's keep it simple.
 
     const handleAnalyze = async () => {
         setLoading(true)
@@ -69,16 +66,26 @@ export default function SentenceAnalysisPopover({
             }}
             PaperProps={{
                 sx: {
-                    width: 360,
-                    p: 2,
+                    width: 400,
+                    p: 0, // Remove default padding to handle header/content cleanly
                     borderRadius: 3,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                    maxHeight: 400,
-                    overflowY: 'auto'
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                    maxHeight: 500,
+                    display: 'flex',
+                    flexDirection: 'column'
                 }
             }}
         >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+            {/* Header */}
+            <Box sx={{
+                p: 2,
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                bgcolor: 'background.default'
+            }}>
                 <Typography variant="subtitle2" color="text.secondary" fontWeight="bold">
                     {t('status.sentenceAnalysis', 'Sentence Analysis')}
                 </Typography>
@@ -87,85 +94,111 @@ export default function SentenceAnalysisPopover({
                 </IconButton>
             </Box>
 
-            <Typography
-                variant="body2"
-                color="text.primary"
-                sx={{
-                    fontStyle: 'italic',
-                    mb: 2,
-                    borderLeft: '3px solid #1976d2',
-                    pl: 1.5,
-                    opacity: 0.9
-                }}
-            >
-                "{sentence.length > 80 ? sentence.substring(0, 80) + '...' : sentence}"
-            </Typography>
+            {/* Scrollable Content Area */}
+            <Box sx={{ p: 2, overflowY: 'auto', flexGrow: 1 }}>
 
-            <Divider sx={{ mb: 2 }} />
-
-            {!result && !loading && !error && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
-                    <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
-                        {t('msg.clickToAnalyze', 'Click to analyze grammar & translation')}
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<AutoFixHigh />}
-                        onClick={handleAnalyze}
-                        sx={{ borderRadius: 6, px: 3 }}
-                    >
-                        {t('button.analyze', 'Analyze')}
-                    </Button>
-                </Box>
-            )}
-
-            {loading && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                    <CircularProgress size={24} />
-                </Box>
-            )}
-
-            {error && (
-                <Typography color="error" variant="body2" align="center" sx={{ py: 2 }}>
-                    {t('common:error', 'Analysis failed. Please try again.')}
+                {/* Target Sentence */}
+                <Typography
+                    variant="body2"
+                    color="text.primary"
+                    sx={{
+                        fontStyle: 'italic',
+                        mb: 2,
+                        borderLeft: '3px solid #1976d2',
+                        pl: 1.5,
+                        opacity: 0.9,
+                        bgcolor: 'action.hover',
+                        py: 1,
+                        borderRadius: '0 4px 4px 0'
+                    }}
+                >
+                    "{sentence}"
                 </Typography>
-            )}
 
-            {result && (
-                <Box sx={{ animation: 'fadeIn 0.3s ease-in' }}>
-                    {/* Translation */}
-                    <Box sx={{ mb: 2 }}>
-                        <Typography variant="caption" color="primary" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-                            <Translate fontSize="inherit" />
-                            {t('label.translation', 'Translation')}
+                {!result && !loading && !error && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
+                        <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
+                            {t('msg.clickToAnalyze', 'Click to analyze grammar & translation')}
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                            {result.translation}
+                        <Button
+                            variant="contained"
+                            startIcon={<AutoFixHigh />}
+                            onClick={handleAnalyze}
+                            sx={{ borderRadius: 6, px: 3 }}
+                        >
+                            {t('button.analyze', 'Analyze')}
+                        </Button>
+                    </Box>
+                )}
+
+                {loading && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, gap: 2 }}>
+                        <CircularProgress size={32} />
+                        <Typography variant="caption" color="text.secondary">
+                            {t('status.analyzing', 'AI is analyzing...')}
                         </Typography>
                     </Box>
+                )}
 
-                    {/* Grammar */}
-                    <Box>
-                        <Typography variant="caption" color="secondary" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-                            <AutoFixHigh fontSize="inherit" />
-                            {t('label.grammar', 'Grammar Points')}
+                {error && (
+                    <Box sx={{ py: 4, textAlign: 'center' }}>
+                        <Typography color="error" variant="body2" sx={{ mb: 1 }}>
+                            {t('common:error', 'Analysis failed. Please try again.')}
                         </Typography>
-                        <List dense disablePadding>
-                            {result.grammar.map((point, index) => (
-                                <ListItem key={index} disablePadding sx={{ mb: 1, alignItems: 'flex-start' }}>
-                                    <ListItemIcon sx={{ minWidth: 20, mt: 0.5 }}>
-                                        <Circle sx={{ fontSize: 6, color: 'text.secondary' }} />
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary={point}
-                                        primaryTypographyProps={{ variant: 'body2', color: 'text.primary' }}
-                                    />
-                                </ListItem>
-                            ))}
-                        </List>
+                        <Button size="small" variant="outlined" onClick={handleAnalyze}>
+                            {t('button.retry', 'Retry')}
+                        </Button>
                     </Box>
-                </Box>
-            )}
+                )}
+
+                {result && (
+                    <Box className="markdown-content" sx={{
+                        '& h2': {
+                            fontSize: '1rem',
+                            fontWeight: 700,
+                            mt: 2,
+                            mb: 1,
+                            color: 'primary.main',
+                            borderBottom: '1px dashed',
+                            borderColor: 'divider',
+                            pb: 0.5
+                        },
+                        '& h3': {
+                            fontSize: '0.9rem',
+                            fontWeight: 600,
+                            mt: 1.5,
+                            mb: 0.5
+                        },
+                        '& p': {
+                            fontSize: '0.9rem',
+                            mb: 1,
+                            lineHeight: 1.6,
+                            color: 'text.primary'
+                        },
+                        '& ul, & ol': {
+                            pl: 2.5,
+                            mb: 1
+                        },
+                        '& li': {
+                            fontSize: '0.9rem',
+                            mb: 0.5
+                        },
+                        '& strong': {
+                            fontWeight: 600,
+                            color: 'text.primary'
+                        },
+                        '& blockquote': {
+                            borderLeft: '3px solid #ccc',
+                            m: 0,
+                            pl: 2,
+                            color: 'text.secondary',
+                            fontStyle: 'italic'
+                        }
+                    }}>
+                        <ReactMarkdown>{result}</ReactMarkdown>
+                    </Box>
+                )}
+            </Box>
         </Popover>
     )
 }

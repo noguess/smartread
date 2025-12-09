@@ -21,14 +21,16 @@
         "search": "搜索",
         "reset": "重置",
         "study": "深入学习",
-        "analyze": "分析"
+        "analyze": "分析",
+        "retry": "重试"
     },
     "status": {
         "new": "新词",
         "learning": "学习中",
         "review": "复习",
         "mastered": "已掌握",
-        "sentenceAnalysis": "长句分析"
+        "sentenceAnalysis": "长句分析",
+        "analyzing": "AI正在分析..."
     },
     "msg": {
         "clickToAnalyze": "点击分析语法和翻译"

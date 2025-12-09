@@ -175,27 +175,54 @@ Return a JSON object with:
    async analyzeSentence(
       sentence: string,
       settings: Setting
-   ): Promise<{ translation: string; grammar: string[] }> {
+   ): Promise<string> {
       const apiKey = settings.apiKey
       const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
 
       if (!apiKey) throw new Error('API Key is missing')
 
       const systemPrompt = `
-You are an expert English grammar teacher.
-Analyze the following English sentence.
-Return a JSON object with:
-{
-  "translation": "Natural, fluent Chinese translation",
-  "grammar": ["Point 1: explanation", "Point 2: explanation"] (List 1-3 key grammatical points)
-}
+# Role
+你是一位拥有 20 年经验的资深英语语言学家和 ESL 教学专家。你擅长将晦涩难懂的英语长难句拆解得如“手术刀”般精准,并能用通俗易懂的中文讲解语法逻辑。
+
+# CRITICAL RULE (重要指令)
+**请务必全程使用中文（简体）进行回答。**
+尽管用户发送的是英文句子，但你的任务是为中国学生进行讲解，因此所有的分析、语法解释、结构拆解必须使用中文。
+
+# Goal
+当我发送一个英语长难句时，请严格按照以下【5步分析法】进行深度解析，帮助我彻底理解句意和语法结构。
+请直接返回 Markdown 格式的内容。
+
+# Workflow
+## 1. 🔍 翻译对照
+* **直译**：按照英文语序字对字翻译（中文）。
+* **意译**：符合中文习惯的流畅翻译（中文）。
+
+## 2. 🦴 核心骨架
+* 提取句子的核心成分（Subject + Verb + Object），忽略修饰语。
+
+## 3. 🔪 结构拆解
+* 将句子按意群拆分，并用**中文**标注每个部分的作用（如：定语从句修饰xx）。
+
+## 4. 💡 语法痛点
+* 用通俗易懂的**中文**解析句中最难的语法点。
+
+## 5. 📖 核心词汇
+* 提取 3-5 个关键生词，提供音标、词性、**中文释义**及例句。
 `
       const userPrompt = `Analyze this sentence: "${sentence}"`
 
-      return this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt)
+      return this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt, undefined, false)
    },
 
-   async _callDeepSeek(apiKey: string, baseUrl: string, systemPrompt: string, userPrompt: string, onProgress?: (p: number) => void): Promise<any> {
+   async _callDeepSeek(
+      apiKey: string,
+      baseUrl: string,
+      systemPrompt: string,
+      userPrompt: string,
+      onProgress?: (p: number) => void,
+      expectJson: boolean = true
+   ): Promise<any> {
       console.log('Starting LLM generation...')
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 60000)
@@ -214,7 +241,7 @@ Return a JSON object with:
                   { role: 'user', content: userPrompt },
                ],
                temperature: 0.7,
-               response_format: { type: 'json_object' },
+               response_format: expectJson ? { type: 'json_object' } : undefined,
             }),
             signal: controller.signal
          })
@@ -256,7 +283,11 @@ Return a JSON object with:
          if (!contentStr) throw new Error('Empty response from API')
 
          onProgress?.(100)
-         return JSON.parse(contentStr)
+
+         if (expectJson) {
+            return JSON.parse(contentStr)
+         }
+         return contentStr
 
       } catch (error: any) {
          console.error('LLM Service Error:', error)

@@ -23,6 +23,9 @@
 - [x] Task 1: Implement `analyzeSentence` in `llmService` (API & Prompt).
 - [x] Task 2: Create `SentenceAnalysisPopover` component with Translation & Grammar sections.
 - [x] Task 3: Update `ReadingPage` to support sentence/phrase selection toggle between definitions and analysis.
+- [x] Task 4: Upgrade `analyzeSentence` prompt to "5-Step Method" & update return type.
+- [x] Task 5: Refactor `SentenceAnalysisPopover` to display rich analysis (Markdown).
+- [x] Task 6: Update I18n keys for new analysis sections.
 
 ## 1. 类型安全改进 (移除 `any`)
 发现 **14** 处使用了 `any`，应使用适当的 TypeScript 接口进行优化：
