@@ -72,6 +72,14 @@ erDiagram
         int difficultyFeedback "1-5 Scale"
         int date "Timestamp"
     }
+
+    SENTENCE_ANALYSIS {
+        int id PK "Auto Increment"
+        string articleId FK "Ref: ARTICLES.uuid"
+        string originalSentence "Target Sentence"
+        string analysisResult "Markdown Content"
+        int createdAt "Timestamp"
+    }
 ```
 
 ## 3. API 响应标准 (Standard API Response)

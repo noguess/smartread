@@ -12,19 +12,22 @@ import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
 import { llmService } from '../../services/llmService'
 import { Setting } from '../../services/db'
+import { analysisStorageService } from '../../services/analysisStorageService'
 
 interface SentenceAnalysisPopoverProps {
     sentence: string
     anchorPosition: { top: number; left: number } | null
     onClose: () => void
     settings: Setting
+    articleId: string
 }
 
 export default function SentenceAnalysisPopover({
     sentence,
     anchorPosition,
     onClose,
-    settings
+    settings,
+    articleId
 }: SentenceAnalysisPopoverProps) {
     const { t } = useTranslation(['common'])
     const [loading, setLoading] = useState(false)
@@ -41,8 +44,23 @@ export default function SentenceAnalysisPopover({
         setLoading(true)
         setError(false)
         try {
+            // Check cache first
+            if (articleId) {
+                const cached = await analysisStorageService.findMatchingAnalysis(articleId, sentence)
+                if (cached) {
+                    console.log('Using cached sentence analysis (fuzzy match)')
+                    setResult(cached.analysisResult)
+                    return // Found in cache, done
+                }
+            }
+
             const data = await llmService.analyzeSentence(sentence, settings)
             setResult(data)
+
+            // Save to cache
+            if (articleId && data) {
+                await analysisStorageService.saveAnalysis(articleId, sentence, data)
+            }
         } catch (err) {
             console.error('Sentence analysis failed:', err)
             setError(true)

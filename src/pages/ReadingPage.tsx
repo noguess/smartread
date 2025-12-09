@@ -371,25 +371,35 @@ export default function ReadingPage() {
             if (settings && settings.apiKey) {
                 // Use Real API with progress callback
                 console.log('Calling Real LLM Service...')
-                data = await llmService.generateArticle(
+                const articleOnly = await llmService.generateArticleOnly(
                     words,
                     settings,
-                    (progress) => {
+                    (progress: number) => {
                         console.log('📊 Real API Download progress:', progress + '%')
                         setRealProgress(progress)
                     }
                 )
+                data = {
+                    ...articleOnly,
+                    readingQuestions: [],
+                    vocabularyQuestions: []
+                }
             } else {
                 // Fallback to Mock with progress callback
                 console.warn('No API Key found. Using Mock Service.')
-                data = await mockLLMService.generateArticle(
+                const articleOnly = await mockLLMService.generateArticleOnly(
                     words,
                     settings,
-                    (progress) => {
+                    (progress: number) => {
                         console.log('🎭 Mock progress:', progress + '%')
                         setRealProgress(progress)
                     }
                 )
+                data = {
+                    ...articleOnly,
+                    readingQuestions: [],
+                    vocabularyQuestions: []
+                }
             }
 
             console.log('Generation successful:', data)
@@ -758,8 +768,8 @@ export default function ReadingPage() {
                                         </Typography>
                                         <Chip
                                             label={t(`reading:sidebar.${currentArticle?.difficultyLevel === 'L1' ? 'beginner' :
-                                                    currentArticle?.difficultyLevel === 'L3' ? 'advanced' :
-                                                        'intermediate'
+                                                currentArticle?.difficultyLevel === 'L3' ? 'advanced' :
+                                                    'intermediate'
                                                 }`)}
                                             size="small"
                                             color="primary"
@@ -867,6 +877,7 @@ export default function ReadingPage() {
                                         anchorPosition={popoverState.position}
                                         onClose={handleClosePopover}
                                         settings={settings}
+                                        articleId={currentArticle?.uuid || ''}
                                     />
                                 )}
 

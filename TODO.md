@@ -26,6 +26,7 @@
 - [x] Task 4: Upgrade `analyzeSentence` prompt to "5-Step Method" & update return type.
 - [x] Task 5: Refactor `SentenceAnalysisPopover` to display rich analysis (Markdown).
 - [x] Task 6: Update I18n keys for new analysis sections.
+- [x] Task 7: Implement local caching for analyzed sentences using IndexedDB (v5 upgrade).
 
 ## [Feature] Word Study Integration
 - [x] Task 1: Update `Article` schema in `db.ts` to include `wordCtxMeanings`.

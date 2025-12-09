@@ -79,12 +79,11 @@ describe('llmService', () => {
         // 1. Verify Request Prompt
         const callArgs = mockFetch.mock.calls[0]
         const body = JSON.parse(callArgs[1].body)
-        const userPrompt = body.messages[1].content // Usually user prompt contains the detailed instructions in this legacy structure?
-        // Wait, in generateArticleOnly, instructions are in userPrompt
+        const systemPrompt = body.messages[0].content
 
-        expect(userPrompt).toContain('Word Study Analysis')
-        expect(userPrompt).toContain('Meaning in Context')
-        expect(userPrompt).toContain('ignite') // Check for the specific example used in prompt
+        expect(systemPrompt).toContain('Word Study Analysis')
+        expect(systemPrompt).toContain('Meaning in Context')
+        expect(systemPrompt).toContain('ignite') // Check for the specific example used in prompt
 
         // 2. Verify Response Parsing
         expect(result.word_study).toHaveLength(1)

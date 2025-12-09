@@ -70,6 +70,14 @@ export interface Setting {
     difficultyLevel: 'L1' | 'L2' | 'L3'
 }
 
+export interface SentenceAnalysis {
+    id?: number
+    articleId: string
+    originalSentence: string
+    analysisResult: string
+    createdAt: number
+}
+
 export class SmartReaderDB extends Dexie {
     words!: Table<Word>
     history!: Table<History> // Legacy V1 table
@@ -78,6 +86,9 @@ export class SmartReaderDB extends Dexie {
     // V2 Tables
     articles!: Table<Article>
     quizRecords!: Table<QuizRecord>
+
+    // V3 Tables
+    sentenceAnalysis!: Table<SentenceAnalysis>
 
     constructor() {
         super('SmartReaderDB_v2')
@@ -116,6 +127,11 @@ export class SmartReaderDB extends Dexie {
             settings: '++id',
             articles: '++id, &uuid, createdAt', // & means unique index
             quizRecords: '++id, articleId, date'
+        })
+
+        // Version 5: Add Sentence Analysis
+        this.version(5).stores({
+            sentenceAnalysis: '++id, articleId'
         })
     }
 }

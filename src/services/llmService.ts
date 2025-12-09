@@ -1,50 +1,4 @@
 import { Word, Setting, WordStudyItem } from './db'
-import { GeneratedContent } from './mockLLMService'
-
-const SYSTEM_PROMPT_ARTICLE = `
-You are an expert English teacher for middle school students preparing for the Zhongkao (Chinese middle school entrance exam).
-Your task is to write a short, engaging story or article that incorporates a specific list of vocabulary words.
-
-IMPORTANT: You MUST return ONLY valid JSON. Do not include any explanatory text before or after the JSON.
-
-The JSON structure must be:
-{
-  "title": "Title of the article",
-  "content": "The article content in Markdown format. **CRITICAL**: You MUST wrap ALL target words in **double asterisks** to bold them (e.g., **ambitious**).",
-  "targetWords": ["word1", "word2"]
-}
-`
-
-const SYSTEM_PROMPT_QUIZ = `
-You are an expert English teacher acting as a test generator.
-Your task is to generate reading comprehension and vocabulary questions based on a provided article and target words.
-
-IMPORTANT: You MUST return ONLY valid JSON.
-
-The JSON structure must be:
-{
-  "readingQuestions": [
-    {
-      "id": "r1",
-      "type": "contextual",
-      "stem": "Question text?",
-      "options": ["A", "B", "C", "D"],
-      "answer": "Correct Option",
-      "explanation": "Brief explanation of why this answer is correct."
-    }
-  ],
-  "vocabularyQuestions": [
-    {
-      "id": "v1",
-      "type": "definition",
-      "stem": "Word definition/context",
-      "options": ["word1", "word2", "word3", "word4"],
-      "answer": "word1",
-      "explanation": "Brief explanation of the word meaning/usage."
-    }
-  ]
-}
-`
 
 export interface GeneratedArticleData {
    title: string
@@ -57,40 +11,7 @@ export interface GeneratedArticleData {
 
 export const llmService = {
 
-   /**
-    * @deprecated This method is kept for backward compatibility. 
-    * It internally calls generateArticleOnly and generateQuizForArticle.
-    */
-   async generateArticle(
-      words: Word[],
-      settings: Setting,
-      onProgress?: (progress: number) => void
-   ): Promise<GeneratedContent & { word_study?: WordStudyItem[] }> {
-      // Split progress: 50% for article, 50% for quiz
-      const handleProgress = (base: number, p: number) => {
-         onProgress?.(base + (p * 0.5))
-      }
-
-      const articleData = await this.generateArticleOnly(words, settings, (p) => handleProgress(0, p))
-
-      const quizData = await this.generateQuizForArticle(
-         articleData.content,
-         words,
-         settings,
-         (p) => handleProgress(50, p)
-      )
-
-      return {
-         title: articleData.title,
-         content: articleData.content,
-         readingQuestions: quizData.readingQuestions,
-         vocabularyQuestions: quizData.vocabularyQuestions,
-         word_study: articleData.word_study
-      }
-   },
-
-
-   // ... (inside generateArticleOnly)
+   //根据单词列表生成文章
    async generateArticleOnly(
       words: Word[],
       settings: Setting,
@@ -104,71 +25,83 @@ export const llmService = {
       const wordList = words.map((w) => w.spelling).join(', ')
       const lengthPrompt = settings.articleLenPref === 'short' ? '400 words' : settings.articleLenPref === 'long' ? '800 words' : '600 words'
       const difficultyLevel = settings.difficultyLevel || 'L2'
+
+      // 1. 定义你的基础映射 (保留你原来的逻辑)
       const cefrLevel = difficultyLevel === 'L1' ? 'A1' : difficultyLevel === 'L2' ? 'A2' : 'B1';
 
+      // 2. 新增：定义针对大模型的“详细指导语” (中文版)
+      // 这段话告诉大模型：这个难度在中考体系里到底算什么水平？
       const difficultyMap = {
-         'L1': `Beginner Level (Grade 7 / CEFR A1). 
-               - Sentence Structure: Short, simple sentences (Subject + Verb + Object). 
-               - Vocabulary: High-frequency basic words only. 
-               - Goal: Build confidence for beginners.`,
+         'L1': `初学者基础水平 (初一 / CEFR A1)。
+                  - 句法结构：短小、简单的句子 (主语+谓语+宾语)，避免复杂从句。
+                  - 词汇要求：仅限极高频的基础词汇。
+                  - 教学目标：建立初学者的阅读信心，无障碍阅读。`,
 
-         'L2': `Standard Zhongkao Level (Grade 8-9 / CEFR A2). 
-               - Sentence Structure: Mix of simple and compound sentences. Introduction of basic clauses (time, if-clauses).
-               - Vocabulary: Standard Zhongkao core vocabulary.
-               - Goal: Match the difficulty of standard reading tasks in the exam.`,
+         'L2': `标准中考水平 (初二至初三 / CEFR A2)。
+                  - 句法结构：简单句与并列句混合。适度引入基础从句 (如时间状语从句、条件状语从句)。
+                  - 词汇要求：严格覆盖中考核心词汇 (1600词范围)。
+                  - 教学目标：完全对标中考阅读理解真题的平均难度。`,
 
-         'L3': `Advanced/Distinction Level (High School Prep / CEFR B1). 
-               - Sentence Structure: Complex sentences with embedded clauses (relative clauses, participle phrases). 
-               - Vocabulary: Richer vocabulary including abstract concepts.
-               - Goal: Challenge the student, aimed at getting full marks in the hardest exam questions.`
-      };
+         'L3': `进阶拔高/压轴水平 (准高中 / CEFR B1)。
+                  - 句法结构：使用复杂句式，包含嵌套从句 (如定语从句、分词作状语、名词性从句)。
+                  - 词汇要求：词汇更丰富，可包含适量的抽象概念或熟词僻义。
+                  - 教学目标：挑战高分段学生，旨在拿下中考里最具区分度的压轴难题。`
+      }
 
+      // 3. 获取当前对应的描述
       const levelDescription = difficultyMap[difficultyLevel] || difficultyMap['L2'];
 
-      const userPrompt = `
-         # Role
-         You are an expert English Teacher specializing in **China's Senior High School Entrance Examination (Zhongkao)**.
-         You adhere to the **"New Curriculum Standard"** values.
+      const systemPrompt = `
+         # Role (角色设定)
+         你是一位专注于**中国中考英语（Zhongkao）**的资深英语教师。
+         你深谙中国《义务教育英语课程标准》（新课标），善于编写符合中国初中生认知水平的高质量英文阅读素材。
 
-         # Parameters
-         - **Target Words**: [${wordList}]
-         - **Target Length**: Approx. ${lengthPrompt} words
-         - **Difficulty Level**: ${difficultyLevel} (${cefrLevel})
+         # Parameters (参数设置)
+         - **目标单词 (Target Words)**: [${wordList}]
+         - **目标篇幅 (Target Length)**: 约 ${lengthPrompt} 词
+         - **难度等级 (Difficulty)**: ${difficultyLevel} (参考标准: ${cefrLevel})
 
-         # Instructions
+         # Instructions (执行指令)
 
-         1. **Topic Selection**
-            - Select a topic aligned with Zhongkao themes (School Life, Personal Growth, Chinese Culture, Science).
+         1. **话题选择 (Topic Selection)**
+            - 请选择一个高度契合中考命题趋势的话题（例如：校园生活、个人成长、中国传统文化、人与自然、科技进步）。
+            - **注意**：文章正文必须使用**英语**撰写。
 
-         2. **Difficulty & Complexity Control** (CRITICAL)
-            - **Constraint**: ${levelDescription}
-            - You must STRICTLY adjust your sentence structures and abstraction level according to the description above.
-            - Do not make it too hard for ${difficultyLevel} students, and do not make it too childish for ${difficultyLevel} students.
+         2. **难度与复杂度控制 (Difficulty & Complexity Control)** [关键]
+            - **具体约束标准**: ${levelDescription}
+            - 请务必**严格遵循**上述描述来调整句子的长短、结构复杂度和逻辑抽象度。
+            - 确保文章既不超纲（太难），也不过于幼稚（太简单）。
 
-         3. **Vocabulary Control**
-            - **Target Words**: Integrate them naturally. Wrap them in **double asterisks**.
-            - **Other Words**: Keep strictly within the **${cefrLevel}** vocabulary range.
+         3. **词汇控制 (Vocabulary Control)**
+            - **目标单词**: 必须自然地融入上下文中，并强制使用 **双星号** (例如 **word**) 进行加粗标记。
+            - **非目标单词**: 除目标词外，其余词汇请严格限制在 **${cefrLevel}** 词汇范围内，严禁使用生僻词。
 
-         4. **Values**
-            - Convey positive, educational values suitable for Chinese teenagers.
+         4. **价值观 (Values)**
+            - 文章内容必须积极向上，符合中国青少年的价值观（如坚韧、友善、爱国、创新）。
 
-         5. **Word Study Analysis** (CRITICAL)
+         5. **Word Study Analysis (核心词汇解析)** [CRITICAL]
             - For the "word_study" array in JSON, you MUST analyze each **Target Word** used in your article.
             - **Meaning in Context**: Provide the specific Chinese meaning *as used in the article*.
             - **Example**: If "light" is used as a verb ("ignite"), the meaning MUST be "点燃" (v.), NOT "光线" (n.).
 
-         # Output Format
-         Return valid JSON only:
+         # Output Format (输出格式)
+         请**仅**返回一个合法的 JSON 对象（不要使用 Markdown 代码块）：
          {
-         "title": "Title",
-         "topic": "Theme",
+         "title": "文章标题 (英文)",
+         "topic": "主题分类 (英文)",
          "difficulty_assessed": "${difficultyLevel}",
-         "content": "Article content...",
-         "word_study": [ { "word": "target word 1", "part_of_speech": "n./v./adj.", "meaning_in_context": "Brief Chinese meaning fitting this article" } ]
+         "content": "文章正文 (英文，目标单词需加粗)",
+         "word_study": [ 
+            { 
+               "word": "目标单词", 
+               "part_of_speech": "词性 (如 n./v.)", 
+               "meaning_in_context": "该词在当前上下文中的中文释义" 
+            } 
+         ]
          }
          `;
-
-      const rawData = await this._callDeepSeek(apiKey, baseUrl, SYSTEM_PROMPT_ARTICLE, userPrompt, onProgress)
+      const userPrompt = `请根据${wordList}生成文章吧`
+      const rawData = await this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt, onProgress)
 
       // Adaptation layer for new format
       let finalTargetWords: string[] = []
@@ -197,51 +130,143 @@ export const llmService = {
       }
    },
 
+   //根据文章内容生成测试题
    async generateQuizForArticle(
       articleContent: string,
       words: Word[],
       settings: Setting,
       onProgress?: (progress: number) => void
    ): Promise<{ readingQuestions: any[]; vocabularyQuestions: any[] }> {
-      const apiKey = settings.apiKey
-      const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
-      const difficultyLevel = settings.difficultyLevel || 'L2'
+      const apiKey = settings.apiKey;
+      const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1';
+      const difficultyLevel = settings.difficultyLevel || 'L2';
 
+      // 1. 重新设计的题型配置 (科学对标中考)
       const questionConfig = {
-         'L1': { total: 10, description: 'Cloze(3) + Definition(3) + Audio Selection(2) + Matching(1 set of 3 pairs)' },
-         'L2': { total: 10, description: 'Contextual(4) + Spelling Input(2) + Cloze(2) + Synonym/Antonym(1) + Audio Dictation(1)' },
-         'L3': { total: 12, description: 'Spelling Input(3) + Contextual(3) + Word Form(2) + Audio Dictation(2) + Synonym/Antonym(1) + Matching(1 set of 3 pairs)' }
-      }
+         'L1': {
+            // L1 目标：建立信心，巩固记忆
+            // 题型：释义连线(最简单) + 原文填空(回顾) + 听音选词
+            description: '3 Definition Choice (English definition -> Word) + 3 Cloze (From article, Choice) + 2 Audio Selection + 2 Spelling (Easy, complete the word)'
+         },
+         'L2': {
+            // L2 目标：中考实战，语境运用
+            // 题型：新语境选词(考查迁移能力) + 词形变换(中考必考，如 act -> active) + 听写
+            description: '4 Contextual Choice (New sentences, distinct contexts) + 3 Word Form (Derivation) + 3 Cloze (From article) + 2 Audio Dictation'
+         },
+         'L3': {
+            // L3 目标：拉开分差，深度掌握
+            // 题型：拼写(无提示) + 熟词僻义/复杂语境 + 词形变换(难)
+            description: '4 Spelling Input (No options) + 4 Contextual Choice (Advanced/Abstract contexts) + 4 Word Form (Complex derivation)'
+         }
+      };
+
       // @ts-ignore
-      const config = questionConfig[difficultyLevel] || questionConfig['L2']
+      const config = questionConfig[difficultyLevel] || questionConfig['L2'];
 
-      const fullSystemPrompt = `${SYSTEM_PROMPT_QUIZ}
+      const difficultyContextMap = {
+         'L1': `难度目标：初学者基础水平 (初一)。
+                - 干扰项设计：干扰性较弱，错误选项特征明显，易于排除（例如词性不同或语义完全无关）。
+                - 设问风格：提问简单直白，不设逻辑陷阱。`,
 
-VOCABULARY QUESTIONS CONFIGURATION FOR LEVEL ${difficultyLevel}:
-${config.description}
+         'L2': `难度目标：标准中考水平 (初二至初三)。
+                - 干扰项设计：必须具备**相同词性**，且具有一定的迷惑性（常规近义词或形近词）。
+                - 解题逻辑：重点考察**语境理解**，无法仅凭单词中文释义直接选出，必须结合上下文逻辑。`,
 
-REQUIREMENTS:
-- Distractors MUST have the same part of speech.
-- For cloze questions, sentences MUST be taken directly from the article.
-- For contextual questions, sentences MUST be NEW (not from article).
-- For audio questions, always include "phonetic" field with IPA notation.
-- For matching questions, use "pairs" array.
-- For spelling/wordForm questions, do NOT include "options" field.
-- Always include "explanation" field.
-`
+         'L3': `难度目标：进阶/压轴水平 (拔高/区分度题)。
+                - 干扰项设计：**强干扰性**，包含高阶近义词辨析、熟词僻义或语法陷阱。
+                - 解题逻辑：考察词义的细微差别 (Nuance)、抽象概念理解以及在复杂句法结构下的逻辑推断。`
+      }
+
+      const difficultyContext = difficultyContextMap[difficultyLevel] || difficultyContextMap['L2']
+
+      // 2. 升级版 Prompt：增加中考特有题型规则
+      const systemPrompt = `
+         # Role
+         你是一位**中国中考英语命题组组长**。你的任务是根据文章和单词，编制一份具有**区分度**和**科学性**的测验题。
+
+         # Difficulty Profile (难度设定)
+         **Level**: ${difficultyLevel}
+         **Guideline**: ${difficultyContext}  <-- 关键：把具体的出题标准告诉它
+
+         # Task 1: Reading Comprehension (4 Questions)
+         生成 4 道单项选择题，必须严格覆盖以下四个中考考点（维度）：
+         1. **Fact Retrieval (细节题)**: 直接从文中提取信息。
+         2. **Main Idea (主旨题)**: 归纳文章标题或中心思想。
+         3. **Inference (推断题)**: 基于事实进行逻辑推断（不可直接找到答案）。
+         4. **Vocabulary/Structure (词义/句意题)**: 猜测文中画线词的意思或指代关系。
+
+         # Task 2: Vocabulary Quiz (Strict Configuration)
+         请按照以下配置生成词汇题：
+         **当前配置**: ${config.description}
+
+         ## 核心题型生成规则 (Critical Rules):
+
+         1. **Word Form (词形变换)** [中考重点]:
+            - 给出目标词的**词根**（如 *success*），给出一个**新句子**挖空。
+            - 要求学生填入**派生词**（如 *successful/successfully*）。
+            - **JSON Format**: type="input", subType="word_form", question="The sentence with ____", hint="Root word: success"
+
+         2. **Contextual Choice (语境选词)**:
+            - 必须编写**全新的句子**（New Sentences），不能抄袭原文。
+            - 考察学生在脱离文章后是否真正掌握了单词用法。
+            - 干扰项（Options）必须是**词性相同**且**语义相关**的单词。
+
+         3. **Cloze (原文填空)**:
+            - 必须**直接摘录原文句子**，挖去目标词。
+            - 考察对文章的所谓“语感”回顾。
+
+         4. **Definition Choice (英英释义)**:
+            - Question 是英文释义，Answer 是目标单词。
+
+         5. **Spelling Input (拼写)**:
+            - type="input"。给出中文释义或英文提示，要求用户输入单词拼写。
+
+         ## 通用约束:
+         - **目标词**: 题目必须优先围绕 Target Words: [${words.map(w => w.spelling).join(', ')}]
+         - **解析 (Explanation)**: 所有题目必须提供中文解析，特别是“词形变换”要解释语法原理（例如：这里修饰动词，所以用副词形式）。
+
+         # Output Format (JSON Only)
+         返回标准 JSON 对象，无 Markdown：
+         {
+         "readingQuestions": [
+            {
+               "type": "multiple_choice",
+               "question": "...",
+               "options": ["A", "B", "C", "D"],
+               "answer": "Option content",
+               "explanation": "中文解析"
+            }
+         ],
+         "vocabularyQuestions": [
+            {
+               "type": "multiple_choice" | "input",
+               "subType": "word_form" | "contextual" | "cloze" | "definition" | "spelling" | "audio",
+               "question": "Question text (or sentence with ____)",
+               "hint": "Root word for word_form / Definition for spelling",
+               "options": ["A", "B", "C", "D"], // 仅选择题需要
+               "answer": "Correct Answer",
+               "phonetic": "/.../", // 仅 Audio 题需要
+               "explanation": "中文解析 (Explanation is mandatory)"
+            }
+         ]
+         }
+`;
 
       const userPrompt = `
-ARTICLE:
-${articleContent}
+      **ARTICLE CONTENT**:
+      ${articleContent}
 
-TARGET WORDS:
-${words.map(w => w.spelling).join(', ')}
+      **TARGET WORDS LIST**:
+      ${JSON.stringify(words.map(w => w.spelling))}
 
-Generate 4 Reading Comprehension questions and ${config.total} Vocabulary questions.
-`
-      return this._callDeepSeek(apiKey, baseUrl, fullSystemPrompt, userPrompt, onProgress)
+      **COMMAND**:
+      Generate the quiz JSON now.
+      `;
+
+      return this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt, onProgress);
    },
 
+   //获取单词的中文释义
    async getChineseDefinition(
       word: string,
       settings: Setting
@@ -264,6 +289,7 @@ Return a JSON object with:
       return this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt)
    },
 
+   //英语长难句分析
    async analyzeSentence(
       sentence: string,
       settings: Setting
@@ -307,6 +333,7 @@ Return a JSON object with:
       return this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt, undefined, false)
    },
 
+   //调用deepseek
    async _callDeepSeek(
       apiKey: string,
       baseUrl: string,
