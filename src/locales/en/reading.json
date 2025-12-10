@@ -47,7 +47,9 @@
         "submit": "Submit Answers",
         "back": "Back to Article",
         "correct": "Correct",
-        "yourAnswer": "Your Answer"
+        "yourAnswer": "Your Answer",
+        "exitReview": "Exit Review",
+        "submitting": "Submitting..."
     },
     "feedback": {
         "title": "Quiz Completed!",
@@ -56,6 +58,9 @@
         "perfect": "Perfect! All correct!",
         "good": "Good job!",
         "keepTrying": "Keep trying!",
+        "excellent": "Excellent! Outstanding Performance!",
+        "goodJob": "Good Job! Keep it up!",
+        "practice": "Keep Going! Practice makes perfect!",
         "difficulty": "How difficult was this article?",
         "easy": "Too Easy",
         "justRight": "Just Right",

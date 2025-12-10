@@ -47,7 +47,9 @@
         "submit": "提交答案",
         "back": "返回文章",
         "correct": "正确",
-        "yourAnswer": "你的答案"
+        "yourAnswer": "你的答案",
+        "exitReview": "退出复习",
+        "submitting": "提交中..."
     },
     "feedback": {
         "title": "测验完成！",
@@ -56,6 +58,9 @@
         "perfect": "太棒了！全对！",
         "good": "做得不错！",
         "keepTrying": "继续加油！",
+        "excellent": "太棒了！表现优异！",
+        "goodJob": "做得不错！继续保持！",
+        "practice": "继续加油！熟能生巧！",
         "difficulty": "你觉得这篇文章难度如何？",
         "easy": "太简单",
         "justRight": "刚刚好",

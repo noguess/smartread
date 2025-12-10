@@ -174,10 +174,10 @@ export default function QuizView({
                             {/* Encouragement Text */}
                             <Typography variant="h6" fontWeight="medium">
                                 {result.score >= 80
-                                    ? '🎉 Excellent! Outstanding Performance!'
+                                    ? `🎉 ${t('reading:feedback.excellent')}`
                                     : result.score >= 60
-                                        ? '👍 Good Job! Keep it up!'
-                                        : '💪 Keep Going! Practice makes perfect!'}
+                                        ? `👍 ${t('reading:feedback.goodJob')}`
+                                        : `💪 ${t('reading:feedback.practice')}`}
                             </Typography>
 
                             {result.message && (
