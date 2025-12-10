@@ -11,13 +11,15 @@ export interface DashboardActivity {
     date: number
     score?: number
     difficultyLevel?: string
+    articleId?: string | number // For navigation
 }
 
 interface RecentActivityListProps {
     activities: DashboardActivity[]
+    onItemClick?: (activity: DashboardActivity) => void
 }
 
-export default function RecentActivityList({ activities }: RecentActivityListProps) {
+export default function RecentActivityList({ activities, onItemClick }: RecentActivityListProps) {
     const { t, i18n } = useTranslation(['home'])
 
     const getScoreEmoji = (score: number) => {
@@ -71,8 +73,14 @@ export default function RecentActivityList({ activities }: RecentActivityListPro
                                 borderBottom: index < Math.min(5, activities.length) - 1 ? '1px solid' : 'none',
                                 borderColor: 'divider',
                                 py: 2,
-                                gap: 2
+                                gap: 2,
+                                cursor: onItemClick ? 'pointer' : 'default',
+                                transition: 'background-color 0.2s',
+                                '&:hover': {
+                                    bgcolor: onItemClick ? 'action.hover' : 'transparent'
+                                }
                             }}
+                            onClick={() => onItemClick && onItemClick(item)}
                         >
                             {getActivityIcon(item.type, item.score)}
 

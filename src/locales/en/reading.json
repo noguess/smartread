@@ -8,6 +8,17 @@
             "draft": "Drafting content...",
             "questions": "Generating questions...",
             "finalize": "Finalizing..."
+        },
+        "generatingQuiz": {
+            "title": "Generating Quiz...",
+            "subtitle": "Building questions based on content",
+            "steps": {
+                "analyze": "Analyzing content...",
+                "reading": "Creating reading questions...",
+                "vocab": "Extracting vocabulary questions...",
+                "options": "Generating distractors...",
+                "finalize": "Finalizing quiz..."
+            }
         }
     },
     "buttons": {

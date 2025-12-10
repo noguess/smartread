@@ -44,6 +44,7 @@ export default function ReadingPage() {
     const [selectedWord, setSelectedWord] = useState<string>('')
     const [isWordModalOpen, setIsWordModalOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [generationMode, setGenerationMode] = useState<'article' | 'quiz'>('article')
 
     const [quizAnswers, setQuizAnswers] = useState<{
         reading: Record<string, string>
@@ -198,8 +199,17 @@ export default function ReadingPage() {
         else if (state?.words && state.words.length > 0) {
             console.log('✅ Detected legacy generation mode')
             setStep('generating')
+            setGenerationMode('article')
             setTargetWords(state.words)
             generateContent(state.words)
+        }
+        // Priority 5: Load from Quiz ID (Review Mode from Home)
+        else if (state?.quizId) {
+            console.log('✅ Detected quiz review mode from navigation test:', state.quizId)
+            // We need to wait for article to load first, so we might need a separate effect or handle it after loading article
+            // Actually, if we have 'id' param, loadArticleById handles the article. 
+            // We just need to trigger review mode *after* article is ready.
+            // Let's handle this by checking state.quizId inside loadArticleById or a separate effect dependent on quizHistory
         }
         // Fallback: Navigate to home ONLY if we're not already in a loading state
         else if (step !== 'generating' && step !== 'initializing') {
@@ -252,6 +262,93 @@ export default function ReadingPage() {
         }
     }
 
+    // Effect to handle opening specific quiz review if navigated with quizId
+    useEffect(() => {
+        const state = location.state as any
+        if (state?.quizId && step === 'reading' && quizHistory.length > 0) {
+            console.log('🔄 Attempting to open specific quiz review:', state.quizId)
+            const record = quizHistory.find(q => q.id === state.quizId) || quizHistory.find(q => q.id === Number(state.quizId))
+            if (record) {
+                loadQuizReviewFromRecord(record)
+                // Clear state to prevent reopening on generic re-renders, but keeping it in history is fine
+                // window.history.replaceState({}, '') 
+            }
+        }
+    }, [step, quizHistory, location.state])
+
+    const loadQuizReviewFromRecord = (record: QuizRecord) => {
+        console.log('📖 Loading review for quiz:', record.id)
+
+        // Restore answers
+        setQuizAnswers(record.userAnswers)
+
+        // Calculate result for banner
+        const readingTotal = record.questions.reading.length
+        const vocabTotal = record.questions.vocabulary.length
+
+        // We need to recalculate counts from record.wordResults and answers since QuizRecord stores score but not explicit counts structure for the banner
+        // Or we can simple approximate or just reconstruct.
+        // Actually, we can reconstruct exactly if we check answers against (now loaded) articleData questions?
+        // But wait, articleData questions might be different if we re-generated? 
+        // V2: QuizRecord stores the questions at that time. We should use THOSE questions.
+
+        // CRITICAL: Update articleData with the questions FROM THE RECORD to ensure consistency
+        if (articleData) {
+            setArticleData({
+                ...articleData,
+                readingQuestions: record.questions.reading,
+                vocabularyQuestions: record.questions.vocabulary
+            })
+        }
+
+        // Re-calculate stats for the Banner
+        let readingCorrect = 0
+        record.questions.reading.forEach(q => {
+            if (record.userAnswers.reading[q.id] === q.answer) readingCorrect++
+        })
+
+        let vocabCorrect = 0
+        // We can use the persisted wordResults to help count, or re-verify. 
+        // Re-verifying is safer if we trust the record's questions.
+        if (record.wordResults) {
+            Object.values(record.wordResults).forEach(isCorrect => {
+                if (isCorrect) vocabCorrect++
+            })
+        }
+        // Note: wordResults keys are spellings. This might not directly map to question count if multiple questions target same word (rare).
+        // Better to re-grade simply:
+        vocabCorrect = 0
+        record.questions.vocabulary.forEach(q => {
+            const userAns = record.userAnswers.vocabulary[q.id]
+            // logic same as grading... simplified for 'isCorrect' check:
+            // Let's just trust record.score for the big number, and approximations for the breakdown if needed.
+            // Actually, let's re-grade strictly to be safe for display
+            const correctAns = q.answer
+            let isCorrect = false
+            if (Array.isArray(correctAns) && Array.isArray(userAns)) {
+                isCorrect = JSON.stringify(correctAns) === JSON.stringify(userAns) // Simple array check
+            } else {
+                isCorrect = (userAns as string)?.toLowerCase() === (correctAns as string)?.toLowerCase()
+            }
+            if (isCorrect) vocabCorrect++
+        })
+
+
+        setQuizResult({
+            score: record.score,
+            total: 100,
+            message: undefined, // No difficulty adjustment on historical review
+            stats: {
+                reading: { correct: readingCorrect, total: readingTotal },
+                vocabulary: { correct: vocabCorrect, total: vocabTotal }
+            }
+        })
+
+        setViewMode('results')
+        setStep('review')
+        window.scrollTo(0, 0)
+    }
+
 
 
     const loadReviewContent = async (record: History) => {
@@ -294,6 +391,7 @@ export default function ReadingPage() {
             }
 
             setStep('generating')
+            setGenerationMode('article')
             setError(null)
             setRealProgress(0)
             console.log('Starting V2.0 article generation for words:', words.map(w => w.spelling))
@@ -368,6 +466,7 @@ export default function ReadingPage() {
     const generateContent = async (words: Word[]) => {
         try {
             setStep('generating')
+            setGenerationMode('article')
             setError(null)
             setRealProgress(0) // Reset progress
             console.log('Starting content generation for words:', words.map(w => w.spelling))
@@ -433,6 +532,7 @@ export default function ReadingPage() {
 
         try {
             setStep('generating')
+            setGenerationMode('quiz')
             setError(null)
             setRealProgress(0)
             console.log('Starting quiz generation for article:', currentArticle.title)
@@ -729,7 +829,7 @@ export default function ReadingPage() {
                             </Box>
                         </Paper>
                     ) : (
-                        <GenerationLoading words={targetWords} realProgress={realProgress} />
+                        <GenerationLoading words={targetWords} realProgress={realProgress} mode={generationMode} />
                     )}
                 </Box>
             </Container>
@@ -806,7 +906,7 @@ export default function ReadingPage() {
                                                         <Paper
                                                             key={record.id}
                                                             variant="outlined"
-                                                            onClick={() => navigate(`/ history / ${record.id} `)}
+                                                            onClick={() => loadQuizReviewFromRecord(record)}
                                                             sx={{
                                                                 p: 1.5,
                                                                 borderRadius: 2,

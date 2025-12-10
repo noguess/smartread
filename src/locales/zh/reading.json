@@ -8,6 +8,17 @@
             "draft": "起草文章内容...",
             "questions": "生成阅读题目...",
             "finalize": "最终优化..."
+        },
+        "generatingQuiz": {
+            "title": "正在生成试题...",
+            "subtitle": "根据文章内容构建问题",
+            "steps": {
+                "analyze": "分析文章内容...",
+                "reading": "生成阅读理解...",
+                "vocab": "提取词汇问题...",
+                "options": "生成干扰选项...",
+                "finalize": "格式化试题..."
+            }
         }
     },
     "buttons": {

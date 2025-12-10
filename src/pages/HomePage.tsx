@@ -69,7 +69,8 @@ export default function HomePage() {
             type: 'article',
             title: a.title,
             date: a.createdAt,
-            difficultyLevel: a.difficultyLevel
+            difficultyLevel: a.difficultyLevel,
+            articleId: a.id // Keep same ID for direct article access
         }))
 
         const quizActivities: DashboardActivity[] = quizzes.map(q => {
@@ -79,7 +80,8 @@ export default function HomePage() {
                 type: 'quiz',
                 title: article ? article.title : t('home:recentActivity.unknownArticle'),
                 date: q.date,
-                score: q.score
+                score: q.score,
+                articleId: article?.id
             }
         })
 
@@ -217,6 +219,17 @@ export default function HomePage() {
         }
     }
 
+    const handleActivityClick = (item: DashboardActivity) => {
+        if (item.type === 'article') {
+            navigate(`/read/${item.id}`)
+        } else if (item.type === 'quiz' && item.articleId) {
+            // Navigate to article page but trigger review mode for this quiz
+            navigate(`/read/${item.articleId}`, {
+                state: { quizId: item.id }
+            })
+        }
+    }
+
     return (
         <Container maxWidth="xl">
             <Box sx={{ py: 2 }}>
@@ -248,7 +261,10 @@ export default function HomePage() {
 
                     {/* Recent Activity Section */}
                     <Grid item xs={12}>
-                        <RecentActivityList activities={activities} />
+                        <RecentActivityList
+                            activities={activities}
+                            onItemClick={handleActivityClick}
+                        />
                     </Grid>
                 </Grid>
 
