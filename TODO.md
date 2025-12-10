@@ -1,4 +1,9 @@
 
+## [Feature] Error Handling & Feedback
+- [x] Task 1 (Reading): Improve "Quiz Generation Failed" UX. Use `Snackbar` instead of blocking `error` state, ensuring user stays on 'reading' view with a visible alert.
+- [x] Task 2 (History): Add feedback when loading a review fails. Pass explanation via `navigate` state or use a global notification context.
+- [x] Task 3 (WordDetail): Handle definition fetch failures in `WordDetailModal` with a graceful "Definition not found" or "Network error" UI state.
+- [x] Task 4 (UI): Polish the blocking "Generation Failed" screen in `ReadingPage` to use the new `EmptyState` component styling for consistency.
 ## [Feature] Auto Difficulty Adjustment & Result Hub
 - [x] Task 1 (Logic): Update `calculateNewDifficulty` to use score/accuracy instead of subjective feedback.
 - [x] Task 2 (UI): Modify `QuizView` to support a "Result Banner" (score + feedback msg) in `readOnly` mode.

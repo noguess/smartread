@@ -27,6 +27,10 @@
         "toast": {
             "autoAdded": "Added '{{word}}' to vocabulary",
             "statusUpdated": "Updated '{{word}}' to Learning status"
+        },
+        "error": {
+            "network": "Failed to fetch definition",
+            "notFound": "Definition not found"
         }
     }
 }

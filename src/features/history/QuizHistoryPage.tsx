@@ -10,9 +10,11 @@ import {
     List,
     ListItem,
     Divider,
-    Button
+    Button,
+    Snackbar,
+    Alert
 } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import {
@@ -43,8 +45,20 @@ const formatDuration = (seconds?: number) => {
 export default function QuizHistoryPage() {
     const { t } = useTranslation(['history', 'common', 'library'])
     const navigate = useNavigate()
+    const location = useLocation()
     const [enhancedRecords, setEnhancedRecords] = useState<EnhancedQuizRecord[]>([])
     const [loading, setLoading] = useState(true)
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+    useEffect(() => {
+        // Check for error passed from other pages (e.g. ReadingPage failed loading)
+        const state = location.state as { error?: string }
+        if (state?.error) {
+            setErrorMsg(state.error)
+            // Clear state so error doesn't persist on refresh
+            window.history.replaceState({}, document.title)
+        }
+    }, [location.state])
 
     useEffect(() => {
         const fetchData = async () => {
@@ -228,6 +242,17 @@ export default function QuizHistoryPage() {
                     </List>
                 </Paper>
             )}
+
+            <Snackbar
+                open={!!errorMsg}
+                autoHideDuration={6000}
+                onClose={() => setErrorMsg(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={() => setErrorMsg(null)} severity="error" sx={{ width: '100%' }}>
+                    {errorMsg}
+                </Alert>
+            </Snackbar>
         </Container>
     )
 }

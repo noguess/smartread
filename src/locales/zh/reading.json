@@ -46,7 +46,8 @@
         "minutesAndSeconds": "{{minutes}} 分 {{seconds}} 秒"
     },
     "error": {
-        "generationFailed": "生成文章失败: {{error}}"
+        "generationFailed": "生成文章失败: {{error}}",
+        "loadReviewFailed": "加载回顾记录失败: {{error}}"
     },
     "quiz": {
         "title": "阅读理解测验",

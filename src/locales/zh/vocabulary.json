@@ -27,6 +27,10 @@
         "toast": {
             "autoAdded": "已将「{{word}}」加入单词本",
             "statusUpdated": "「{{word}}」状态更新为学习中"
+        },
+        "error": {
+            "network": "获取释义失败",
+            "notFound": "未找到释义"
         }
     }
 }

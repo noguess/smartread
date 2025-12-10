@@ -22,7 +22,7 @@ import { dictionaryService, DictionaryEntry } from '../services/dictionaryServic
 import { chineseDictionaryService } from '../services/chineseDictionaryService'
 import { getLemma } from '../utils/textUtils'
 import { VolumeUp, MenuBook } from '@mui/icons-material'
-import { Button, CircularProgress, Snackbar, Alert } from '@mui/material'
+import { Button, CircularProgress, Snackbar, Alert, AlertColor } from '@mui/material'
 
 interface WordDetailModalProps {
     word: string
@@ -42,8 +42,10 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
     const [loadingDictionary, setLoadingDictionary] = useState(false)
     const [showDictionary, setShowDictionary] = useState(false)
 
+    const [apiError, setApiError] = useState<string | null>(null)
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
+    const [snackbarSeverity, setSnackbarSeverity] = useState<AlertColor>('success')
 
     useEffect(() => {
         if (open && word) {
@@ -51,8 +53,9 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
         }
     }, [open, word])
 
-    const showToast = (message: string) => {
+    const showToast = (message: string, severity: AlertColor = 'success') => {
         setSnackbarMessage(message)
+        setSnackbarSeverity(severity)
         setSnackbarOpen(true)
     }
 
@@ -155,6 +158,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
         setShowDictionary(true)
         if (!dictionaryData && !loadingDictionary) {
             setLoadingDictionary(true)
+            setApiError(null)
             try {
                 // If we already auto-fetched it in loadWordData but failed to save or something, retry
                 // Or if we failed to fetch in loadWordData, we retry here.
@@ -162,6 +166,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                 setDictionaryData(data)
             } catch (error) {
                 console.error('Failed to load dictionary data', error)
+                setApiError(t('vocabulary:modal.error.network'))
             } finally {
                 setLoadingDictionary(false)
             }
@@ -287,6 +292,10 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                                 <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
                                     <CircularProgress size={24} />
                                 </Box>
+                            ) : apiError ? (
+                                <Alert severity="error" sx={{ mb: 2 }}>
+                                    {apiError}
+                                </Alert>
                             ) : dictionaryData ? (
                                 <Box>
                                     {dictionaryData.map((entry, idx) => (
@@ -378,7 +387,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                 onClose={() => setSnackbarOpen(false)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
-                <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
                 </Alert>
             </Snackbar>

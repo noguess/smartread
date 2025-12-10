@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import WordDetailModal from './WordDetailModal'
 import { wordService } from '../services/wordService'
@@ -194,6 +194,28 @@ describe('WordDetailModal', () => {
                 meaning: '测试释义',
                 phonetic: '/test-chn/'
             }))
+        })
+    })
+    it('shows error state when manual dictionary check fails', async () => {
+        vi.mocked(wordService.getWordBySpelling).mockResolvedValue({
+            id: 1, spelling: 'test', status: 'Learning'
+        } as any)
+
+        // Mock Dictionary failure
+        vi.mocked(dictionaryService.getDefinition).mockRejectedValue(new Error('Network Error'))
+
+        render(<WordDetailModal word="test" open={true} onClose={mockOnClose} />)
+
+        // Wait for word to load
+        await waitFor(() => expect(screen.getByText('test')).toBeInTheDocument())
+
+        // Click "Check Dictionary"
+        const checkBtn = screen.getByText('vocabulary:modal.checkDictionary')
+        fireEvent.click(checkBtn)
+
+        // Wait for Error Feedback
+        await waitFor(() => {
+            expect(screen.getByText('vocabulary:modal.error.network')).toBeInTheDocument()
         })
     })
 })

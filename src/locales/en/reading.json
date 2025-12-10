@@ -46,7 +46,8 @@
         "minutesAndSeconds": "{{minutes}} min {{seconds}} sec"
     },
     "error": {
-        "generationFailed": "Failed to generate article: {{error}}"
+        "generationFailed": "Generation failed: {{error}}",
+        "loadReviewFailed": "Failed to load review: {{error}}"
     },
     "quiz": {
         "title": "Reading Comprehension Quiz",

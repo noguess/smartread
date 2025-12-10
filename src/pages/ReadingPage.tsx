@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Container, Box, Typography, Button, Grid, Paper, Chip, Fade, Divider, Snackbar, Alert, CircularProgress } from '@mui/material'
+import { Container, Box, Typography, Button, Grid, Paper, Chip, Fade, Divider, Snackbar, Alert, CircularProgress, AlertColor } from '@mui/material'
 
 import { Word, History, Article, QuizRecord } from '../services/db'
 import { mockLLMService, GeneratedContent } from '../services/mockLLMService'
@@ -23,6 +23,8 @@ import DefinitionPopover from '../components/reading/DefinitionPopover'
 import SentenceAnalysisPopover from '../components/reading/SentenceAnalysisPopover'
 import { useTranslation } from 'react-i18next'
 import { useStudyTimer } from '../hooks/useStudyTimer'
+import EmptyState from '../components/common/EmptyState'
+import { ErrorOutline } from '@mui/icons-material'
 
 type Step = 'initializing' | 'generating' | 'reading' | 'quiz' | 'feedback' | 'review'
 type FontSize = 'small' | 'medium' | 'large'
@@ -57,6 +59,8 @@ export default function ReadingPage() {
     const [error, setError] = useState<string | null>(null)
     const [realProgress, setRealProgress] = useState(0)
 
+    const topRef = useRef<HTMLDivElement>(null)
+
     // New state for V2.0 support
     const [currentArticle, setCurrentArticle] = useState<Article | null>(null)
     const [quizHistory, setQuizHistory] = useState<QuizRecord[]>([])
@@ -64,6 +68,7 @@ export default function ReadingPage() {
     // Snackbar Notification State
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
+    const [snackbarSeverity, setSnackbarSeverity] = useState<AlertColor>('info')
 
     // Quiz Result State (for Banner)
     const [quizResult, setQuizResult] = useState<{
@@ -90,6 +95,12 @@ export default function ReadingPage() {
         // Load settings independently
         settingsService.getSettings().then(setSettings)
     }, [])
+
+    // Scroll to top whenever step changes
+    useEffect(() => {
+        // Use scrollIntoView which works regardless of whether the scroll container is window or a div
+        topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, [step])
 
     const handleSelection = (text: string, position: { top: number; left: number }) => {
         // Close if selecting a new word or clearing
@@ -346,7 +357,6 @@ export default function ReadingPage() {
 
         setViewMode('results')
         setStep('review')
-        window.scrollTo(0, 0)
     }
 
 
@@ -377,7 +387,11 @@ export default function ReadingPage() {
             setStep('reading')
         } catch (error) {
             console.error('Failed to load review', error)
-            navigate('/history')
+            navigate('/history', {
+                state: {
+                    error: t('reading:error.loadReviewFailed', { error: error instanceof Error ? error.message : 'Unknown error' })
+                }
+            })
         }
     }
 
@@ -575,7 +589,12 @@ export default function ReadingPage() {
             setStep('quiz')
         } catch (error) {
             console.error('Failed to generate quiz:', error)
-            setError(error instanceof Error ? error.message : t('reading:error.generationFailed', { error: 'Quiz generation failed' }))
+            // Fix: Use Snackbar instead of blocking Error UI for better UX
+            setSnackbarMessage(error instanceof Error ? error.message : t('reading:error.generationFailed', { error: 'Quiz generation failed' }))
+            setSnackbarSeverity('error')
+            setSnackbarOpen(true)
+
+            // Revert step to 'reading' so user sees the article again
             setStep('reading')
         }
     }
@@ -764,7 +783,6 @@ export default function ReadingPage() {
 
         setIsSubmitting(false)
         setStep('review')
-        window.scrollTo(0, 0)
     }
 
     const checkAndAdjustDifficulty = async (stats: { readingAccuracy: number, totalAccuracy: number }): Promise<string> => {
@@ -812,22 +830,21 @@ export default function ReadingPage() {
             <Container maxWidth="md" sx={{ py: 8 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {error ? (
-                        <Paper sx={{ p: 4, textAlign: 'center', bgcolor: '#fff5f5', border: '1px solid #ffcdd2' }}>
-                            <Typography variant="h6" color="error" gutterBottom>
-                                {t('reading:error.generationFailed', 'Generation Failed')}
-                            </Typography>
-                            <Typography color="text.secondary" sx={{ mb: 3 }}>
-                                {error}
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                <Button variant="outlined" onClick={() => navigate('/')}>
-                                    {t('common:button.back', 'Back')}
-                                </Button>
-                                <Button variant="contained" onClick={handleRetry}>
-                                    {t('common:button.retry', 'Retry')}
-                                </Button>
-                            </Box>
-                        </Paper>
+                        <EmptyState
+                            icon={<ErrorOutline sx={{ fontSize: 64, color: 'error.main' }} />}
+                            title={t('reading:error.generationFailed', 'Generation Failed')}
+                            description={error}
+                            action={
+                                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                                    <Button variant="outlined" onClick={() => navigate('/')}>
+                                        {t('common:button.back', 'Back')}
+                                    </Button>
+                                    <Button variant="contained" onClick={handleRetry}>
+                                        {t('common:button.retry', 'Retry')}
+                                    </Button>
+                                </Box>
+                            }
+                        />
                     ) : (
                         <GenerationLoading words={targetWords} realProgress={realProgress} mode={generationMode} />
                     )}
@@ -837,8 +854,9 @@ export default function ReadingPage() {
     }
 
     return (
-        <>
+        <Box ref={topRef}>
             {step === 'reading' && <ReadingProgressBar />}
+
 
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 {step === 'reading' && articleData && (
@@ -1120,7 +1138,7 @@ export default function ReadingPage() {
                 >
                     <Alert
                         onClose={() => setSnackbarOpen(false)}
-                        severity="info"
+                        severity={snackbarSeverity}
                         sx={{ width: '100%', boxShadow: 3 }}
                         variant="filled"
                     >
@@ -1128,6 +1146,6 @@ export default function ReadingPage() {
                     </Alert>
                 </Snackbar>
             </Container>
-        </>
+        </Box>
     )
 }
