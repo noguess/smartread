@@ -48,6 +48,7 @@
         "total": "Total",
         "score": "Score",
         "time": "Duration",
-        "unknownArticle": "Unknown Article"
+        "unknownArticle": "Unknown Article",
+        "unknownError": "Unknown Error"
     }
 }

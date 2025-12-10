@@ -33,7 +33,7 @@ type FontSize = 'small' | 'medium' | 'large'
 const generatingUuids = new Set<string>()
 
 export default function ReadingPage() {
-    const { t } = useTranslation(['reading'])
+    const { t } = useTranslation(['reading', 'common'])
     const { id } = useParams<{ id: string }>()
     const location = useLocation()
     const navigate = useNavigate()
@@ -389,7 +389,7 @@ export default function ReadingPage() {
             console.error('Failed to load review', error)
             navigate('/history', {
                 state: {
-                    error: t('reading:error.loadReviewFailed', { error: error instanceof Error ? error.message : 'Unknown error' })
+                    error: t('reading:error.loadReviewFailed', { error: error instanceof Error ? error.message : t('common:common.unknownError', 'Unknown Error') })
                 }
             })
         }
