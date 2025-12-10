@@ -13,7 +13,7 @@ import {
 import { ArrowBack, Timer, Assignment } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import { db, QuizRecord } from '../../services/db'
-import QuestionReviewCard, { QuestionData } from './components/QuestionReviewCard'
+import QuestionReviewCard from './components/QuestionReviewCard'
 
 export default function QuizResultPage() {
     const { id } = useParams()
@@ -46,8 +46,8 @@ export default function QuizResultPage() {
     // Combine questions from potentially multiple sections (reading/vocabulary)
     // The schema in db.ts says `questions: any`. 
     // Usually it's { reading: [], vocabulary: [] } or legacy { readingQuestions: [], vocabularyQuestions: [] }
-    const readingQs = record.questions?.reading || record.questions?.readingQuestions || []
-    const vocabQs = record.questions?.vocabulary || record.questions?.vocabularyQuestions || []
+    const readingQs = (record.questions as any)?.reading || (record.questions as any)?.readingQuestions || []
+    const vocabQs = (record.questions as any)?.vocabulary || (record.questions as any)?.vocabularyQuestions || []
     const allQuestions = [...readingQs, ...vocabQs]
 
     return (
@@ -97,7 +97,7 @@ export default function QuizResultPage() {
             </Typography>
 
             {/* Questions List */}
-            {allQuestions.map((q: QuestionData, idx: number) => {
+            {allQuestions.map((q: any, idx: number) => {
                 // Find user answer based on ID or index
                 // userAnswers structure is usually { reading: { r1: 'A' }, vocabulary: { v1: 'word' } }
                 // We need to hunt for it.

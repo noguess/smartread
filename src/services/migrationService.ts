@@ -35,7 +35,7 @@ export const migrateV1ToV2 = async () => {
                     articleId: articleId,
                     date: h.date,
                     questions: h.questionsJson,
-                    userAnswers: h.userAnswers,
+                    userAnswers: h.userAnswers || { reading: {}, vocabulary: {} },
                     score: h.userScore,
                     difficultyFeedback: h.difficultyFeedback,
                     timeSpent: h.timeSpent

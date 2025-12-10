@@ -10,7 +10,7 @@ interface GenerationLoadingProps {
     mode?: 'article' | 'quiz'
 }
 
-export default function GenerationLoading({ words, realProgress = 0, mode = 'article' }: GenerationLoadingProps) {
+export default function GenerationLoading({ words: _words, realProgress = 0, mode = 'article' }: GenerationLoadingProps) {
     const { t } = useTranslation(['reading'])
     const [activeStep, setActiveStep] = useState(0)
     const [logs, setLogs] = useState<Array<{ timestamp: Date; label: string; duration?: number }>>([])
