@@ -123,4 +123,55 @@ describe('QuizView', () => {
         fireEvent.click(screen.getByText('reading:quiz.exitReview'))
         expect(onExit).toHaveBeenCalled()
     })
+    it('displays result banner in review mode', () => {
+        render(
+            <QuizView
+                readingQuestions={mockReadingQuestions}
+                vocabularyQuestions={mockVocabQuestions}
+                onSubmit={mockObSubmit}
+                onBack={mockOnBack}
+                readOnly={true}
+                result={{ score: 80, total: 100, message: 'Great job!' }}
+                initialAnswers={{ reading: {}, vocabulary: {} }}
+            />
+        )
+
+        expect(screen.getByText(/80/)).toBeInTheDocument()
+        expect(screen.getByText(/Great job!/)).toBeInTheDocument()
+    })
+    it('displays rich result dashboard in review mode', () => {
+        render(
+            <QuizView
+                readingQuestions={mockReadingQuestions}
+                vocabularyQuestions={mockVocabQuestions}
+                onSubmit={mockObSubmit}
+                onBack={mockOnBack}
+                readOnly={true}
+                result={{
+                    score: 85,
+                    total: 100,
+                    message: 'Difficulty adjusted',
+                    stats: {
+                        reading: { correct: 3, total: 5 },
+                        vocabulary: { correct: 8, total: 10 }
+                    }
+                }}
+                initialAnswers={{ reading: {}, vocabulary: {} }}
+            />
+        )
+
+        // Check for main score
+        expect(screen.getByText('85')).toBeInTheDocument()
+
+        // Check for stats
+        // Check for stats (searching by parts)
+        expect(screen.getByText(/3/)).toBeInTheDocument()
+        expect(screen.getByText(/\/ 5/)).toBeInTheDocument()
+        expect(screen.getAllByText(/8/).length).toBeGreaterThan(0) // Matches 85 (score) and 8 (stats)
+        expect(screen.getByText(/\/ 10/)).toBeInTheDocument()
+
+        // Check for section labels (using translation keys as per mock)
+        expect(screen.getAllByText('reading:quiz.readingTitle').length).toBeGreaterThan(0)
+        expect(screen.getAllByText('reading:quiz.vocabTitle').length).toBeGreaterThan(0)
+    })
 })

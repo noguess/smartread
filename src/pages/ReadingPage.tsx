@@ -14,7 +14,6 @@ import { quizRecordService } from '../services/quizRecordService'
 import { calculateNewDifficulty, DifficultyLevel } from '../utils/difficultyLogic'
 import ArticleContent from '../components/reading/ArticleContent'
 import QuizView from '../components/reading/QuizView'
-import ScoreFeedback from '../components/reading/ScoreFeedback'
 import WordDetailModal from '../components/WordDetailModal'
 import ReadingProgressBar from '../components/reading/ReadingProgressBar'
 import ReadingToolbar from '../components/reading/ReadingToolbar'
@@ -42,11 +41,10 @@ export default function ReadingPage() {
     })
     const [articleData, setArticleData] = useState<GeneratedContent | null>(null)
     const [targetWords, setTargetWords] = useState<Word[]>([])
-    const [score, setScore] = useState(0)
-    const [readingScore, setReadingScore] = useState(0)
     const [selectedWord, setSelectedWord] = useState<string>('')
     const [isWordModalOpen, setIsWordModalOpen] = useState(false)
-    const [lastWordResults, setLastWordResults] = useState<{ [spelling: string]: boolean }>({})
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
     const [quizAnswers, setQuizAnswers] = useState<{
         reading: Record<string, string>
         vocabulary: Record<string, string | string[]>
@@ -65,6 +63,17 @@ export default function ReadingPage() {
     // Snackbar Notification State
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
+
+    // Quiz Result State (for Banner)
+    const [quizResult, setQuizResult] = useState<{
+        score: number
+        total: number
+        message?: string
+        stats?: {
+            reading: { correct: number; total: number }
+            vocabulary: { correct: number; total: number }
+        }
+    } | undefined>(undefined)
 
     // Settings State
     const [settings, setSettings] = useState<any>(null)
@@ -474,6 +483,7 @@ export default function ReadingPage() {
     const handleQuizSubmit = async (answers: { reading: Record<string, string>; vocabulary: Record<string, string | string[]> }) => {
         if (!articleData) return
 
+        setIsSubmitting(true)
         setQuizAnswers(answers)
 
         // Calculate Reading Score (40% weight)
@@ -506,9 +516,6 @@ export default function ReadingPage() {
         })
 
         const totalCorrect = readingCorrect + vocabCorrect
-        setScore(totalCorrect)
-        setReadingScore(readingCorrect)
-        setStep('feedback')
 
         // Precise SRS Update Logic
         const wordResults: { [spelling: string]: boolean } = {}
@@ -521,12 +528,12 @@ export default function ReadingPage() {
             console.log(`Processing question for targetWord: "${q.targetWord}"`)
 
             // Enhanced word matching with multiple fallback strategies
-            let word = targetWords.find(w => w.spelling === q.targetWord)
+            let word = targetWords?.find(w => w.spelling === q.targetWord)
 
             if (!word) {
                 // Fallback 1: Check if stem contains any target word
                 const stemLower = q.stem.toLowerCase()
-                word = targetWords.find(w => stemLower.includes(w.spelling.toLowerCase()))
+                word = targetWords?.find(w => stemLower.includes(w.spelling.toLowerCase()))
 
                 if (word) {
                     console.log(`   Found via stem match: "${word.spelling}"`)
@@ -535,7 +542,7 @@ export default function ReadingPage() {
 
             if (!word && q.answer && typeof q.answer === 'string') {
                 // Fallback 2: Check if answer matches any target word
-                word = targetWords.find(w => w.spelling.toLowerCase() === (q.answer as string).toLowerCase())
+                word = targetWords?.find(w => w.spelling.toLowerCase() === (q.answer as string).toLowerCase())
 
                 if (word) {
                     console.log(`   Found via answer match: "${word.spelling}"`)
@@ -575,32 +582,48 @@ export default function ReadingPage() {
 
         console.log('✅ SRS updates complete. Word results:', wordResults)
 
-        // Store word results for history saving
-        setLastWordResults(wordResults)
-    }
-
-    const handleFinish = async (difficulty: number) => {
-        if (!articleData || !quizAnswers) return
-
+        // --- Saving & Transition Logic ---
         const readingTotal = articleData.readingQuestions.length
         const vocabTotal = articleData.vocabularyQuestions.length
+        const total = readingTotal + vocabTotal
 
-        // Calculate Weighted Score
-        // Reading: 40% weight
-        // Vocabulary: 60% weight
-        // Note: score holds total correct count, readingScore holds reading correct count
-        const vocabScore = score - readingScore
-        const readingWeight = readingTotal > 0 ? (readingScore / readingTotal) * 40 : 0
+        // Weighted Score Calculation
+        const vocabScore = totalCorrect - readingCorrect
+        const readingWeight = readingTotal > 0 ? (readingCorrect / readingTotal) * 40 : 0
         const vocabWeight = vocabTotal > 0 ? (vocabScore / vocabTotal) * 60 : 0
-        const weightedScore = Math.round(readingWeight + vocabWeight)
+        const scorePercentage = Math.round(readingWeight + vocabWeight)
 
-        // Use weighted score for percentage
-        const scorePercentage = weightedScore
+        // Difficulty Adjustment Logic
+        const readingAccuracy = readingTotal > 0 ? readingCorrect / readingTotal : 0
+        const totalAccuracy = total > 0 ? totalCorrect / total : 0
 
-        // V2.0 Flow: Save to QuizRecord if we have a currentArticle
+        const adjustMsg = await checkAndAdjustDifficulty({ readingAccuracy, totalAccuracy })
+
+        setQuizResult({
+            score: scorePercentage,
+            total: 100,
+            message: adjustMsg || undefined,
+            stats: {
+                reading: {
+                    correct: readingCorrect,
+                    total: readingTotal
+                },
+                vocabulary: {
+                    correct: vocabCorrect,
+                    total: vocabTotal
+                }
+            }
+        })
+
+        if (adjustMsg) {
+            setSnackbarMessage(adjustMsg)
+            setSnackbarOpen(true)
+        }
+
+        const difficultyFeedback = 3
+
         if (currentArticle) {
             console.log('Saving quiz record for V2.0 article:', currentArticle.uuid)
-
             const quizRecord: Omit<QuizRecord, 'id'> = {
                 articleId: currentArticle.uuid,
                 date: Date.now(),
@@ -608,45 +631,19 @@ export default function ReadingPage() {
                     reading: articleData.readingQuestions,
                     vocabulary: articleData.vocabularyQuestions
                 },
-                userAnswers: quizAnswers,
-                score: scorePercentage, // Weighted score
-                difficultyFeedback: difficulty,
+                userAnswers: answers,
+                score: scorePercentage,
+                difficultyFeedback: difficultyFeedback,
                 timeSpent: timeSpent,
-                wordResults: lastWordResults
+                wordResults: wordResults
             }
-
             await quizRecordService.saveQuizRecord(quizRecord)
-            console.log('Quiz record saved successfully')
 
-            // Auto-adjustment logic for V2
-            // We relaxed the downgrade condition to be more responsive (Feedback >= 4)
-            const adjustMsg = await checkAndAdjustDifficulty(readingScore, difficulty)
-            if (adjustMsg) {
-                console.log(adjustMsg)
-                setSnackbarMessage(adjustMsg)
-                setSnackbarOpen(true)
-            }
-
-            // Refresh quiz history
+            // Refresh history
             const updatedHistory = await quizRecordService.getRecordsByArticleUuid(currentArticle.uuid)
             setQuizHistory(updatedHistory)
-            console.log('Quiz history refreshed:', updatedHistory.length, 'records')
-
-            // Clear quiz data for next round
-            setArticleData({
-                title: articleData.title,
-                content: articleData.content,
-                readingQuestions: [],
-                vocabularyQuestions: []
-            })
-
-            // Return to reading page
-            setStep('reading')
-        }
-        // Legacy Flow: Save to History table for backward compatibility
-        else {
-            console.log('Saving to legacy History table')
-
+        } else {
+            // Legacy
             const historyRecord: Omit<History, 'id'> = {
                 date: Date.now(),
                 title: articleData.title,
@@ -656,28 +653,28 @@ export default function ReadingPage() {
                     reading: articleData.readingQuestions,
                     vocabulary: articleData.vocabularyQuestions
                 },
-                userScore: scorePercentage, // Weighted Score
-                difficultyFeedback: difficulty,
+                userScore: scorePercentage,
+                difficultyFeedback: difficultyFeedback,
                 timeSpent: timeSpent,
-                wordResults: lastWordResults,
-                userAnswers: quizAnswers
+                wordResults: wordResults,
+                userAnswers: answers
             }
-
             await historyService.saveArticleRecord(historyRecord)
-
-            const message = await checkAndAdjustDifficulty(readingScore, difficulty)
-            navigate('/', { state: { message } })
         }
+
+        setIsSubmitting(false)
+        setStep('review')
+        window.scrollTo(0, 0)
     }
 
-    const checkAndAdjustDifficulty = async (readingCorrectCount: number, feedbackDifficulty: number): Promise<string> => {
+    const checkAndAdjustDifficulty = async (stats: { readingAccuracy: number, totalAccuracy: number }): Promise<string> => {
         const settings = await settingsService.getSettings()
         const currentLevel = settings?.difficultyLevel || 'L2'
+
         // Use the pure function for logic
         const newLevel = calculateNewDifficulty(
             currentLevel as DifficultyLevel,
-            readingCorrectCount,
-            feedbackDifficulty
+            stats
         )
         let message = ''
 
@@ -990,6 +987,7 @@ export default function ReadingPage() {
                         onBack={() => setStep('reading')}
                         initialAnswers={viewMode === 'results' ? quizAnswers || undefined : undefined}
                         readOnly={viewMode === 'results'}
+                        isSubmitting={isSubmitting}
                     />
                 )}
 
@@ -999,31 +997,14 @@ export default function ReadingPage() {
                         vocabularyQuestions={articleData.vocabularyQuestions}
                         onSubmit={() => { }} // Not used in readOnly mode
                         onExit={() => setStep('reading')} // Exit Review -> Back to Article/Reading
-                        onBack={() => setStep('feedback')} // Back -> Back to Score
+                        onBack={() => setStep('reading')} // Back -> Exit (There is no ScoreFeedback now)
                         initialAnswers={quizAnswers}
                         readOnly={true}
+                        result={quizResult}
                     />
                 )}
 
-                {step === 'feedback' && articleData && (
-                    <ScoreFeedback
-                        score={score}
-                        totalQuestions={articleData.readingQuestions.length + articleData.vocabularyQuestions.length}
-                        customPercentage={(() => {
-                            const rTotal = articleData.readingQuestions.length
-                            const vTotal = articleData.vocabularyQuestions.length
-                            // score is total correct, readingScore is reading correct
-                            const vScore = score - readingScore
-
-                            const rWeight = rTotal > 0 ? (readingScore / rTotal) * 40 : 0
-                            const vWeight = vTotal > 0 ? (vScore / vTotal) * 60 : 0
-
-                            return Math.round(rWeight + vWeight)
-                        })()}
-                        onComplete={handleFinish}
-                        onReview={() => setStep('review')}
-                    />
-                )}
+                {/* Feedback step removed */}
 
                 <WordDetailModal
                     word={selectedWord}

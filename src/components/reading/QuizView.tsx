@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
     Paper,
     Typography,
@@ -14,8 +14,13 @@ import {
     Accordion,
     AccordionSummary,
     AccordionDetails,
+    Card,
+    CardContent,
+    LinearProgress,
+    Stack,
+    Divider
 } from '@mui/material'
-import { ExpandMore, Lightbulb } from '@mui/icons-material'
+import { ExpandMore, Lightbulb, MenuBook, Abc, EmojiEvents } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import { Question } from '../../services/db'
 import VocabularyQuestionRenderer from './VocabularyQuestionRenderer'
@@ -31,6 +36,22 @@ interface QuizViewProps {
     }
     readOnly?: boolean
     onExit?: () => void
+    isSubmitting?: boolean
+    result?: {
+        score: number
+        total: number
+        message?: string
+        stats?: {
+            reading: {
+                correct: number
+                total: number
+            }
+            vocabulary: {
+                correct: number
+                total: number
+            }
+        }
+    }
 }
 
 export default function QuizView({
@@ -41,11 +62,23 @@ export default function QuizView({
     initialAnswers,
     readOnly = false,
     onExit,
+    isSubmitting = false,
+    result,
 }: QuizViewProps) {
     const { t } = useTranslation(['reading'])
     const [activeStep, setActiveStep] = useState(0)
     const [readingAnswers, setReadingAnswers] = useState<Record<string, string>>(initialAnswers?.reading || {})
     const [vocabAnswers, setVocabAnswers] = useState<Record<string, string | string[]>>(initialAnswers?.vocabulary || {})
+
+    // Auto-scroll to top when result is displayed (review mode)
+    useEffect(() => {
+        if (readOnly && result) {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            })
+        }
+    }, [readOnly, result])
 
     const steps = [t('reading:quiz.readingTitle'), t('reading:quiz.vocabTitle')]
 
@@ -95,6 +128,134 @@ export default function QuizView({
 
     return (
         <Paper elevation={0} sx={{ p: 4, borderRadius: 4 }}>
+            {/* Result Banner in ReadOnly Mode */}
+            {/* Result Dashboard in ReadOnly Mode */}
+            {readOnly && result && (
+                <Card
+                    elevation={4}
+                    sx={{
+                        mb: 4,
+                        borderRadius: 4,
+                        overflow: 'hidden',
+                        background: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)', // Soft minimal bg
+                        border: '1px solid rgba(0,0,0,0.05)'
+                    }}
+                >
+                    {/* Hero Section */}
+                    <Box
+                        sx={{
+                            p: 3,
+                            background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
+                            color: 'white',
+                            textAlign: 'center',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}
+                    >
+                        {/* Decorative Circle */}
+                        <Box sx={{
+                            position: 'absolute',
+                            top: -20,
+                            right: -20,
+                            width: 100,
+                            height: 100,
+                            borderRadius: '50%',
+                            bgcolor: 'rgba(255,255,255,0.1)'
+                        }} />
+
+                        <Stack alignItems="center" spacing={1}>
+                            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                                <EmojiEvents sx={{ fontSize: 40, color: '#FFD700' }} />
+                                <Typography variant="h2" fontWeight="800" sx={{ textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+                                    {result.score}
+                                </Typography>
+                            </Box>
+
+                            {/* Encouragement Text */}
+                            <Typography variant="h6" fontWeight="medium">
+                                {result.score >= 80
+                                    ? '🎉 Excellent! Outstanding Performance!'
+                                    : result.score >= 60
+                                        ? '👍 Good Job! Keep it up!'
+                                        : '💪 Keep Going! Practice makes perfect!'}
+                            </Typography>
+
+                            {result.message && (
+                                <Typography variant="body2" sx={{ opacity: 0.9, fontStyle: 'italic', bgcolor: 'rgba(0,0,0,0.1)', px: 2, py: 0.5, borderRadius: 2 }}>
+                                    {result.message}
+                                </Typography>
+                            )}
+                        </Stack>
+                    </Box>
+
+                    {/* Detailed Stats Section */}
+                    {result.stats && (
+                        <CardContent sx={{ p: 3 }}>
+                            <Stack
+                                direction={{ xs: 'column', sm: 'row' }}
+                                spacing={4}
+                                divider={<Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />}
+                            >
+                                {/* Reading Stats */}
+                                <Box sx={{ flex: 1 }}>
+                                    <Stack spacing={2}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'primary.light', color: 'white' }}>
+                                                <MenuBook fontSize="small" />
+                                            </Box>
+                                            <Typography variant="subtitle1" fontWeight="bold">
+                                                {t('reading:quiz.readingTitle')}
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                            <Typography variant="h4" color="primary.main" fontWeight="bold">
+                                                {result.stats.reading.correct} <Typography component="span" variant="h6" color="text.secondary">/ {result.stats.reading.total}</Typography>
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {Math.round((result.stats.reading.correct / (result.stats.reading.total || 1)) * 100)}% Accuracy
+                                            </Typography>
+                                        </Box>
+                                        <LinearProgress
+                                            variant="determinate"
+                                            value={(result.stats.reading.correct / (result.stats.reading.total || 1)) * 100}
+                                            sx={{ height: 8, borderRadius: 4, bgcolor: 'rgba(74, 144, 226, 0.1)', '& .MuiLinearProgress-bar': { borderRadius: 4 } }}
+                                        />
+                                    </Stack>
+                                </Box>
+
+                                {/* Vocabulary Stats */}
+                                <Box sx={{ flex: 1 }}>
+                                    <Stack spacing={2}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'secondary.light', color: 'white' }}>
+                                                <Abc fontSize="small" />
+                                            </Box>
+                                            <Typography variant="subtitle1" fontWeight="bold">
+                                                {t('reading:quiz.vocabTitle')}
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                            <Typography variant="h4" color="secondary.main" fontWeight="bold">
+                                                {result.stats.vocabulary.correct} <Typography component="span" variant="h6" color="text.secondary">/ {result.stats.vocabulary.total}</Typography>
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {Math.round((result.stats.vocabulary.correct / (result.stats.vocabulary.total || 1)) * 100)}% Accuracy
+                                            </Typography>
+                                        </Box>
+                                        <LinearProgress
+                                            variant="determinate"
+                                            color="secondary"
+                                            value={(result.stats.vocabulary.correct / (result.stats.vocabulary.total || 1)) * 100}
+                                            sx={{ height: 8, borderRadius: 4, bgcolor: 'rgba(123, 104, 238, 0.1)', '& .MuiLinearProgress-bar': { borderRadius: 4 } }}
+                                        />
+                                    </Stack>
+                                </Box>
+                            </Stack>
+                        </CardContent>
+                    )}
+                </Card>
+            )}
+
             {/* Stepper */}
             <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
                 {steps.map((label) => (
@@ -247,10 +408,10 @@ export default function QuizView({
                         <Button
                             variant="contained"
                             size="large"
-                            disabled={!isStepComplete()}
+                            disabled={!isStepComplete() || isSubmitting}
                             onClick={handleSubmit}
                         >
-                            {t('reading:quiz.submit')}
+                            {isSubmitting ? t('reading:quiz.submitting', 'Submitting...') : t('reading:quiz.submit')}
                         </Button>
                     )
                 )}

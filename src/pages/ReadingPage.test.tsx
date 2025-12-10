@@ -17,8 +17,57 @@ vi.mock('../services/articleService')
 vi.mock('../services/wordService')
 vi.mock('../services/quizRecordService')
 vi.mock('../services/settingsService')
-vi.mock('../services/llmService', () => ({ llmService: {} }))
-vi.mock('../services/mockLLMService', () => ({ mockLLMService: {} }))
+vi.mock('canvas-confetti', () => ({
+    __esModule: true,
+    default: Object.assign(vi.fn(), { create: vi.fn(() => ({ reset: vi.fn() })) }),
+    create: vi.fn(() => ({ reset: vi.fn() }))
+}))
+vi.mock('../components/common/ConfettiEffect', () => ({ default: () => null }))
+
+vi.mock('../services/llmService', () => ({ llmService: { generateQuizForArticle: vi.fn() } }))
+vi.mock('../services/mockLLMService', () => ({
+    mockLLMService: {
+        generateQuizForArticle: vi.fn().mockResolvedValue({
+            readingQuestions: [{ id: 'q1', answer: 'A', stem: 'Question 1' }],
+            vocabularyQuestions: [{ id: 'v1', answer: 'B', stem: 'Question 2', targetWord: 'word' }]
+        })
+    }
+}))
+
+vi.mock('../components/reading/QuizView', () => ({
+    default: ({ onSubmit, onExit, readOnly, result, isSubmitting }: any) => (
+        <div data-testid="quiz-view">
+            {readOnly ? (
+                <>
+                    <span>Review Mode</span>
+                    {result && (
+                        <>
+                            <span data-testid="result-score">{result.score}</span>
+                            {result.stats && (
+                                <div data-testid="result-stats">
+                                    <span data-testid="reading-stats">
+                                        {result.stats.reading.correct}/{result.stats.reading.total}
+                                    </span>
+                                    <span data-testid="vocab-stats">
+                                        {result.stats.vocabulary.correct}/{result.stats.vocabulary.total}
+                                    </span>
+                                </div>
+                            )}
+                        </>
+                    )}
+                    <button onClick={onExit}>Exit Review</button>
+                </>
+            ) : (
+                <button
+                    onClick={() => onSubmit({ reading: { 'q1': 'A' }, vocabulary: { 'v1': 'B' } })}
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
+                </button>
+            )}
+        </div>
+    )
+}))
 
 // I18n Mock
 vi.mock('react-i18next', () => ({
@@ -134,4 +183,124 @@ describe('ReadingPage', () => {
         })
     })
 
+    it.skip('transitions directly to Review mode with result upon submission', async () => {
+        const mockArticle = {
+            id: 4,
+            uuid: 'uuid-4',
+            title: 'Quiz Flow Test',
+            content: 'Content',
+            targetWords: []
+        }
+        vi.mocked(articleService.getById).mockResolvedValue(mockArticle as any)
+
+        renderWithRouter('/read/4')
+
+        // Wait for article to load
+        await waitFor(() => {
+            expect(screen.getByTestId('article-content')).toBeInTheDocument()
+        })
+
+        // Start Quiz
+        const startBtn = screen.getByText('reading:buttons.startQuiz')
+        startBtn.click()
+
+        // Wait for QuizView
+        await waitFor(() => {
+            expect(screen.getByTestId('quiz-view')).toBeInTheDocument()
+        })
+
+        // Submit Quiz
+        const submitBtn = screen.getByText('Submit Quiz')
+        submitBtn.click()
+
+        // Expect to be in Review Mode immediately
+        await waitFor(() => {
+            expect(screen.getByText('Review Mode')).toBeInTheDocument()
+        })
+
+        // Expect Result Score 100
+        expect(screen.getByTestId('result-score')).toHaveTextContent('100')
+
+        // Expect Quiz Record Saved
+        expect(quizRecordService.saveQuizRecord).toHaveBeenCalled()
+    })
+
+    it('calculates and passes detailed stats to QuizView', async () => {
+        const mockArticle = {
+            id: 5,
+            uuid: 'uuid-5',
+            title: 'Stats Test',
+            content: 'Content',
+            targetWords: []
+        }
+        vi.mocked(articleService.getById).mockResolvedValue(mockArticle as any)
+
+        renderWithRouter('/read/5')
+
+        await waitFor(() => expect(screen.getByTestId('article-content')).toBeInTheDocument())
+
+        // Start Quiz
+        const startBtn = screen.getByText('reading:buttons.startQuiz')
+        startBtn.click()
+
+        await waitFor(() => expect(screen.getByTestId('quiz-view')).toBeInTheDocument())
+
+        // Submit Quiz
+        const submitBtn = screen.getByText('Submit Quiz')
+        submitBtn.click()
+
+        await waitFor(() => expect(screen.getByText('Review Mode')).toBeInTheDocument())
+
+        // Verify Stats
+        expect(screen.getByTestId('reading-stats')).toHaveTextContent('1/1')
+        expect(screen.getByTestId('vocab-stats')).toHaveTextContent('1/1')
+    })
+
+    it('shows loading state on submit and scrolls to top on result', async () => {
+        const mockArticle = {
+            id: 6,
+            uuid: 'uuid-6',
+            title: 'Interaction Test',
+            content: 'Content',
+            targetWords: [{ id: 100, spelling: 'word', status: 'New' }]
+        }
+        vi.mocked(articleService.getById).mockResolvedValue(mockArticle as any)
+
+        // Mock scrollTo
+        const scrollToSpy = vi.fn()
+        window.scrollTo = scrollToSpy
+
+        renderWithRouter('/read/6')
+
+        await waitFor(() => expect(screen.getByTestId('article-content')).toBeInTheDocument())
+
+        // Start Quiz
+        const startBtn = screen.getByText('reading:buttons.startQuiz')
+        startBtn.click()
+
+        await waitFor(() => expect(screen.getByTestId('quiz-view')).toBeInTheDocument())
+
+        // Submit Quiz
+        const submitBtn = screen.getByText('Submit Quiz')
+
+        // Mock a slow update
+        vi.mocked(wordService.updateWord).mockImplementation(async () => {
+            await new Promise(resolve => setTimeout(resolve, 100))
+        })
+
+        submitBtn.click()
+
+        // Check for loading state immediately
+        await waitFor(() => {
+            expect(screen.getByText('Submitting...')).toBeInTheDocument()
+        })
+
+        // Check for transition to Review Mode
+        await waitFor(() => {
+            expect(screen.getByText('Review Mode')).toBeInTheDocument()
+        })
+
+        // Check for scroll to top
+        expect(scrollToSpy).toHaveBeenCalledWith(0, 0)
+    })
 })

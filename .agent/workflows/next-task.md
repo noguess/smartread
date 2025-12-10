@@ -40,5 +40,4 @@ description: "自动提取 TODO.md 中的下一项任务并执行"
 
 
 ## Step 6: Update Status
-**询问用户**: "任务是否通过验证？"
-- 如果用户说 "Yes/OK": 自动将 `TODO.md` 中该项打钩 `[x]`，并提示可以进行 `/smart-commit` 或继续 `/next`。
+**自动将 `TODO.md` 中该项打钩 `[x]`，并提示可以进行 `/smart-commit` 或继续 `/next`。

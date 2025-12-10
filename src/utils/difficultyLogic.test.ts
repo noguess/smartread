@@ -4,48 +4,54 @@ import { calculateNewDifficulty } from './difficultyLogic';
 
 describe('calculateNewDifficulty', () => {
     describe('Upgrade Logic', () => {
-        it('should upgrade from L1 to L2 if score is 4/4 and feedback is easy (<=2)', () => {
-            expect(calculateNewDifficulty('L1', 4, 1)).toBe('L2');
-            expect(calculateNewDifficulty('L1', 4, 2)).toBe('L2');
+        it('should upgrade L1 -> L2 when Reading >= 80% and Total >= 85%', () => {
+            expect(calculateNewDifficulty('L1', { readingAccuracy: 1.0, totalAccuracy: 0.9 })).toBe('L2');
+            expect(calculateNewDifficulty('L1', { readingAccuracy: 0.8, totalAccuracy: 0.85 })).toBe('L2');
         });
 
-        it('should upgrade from L2 to L3 if score is 4/4 and feedback is easy (<=2)', () => {
-            expect(calculateNewDifficulty('L2', 4, 2)).toBe('L3');
+        it('should upgrade L2 -> L3 when metrics are met', () => {
+            expect(calculateNewDifficulty('L2', { readingAccuracy: 0.8, totalAccuracy: 0.85 })).toBe('L3');
         });
 
-        it('should NOT upgrade from L3 (already max)', () => {
-            expect(calculateNewDifficulty('L3', 4, 1)).toBe('L3');
+        it('should stay at L3 (max) even if metrics match', () => {
+            expect(calculateNewDifficulty('L3', { readingAccuracy: 1.0, totalAccuracy: 1.0 })).toBe('L3');
         });
 
-        it('should NOT upgrade if score is less than 4', () => {
-            expect(calculateNewDifficulty('L1', 3, 1)).toBe('L1');
+        it('should NOT upgrade if Total Accuracy is below 85%', () => {
+            // Reading perfect, but total dragged down by vocab
+            expect(calculateNewDifficulty('L1', { readingAccuracy: 1.0, totalAccuracy: 0.84 })).toBe('L1');
         });
 
-        it('should NOT upgrade if feedback is not easy (>2)', () => {
-            expect(calculateNewDifficulty('L1', 4, 3)).toBe('L1');
+        it('should NOT upgrade if Reading Accuracy is below 80%', () => {
+            // Total high, but reading low (unlikely but possible heavily weighted vocab)
+            expect(calculateNewDifficulty('L1', { readingAccuracy: 0.75, totalAccuracy: 0.9 })).toBe('L1');
         });
     });
 
     describe('Downgrade Logic', () => {
-        it('should downgrade from L2 to L1 if score < 2 and feedback is hard (>=4)', () => {
-            expect(calculateNewDifficulty('L2', 1, 4)).toBe('L1');
-            expect(calculateNewDifficulty('L2', 0, 5)).toBe('L1');
+        it('should downgrade L2 -> L1 if Reading Accuracy < 50%', () => {
+            // Reading failed, even if total is okayish
+            expect(calculateNewDifficulty('L2', { readingAccuracy: 0.25, totalAccuracy: 0.7 })).toBe('L1');
         });
 
-        it('should downgrade from L3 to L2 if score < 2 and feedback is hard (>=4)', () => {
-            expect(calculateNewDifficulty('L3', 1, 4)).toBe('L2');
+        it('should downgrade L3 -> L2 if Total Accuracy < 60%', () => {
+            // Reading perfect, but vocab disaster
+            expect(calculateNewDifficulty('L3', { readingAccuracy: 1.0, totalAccuracy: 0.5 })).toBe('L2');
         });
 
-        it('should NOT downgrade from L1 (already min)', () => {
-            expect(calculateNewDifficulty('L1', 0, 5)).toBe('L1');
+        it('should stay at L1 (min) even if failing', () => {
+            expect(calculateNewDifficulty('L1', { readingAccuracy: 0.0, totalAccuracy: 0.0 })).toBe('L1');
         });
+    });
 
-        it('should NOT downgrade if score is >= 2', () => {
-            expect(calculateNewDifficulty('L2', 2, 5)).toBe('L2');
+    describe('Keep Logic (Learning Zone)', () => {
+        it('should maintain level when in learning zone', () => {
+            // Reading 75% (Comfortable but not perfect)
+            // Total 70% (Good challenge)
+            expect(calculateNewDifficulty('L2', { readingAccuracy: 0.75, totalAccuracy: 0.7 })).toBe('L2');
         });
-
-        it('should NOT downgrade if feedback is meant to be easy (<4)', () => {
-            expect(calculateNewDifficulty('L2', 1, 3)).toBe('L2');
+        it('should maintain level when high reading but mid total', () => {
+            expect(calculateNewDifficulty('L2', { readingAccuracy: 1.0, totalAccuracy: 0.80 })).toBe('L2');
         });
     });
 });
