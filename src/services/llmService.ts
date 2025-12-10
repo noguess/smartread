@@ -260,10 +260,31 @@ export const llmService = {
       ${JSON.stringify(words.map(w => w.spelling))}
 
       **COMMAND**:
-      Generate the quiz JSON now.
+            Generate the quiz JSON now.
       `;
 
-      return this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt, onProgress);
+      const json = await this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt, onProgress);
+
+      // Normalize fields (LLM prompt uses "question" but frontend expects "stem")
+      // and inject IDs locally to ensure frontend stability
+      const processQuestions = (questions: any[], prefix: string) => {
+         if (!questions || !Array.isArray(questions)) return
+         questions.forEach((q: any, i: number) => {
+            // 1. Normalize stem
+            if (!q.stem && q.question) {
+               q.stem = q.question
+            }
+            // 2. Inject ID
+            if (!q.id) {
+               q.id = `${prefix}${i}`
+            }
+         })
+      }
+
+      processQuestions(json.readingQuestions, 'r')
+      processQuestions(json.vocabularyQuestions, 'v')
+
+      return json;
    },
 
    //获取单词的中文释义

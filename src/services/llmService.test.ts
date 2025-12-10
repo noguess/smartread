@@ -89,4 +89,50 @@ describe('llmService', () => {
         expect(result.word_study).toHaveLength(1)
         expect(result.word_study![0].meaning_in_context).toBe('点燃')
     })
+    it('generateQuizForArticle injects IDs if missing', async () => {
+        // Mock Response with questions missing IDs
+        const mockQuizData = {
+            readingQuestions: [
+                { question: "Q1", answer: "A" }, // Missing ID, using 'question' instead of 'stem'
+                { question: "Q2", answer: "B", id: "existing_r2" }
+            ],
+            vocabularyQuestions: [
+                { question: "V1", answer: "A" }, // Missing ID
+                { question: "V2", answer: "B" }
+            ]
+        }
+
+        const mockResponse = {
+            ok: true,
+            headers: { get: () => '1000' },
+            body: {
+                getReader: () => ({
+                    read: vi.fn()
+                        .mockResolvedValueOnce({
+                            done: false, value: new TextEncoder().encode(JSON.stringify({
+                                choices: [{ message: { content: JSON.stringify(mockQuizData) } }]
+                            }))
+                        })
+                        .mockResolvedValueOnce({ done: true })
+                })
+            }
+        }
+        mockFetch.mockResolvedValue(mockResponse)
+
+        const words = [{ spelling: 'test', meaning: '测试' }] as any
+        const settings = { apiKey: 'test', difficultyLevel: 'L2' } as any
+
+        const result = await llmService.generateQuizForArticle("Content", words, settings)
+
+        // Verify IDs were injected
+        expect(result.readingQuestions[0].id).toBe('r0')
+        expect(result.readingQuestions[1].id).toBe('existing_r2')
+
+        expect(result.vocabularyQuestions[0].id).toBe('v0')
+        expect(result.vocabularyQuestions[1].id).toBe('v1')
+
+        // Verify Stem Normalization (question -> stem)
+        expect(result.readingQuestions[0].stem).toBe('Q1')
+        expect(result.vocabularyQuestions[0].stem).toBe('V1')
+    })
 })

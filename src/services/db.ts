@@ -14,13 +14,28 @@ export interface Word {
     lastSeenAt: number // Timestamp
 }
 
+export interface Question {
+    id: string
+    type: 'cloze' | 'definition' | 'spelling' | 'contextual' | 'audio' | 'wordForm' | 'synonym' | 'matching' | 'spellingInput' | 'synonymAntonym' | 'audioDictation' | 'audioSelection' | 'multiple_choice' | 'input'
+    subType?: string
+    targetWord?: string
+    hint?: string
+    explanation?: string
+    stem: string
+    options?: string[]
+    answer: string | string[]
+    audioUrl?: string
+    phonetic?: string
+    pairs?: { word: string; definition: string }[]
+}
+
 export interface History {
     id?: number
     date: number
     title?: string
     articleContent: string
     targetWords: string[]
-    questionsJson: { reading: any[]; vocabulary: any[] } | any // Union type for compatibility
+    questionsJson: { reading: Question[]; vocabulary: Question[] }
     userScore: number
     difficultyFeedback: number
     timeSpent?: number // Time spent in seconds
@@ -53,8 +68,11 @@ export interface QuizRecord {
     id?: number
     articleId: string // References Article.uuid
     date: number
-    questions: any // Snapshot of generated questions
-    userAnswers: any
+    questions: { reading: Question[]; vocabulary: Question[] }
+    userAnswers: {
+        reading: Record<string, string>
+        vocabulary: Record<string, string | string[]>
+    }
     score: number
     difficultyFeedback: number
     timeSpent?: number

@@ -12,9 +12,13 @@ import {
     IconButton,
     Chip,
     Paper,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
 } from '@mui/material'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
-import { Question } from '../../services/mockLLMService'
+import { ExpandMore, Lightbulb } from '@mui/icons-material'
+import { Question } from '../../services/db'
 import { ttsService } from '../../services/ttsService'
 
 interface VocabularyQuestionRendererProps {
@@ -57,7 +61,23 @@ export default function VocabularyQuestionRenderer({
 
     // Render based on question type
     const renderQuestionInput = () => {
-        switch (question.type) {
+        // Normalize type for rendering
+        let renderType = question.type
+        const subType = (question as any).subType
+
+        if (question.type === 'multiple_choice') {
+            // Map subTypes to legacy render keys or default to 'contextual'
+            if (subType === 'definition') renderType = 'definition'
+            else if (subType === 'audio') renderType = 'audio'
+            else renderType = 'contextual'
+        } else if (question.type === 'input') {
+            // Map subTypes to legacy render keys or default to 'spelling'
+            if (subType === 'word_form') renderType = 'wordForm'
+            else if (subType === 'audio') renderType = 'audio'
+            else renderType = 'spelling'
+        }
+
+        switch (renderType) {
             case 'definition':
             case 'contextual':
             case 'synonym':
@@ -83,7 +103,7 @@ export default function VocabularyQuestionRenderer({
                                     <FormControlLabel
                                         key={opt}
                                         value={opt}
-                                        control={<Radio color={readOnly && isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary'} />}
+                                        control={<Radio color={readOnly ? (isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary') : 'primary'} />}
                                         label={
                                             <Typography color={color} fontWeight={readOnly && isTheCorrectAnswer ? 'bold' : 'normal'}>
                                                 {opt} {readOnly && isTheCorrectAnswer && '(Correct)'} {readOnly && isSelected && !isCorrect && '(Your Answer)'}
@@ -127,7 +147,7 @@ export default function VocabularyQuestionRenderer({
                                         <FormControlLabel
                                             key={opt}
                                             value={opt}
-                                            control={<Radio color={readOnly && isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary'} />}
+                                            control={<Radio color={readOnly ? (isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary') : 'primary'} />}
                                             label={
                                                 <Typography color={color} fontWeight={readOnly && isTheCorrectAnswer ? 'bold' : 'normal'}>
                                                     {opt} {readOnly && isTheCorrectAnswer && '(Correct)'} {readOnly && isSelected && !isCorrect && '(Your Answer)'}
@@ -188,6 +208,7 @@ export default function VocabularyQuestionRenderer({
                             onChange={(e) => onChange(e.target.value)}
                             disabled={readOnly}
                             error={readOnly && !isCorrect}
+                            helperText={question.hint ? `Hint: ${question.hint}` : undefined}
                             sx={{
                                 mt: 2,
                                 '& .MuiOutlinedInput-root': {
@@ -259,7 +280,7 @@ export default function VocabularyQuestionRenderer({
                                             <FormControlLabel
                                                 key={opt}
                                                 value={opt}
-                                                control={<Radio color={readOnly && isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary'} />}
+                                                control={<Radio color={readOnly ? (isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary') : 'primary'} />}
                                                 label={
                                                     <Typography color={color} fontWeight={readOnly && isTheCorrectAnswer ? 'bold' : 'normal'}>
                                                         {opt} {readOnly && isTheCorrectAnswer && '(Correct)'} {readOnly && isSelected && !isCorrect && '(Your Answer)'}
@@ -404,6 +425,30 @@ export default function VocabularyQuestionRenderer({
 
             {/* 渲染具体的输入组件 */}
             {renderQuestionInput()}
+
+            {/* Explanation Section - Only in ReadOnly mode */}
+            {readOnly && (
+                <Accordion elevation={0} sx={{
+                    bgcolor: 'transparent',
+                    '&:before': { display: 'none' },
+                    borderTop: '1px dashed #ccc',
+                    mt: 2
+                }}>
+                    <AccordionSummary expandIcon={<ExpandMore />}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Lightbulb color="info" fontSize="small" />
+                            <Typography variant="button" color="text.secondary">
+                                Explanation
+                            </Typography>
+                        </Box>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Typography variant="body2" color="text.secondary">
+                            {question.explanation || 'No explanation available.'}
+                        </Typography>
+                    </AccordionDetails>
+                </Accordion>
+            )}
         </Box>
     )
 }

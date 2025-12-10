@@ -11,9 +11,13 @@ import {
     Stepper,
     Step,
     StepLabel,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
 } from '@mui/material'
+import { ExpandMore, Lightbulb } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
-import { Question } from '../../services/mockLLMService'
+import { Question } from '../../services/db'
 import VocabularyQuestionRenderer from './VocabularyQuestionRenderer'
 
 interface QuizViewProps {
@@ -26,6 +30,7 @@ interface QuizViewProps {
         vocabulary: Record<string, string | string[]>
     }
     readOnly?: boolean
+    onExit?: () => void
 }
 
 export default function QuizView({
@@ -34,7 +39,8 @@ export default function QuizView({
     onSubmit,
     onBack,
     initialAnswers,
-    readOnly = false
+    readOnly = false,
+    onExit,
 }: QuizViewProps) {
     const { t } = useTranslation(['reading'])
     const [activeStep, setActiveStep] = useState(0)
@@ -127,6 +133,7 @@ export default function QuizView({
                                 </Typography>
                                 <FormControl fullWidth disabled={readOnly}>
                                     <RadioGroup
+                                        name={`reading-question-${q.id}`}
                                         value={userAnswer || ''}
                                         onChange={(e) => handleReadingChange(q.id, e.target.value)}
                                     >
@@ -144,7 +151,7 @@ export default function QuizView({
                                                 <FormControlLabel
                                                     key={opt}
                                                     value={opt}
-                                                    control={<Radio color={readOnly && isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary'} />}
+                                                    control={<Radio color={readOnly ? (isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary') : 'primary'} />}
                                                     label={
                                                         <Typography color={color} fontWeight={readOnly && isTheCorrectAnswer ? 'bold' : 'normal'}>
                                                             {opt} {readOnly && isTheCorrectAnswer && `(${t('reading:quiz.correct')})`} {readOnly && isSelected && !isCorrect && `(${t('reading:quiz.yourAnswer')})`}
@@ -155,6 +162,28 @@ export default function QuizView({
                                         })}
                                     </RadioGroup>
                                 </FormControl>
+                                {readOnly && (
+                                    <Accordion elevation={0} sx={{
+                                        bgcolor: 'transparent',
+                                        '&:before': { display: 'none' },
+                                        borderTop: '1px dashed #ccc',
+                                        mt: 2
+                                    }}>
+                                        <AccordionSummary expandIcon={<ExpandMore />}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Lightbulb color="info" fontSize="small" />
+                                                <Typography variant="button" color="text.secondary">
+                                                    {t('reading:quiz.explanation', 'Explanation')}
+                                                </Typography>
+                                            </Box>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {q.explanation || t('reading:quiz.noExplanation', 'No explanation available.')}
+                                            </Typography>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                )}
                             </Box>
                         )
                     })}
@@ -204,7 +233,17 @@ export default function QuizView({
                         {t('reading:quiz.next')}
                     </Button>
                 ) : (
-                    !readOnly && (
+                    readOnly ? (
+                        <Button
+                            variant="contained"
+                            size="large"
+                            onClick={onExit}
+                        // Color distinct from Submit? Maybe secondary or warning or error?
+                        // Or keep contained primary.
+                        >
+                            {t('reading:quiz.exitReview', 'Exit Review')}
+                        </Button>
+                    ) : (
                         <Button
                             variant="contained"
                             size="large"

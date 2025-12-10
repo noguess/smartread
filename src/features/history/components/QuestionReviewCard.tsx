@@ -59,7 +59,7 @@ export default function QuestionReviewCard({ question, userAnswer, index }: Ques
                     </Typography>
 
                     {/* Options Display (if applicable) */}
-                    {question.options && (
+                    {question.options && question.options.length > 0 && (
                         <Stack spacing={1} sx={{ mt: 1, ml: 1 }}>
                             {question.options.map((opt, i) => {
                                 const isSelected = userAnswer === opt
@@ -90,7 +90,7 @@ export default function QuestionReviewCard({ question, userAnswer, index }: Ques
                     )}
 
                     {/* Text Input Display (if no options) */}
-                    {!question.options && (
+                    {(!question.options || question.options.length === 0) && (
                         <Box sx={{ mt: 1, ml: 1 }}>
                             <Typography variant="body2" color={correct ? 'success.main' : 'error.main'} fontWeight="bold">
                                 Your Answer: {userAnswer || '(No Answer)'}

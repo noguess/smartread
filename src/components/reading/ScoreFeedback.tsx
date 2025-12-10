@@ -9,9 +9,10 @@ interface ScoreFeedbackProps {
     totalQuestions: number
     customPercentage?: number // Optional weighted percentage
     onComplete: (difficulty: number) => void
+    onReview?: () => void
 }
 
-export default function ScoreFeedback({ score, totalQuestions, customPercentage, onComplete }: ScoreFeedbackProps) {
+export default function ScoreFeedback({ score, totalQuestions, customPercentage, onComplete, onReview }: ScoreFeedbackProps) {
     const { t } = useTranslation(['reading'])
     const [difficulty, setDifficulty] = useState<number | null>(null)
     const percentage = customPercentage !== undefined
@@ -55,6 +56,17 @@ export default function ScoreFeedback({ score, totalQuestions, customPercentage,
             >
                 {t('reading:feedback.complete')}
             </Button>
+
+            {onReview && (
+                <Button
+                    variant="text"
+                    fullWidth
+                    onClick={onReview}
+                    sx={{ mt: 2, color: 'text.secondary' }}
+                >
+                    {t('reading:feedback.reviewAnswers', 'Review Answers & Explanations')}
+                </Button>
+            )}
         </Paper>
     )
 }

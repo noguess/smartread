@@ -64,4 +64,23 @@ describe('QuestionReviewCard', () => {
         expect(screen.queryByText(/^A\./)).not.toBeInTheDocument() // No options
         expect(screen.getByText('Your Answer: hello')).toBeInTheDocument()
     })
+    it('handles empty options array as text input', () => {
+        const emptyOptionsQuestion: QuestionData = {
+            id: 'q3',
+            type: 'cloze',
+            stem: 'Empty Options Q',
+            options: [], // Empty array causing the bug previously
+            answer: 'Correct',
+            explanation: 'None'
+        }
+
+        render(<QuestionReviewCard question={emptyOptionsQuestion} userAnswer="Wrong" index={2} />)
+
+        // Should fall back to text input display mode
+        expect(screen.getByText(/Your Answer: Wrong/i)).toBeInTheDocument()
+        expect(screen.getByText(/Correct Answer: Correct/i)).toBeInTheDocument()
+
+        // Should NOT render options list
+        expect(screen.queryByText(/^A\./)).not.toBeInTheDocument()
+    })
 })

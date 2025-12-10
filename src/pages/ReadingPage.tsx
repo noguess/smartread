@@ -25,7 +25,7 @@ import SentenceAnalysisPopover from '../components/reading/SentenceAnalysisPopov
 import { useTranslation } from 'react-i18next'
 import { useStudyTimer } from '../hooks/useStudyTimer'
 
-type Step = 'initializing' | 'generating' | 'reading' | 'quiz' | 'feedback'
+type Step = 'initializing' | 'generating' | 'reading' | 'quiz' | 'feedback' | 'review'
 type FontSize = 'small' | 'medium' | 'large'
 
 // Track active generations to prevent duplicates in StrictMode
@@ -993,6 +993,18 @@ export default function ReadingPage() {
                     />
                 )}
 
+                {step === 'review' && articleData && quizAnswers && (
+                    <QuizView
+                        readingQuestions={articleData.readingQuestions}
+                        vocabularyQuestions={articleData.vocabularyQuestions}
+                        onSubmit={() => { }} // Not used in readOnly mode
+                        onExit={() => setStep('reading')} // Exit Review -> Back to Article/Reading
+                        onBack={() => setStep('feedback')} // Back -> Back to Score
+                        initialAnswers={quizAnswers}
+                        readOnly={true}
+                    />
+                )}
+
                 {step === 'feedback' && articleData && (
                     <ScoreFeedback
                         score={score}
@@ -1009,6 +1021,7 @@ export default function ReadingPage() {
                             return Math.round(rWeight + vWeight)
                         })()}
                         onComplete={handleFinish}
+                        onReview={() => setStep('review')}
                     />
                 )}
 

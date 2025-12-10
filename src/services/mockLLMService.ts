@@ -1,16 +1,4 @@
-import { Word, WordStudyItem } from './db'
-
-export interface Question {
-    id: string
-    type: 'cloze' | 'definition' | 'spelling' | 'contextual' | 'audio' | 'wordForm' | 'synonym' | 'matching' | 'spellingInput' | 'synonymAntonym' | 'audioDictation' | 'audioSelection'
-    targetWord?: string
-    stem: string
-    options?: string[]
-    answer: string | string[]
-    audioUrl?: string
-    phonetic?: string
-    pairs?: { word: string; definition: string }[]
-}
+import { Word, WordStudyItem, Question } from './db'
 
 export interface GeneratedContent {
     title: string
