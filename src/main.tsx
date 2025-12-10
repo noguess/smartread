@@ -7,7 +7,7 @@ import './i18n/config' // 初始化 i18n
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <CssBaseline />
             <App />
         </BrowserRouter>

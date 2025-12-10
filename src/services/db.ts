@@ -100,6 +100,15 @@ export class SmartReaderDB extends Dexie {
             settings: '++id',
         })
 
+        // Version 2: Add articles and quizRecords
+        this.version(2).stores({
+            words: '++id, spelling, status, nextReviewAt',
+            history: '++id, date',
+            settings: '++id',
+            articles: '++id, uuid, createdAt',
+            quizRecords: '++id, articleId, date'
+        })
+
         // Version 3: Remove duplicates first to allow unique index creation
         this.version(3).upgrade(async tx => {
             const articles = await tx.table('articles').toArray()
