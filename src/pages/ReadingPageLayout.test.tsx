@@ -72,7 +72,7 @@ describe('ReadingPage Layout', () => {
     }
 
     it('adapts layout for Mobile/Tablet vs Desktop', async () => {
-        const { container } = renderPage()
+        renderPage()
 
         await screen.findByTestId('article-content')
 
