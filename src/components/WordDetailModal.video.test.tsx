@@ -5,7 +5,7 @@ import WordDetailModal from './WordDetailModal'
 import { videoIndexService } from '../services/videoIndexService'
 import { settingsService } from '../services/settingsService'
 import { wordService } from '../services/wordService'
-import { dictionaryService } from '../services/dictionaryService'
+
 
 // Mock dependencies
 vi.mock('react-i18next', () => ({
@@ -88,7 +88,8 @@ describe('WordDetailModal Video Switching', () => {
 
         // Verify Youtube Iframe Rendered
         // Youtube embed format: https://www.youtube.com/embed/{id}?start={time}
-        const iframe = screen.getByTitle('YouTube video player')
+        // Verify Youtube Iframe Rendered
+        // Youtube embed format: https://www.youtube.com/embed/{id}?start={time}
         // Note: mui Dialog might render in portal. using baseElement or querying by role inside document body is better.
         // Actually screen.getByRole can find it if visible.
     })
