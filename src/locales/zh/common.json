@@ -33,7 +33,8 @@
         "analyzing": "AI正在分析..."
     },
     "msg": {
-        "clickToAnalyze": "点击分析语法和翻译"
+        "clickToAnalyze": "点击分析语法和翻译",
+        "analysisFailed": "分析失败，请重试。"
     },
     "label": {
         "translation": "参考翻译",

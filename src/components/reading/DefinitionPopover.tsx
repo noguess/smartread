@@ -6,7 +6,10 @@ import {
     CircularProgress,
     Button,
     IconButton,
-    Divider
+    Divider,
+    Drawer,
+    useMediaQuery,
+    useTheme
 } from '@mui/material'
 import { VolumeUp, School, Close } from '@mui/icons-material'
 import { dictionaryService, DictionaryEntry } from '../../services/dictionaryService'
@@ -117,31 +120,16 @@ export default function DefinitionPopover({
         }
     }
 
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+
     const open = Boolean(anchorPosition)
     if (!open) return null
 
     const phonetic = data?.type === 'simple' ? data.phonetic : data?.type === 'complex' ? data.entry.phonetic : null
 
-    return (
-        <Popover
-            open={open}
-            onClose={onClose}
-            anchorReference="anchorPosition"
-            anchorPosition={anchorPosition || undefined}
-            transformOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-            }}
-            PaperProps={{
-                sx: {
-                    width: 320,
-                    p: 2,
-                    borderRadius: 3,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
-                }
-            }}
-            disableRestoreFocus
-        >
+    const Content = (
+        <Box sx={{ p: isMobile ? 3 : 0 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                 <Box>
                     <Typography variant="h6" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
@@ -209,6 +197,48 @@ export default function DefinitionPopover({
             >
                 {t('common:button.study', 'Deep Dive')}
             </Button>
+        </Box>
+    )
+
+    if (isMobile) {
+        return (
+            <Drawer
+                anchor="bottom"
+                open={open}
+                onClose={onClose}
+                PaperProps={{
+                    sx: {
+                        borderRadius: '16px 16px 0 0',
+                        maxHeight: '50vh'
+                    }
+                }}
+            >
+                {Content}
+            </Drawer>
+        )
+    }
+
+    return (
+        <Popover
+            open={open}
+            onClose={onClose}
+            anchorReference="anchorPosition"
+            anchorPosition={anchorPosition || undefined}
+            transformOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+            }}
+            PaperProps={{
+                sx: {
+                    width: 320,
+                    p: 2,
+                    borderRadius: 3,
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+                }
+            }}
+            disableRestoreFocus
+        >
+            {Content}
         </Popover>
     )
 }

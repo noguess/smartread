@@ -1,4 +1,11 @@
 
+## [Feature] iPad Interaction Optimization (Selection & Menu)
+- [x] Task 1 (Event): Prevent System Context Menu & Enable Touch.
+    - **Problem**: Screenshot shows system vertical context menu (right-click/long-press behavior) blocking app interaction. Touch selection doesn't trigger app popover.
+    - **Fix**: In `ArticleContent.tsx`, add `onContextMenu={e => e.preventDefault()}` to block system menu. Add `onTouchEnd={handleSelection}` to support touch selection.
+- [x] Task 2 (UI): Mobile Bottom Sheet Strategy.
+    - **Problem**: System horizontal selection menu (Copy/Paste) often conflicts with floating popovers on mobile.
+    - **Fix**: Update `ReadingPage.tsx` popover logic. On mobile/tablet (`theme.breakpoints.down('md')`), force `DefinitionPopover` and `SentenceAnalysisPopover` to be fixed at the *bottom* of the screen (Bottom Sheet style) instead of floating near text. Use `useMediaQuery` to switch modes.
 ## [Feature] iPad & Tablet Adaptation
 - [x] Task 1 (Layout): Implement Responsive Navigation (Drawer).
     - **Problem**: Permanent sidebar (240px) squeezes content on iPad.

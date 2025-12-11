@@ -6,6 +6,9 @@ import {
     CircularProgress,
     Button,
     IconButton,
+    Drawer,
+    useMediaQuery,
+    useTheme
 } from '@mui/material'
 import { Close, AutoFixHigh } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
@@ -69,31 +72,18 @@ export default function SentenceAnalysisPopover({
         }
     }
 
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+
     const open = Boolean(anchorPosition)
     if (!open) return null
 
-    return (
-        <Popover
-            open={open}
-            onClose={onClose}
-            anchorReference="anchorPosition"
-            anchorPosition={anchorPosition || undefined}
-            transformOrigin={{
-                vertical: 'top',
-                horizontal: 'center',
-            }}
-            PaperProps={{
-                sx: {
-                    width: 400,
-                    p: 0, // Remove default padding to handle header/content cleanly
-                    borderRadius: 3,
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                    maxHeight: 500,
-                    display: 'flex',
-                    flexDirection: 'column'
-                }
-            }}
-        >
+    const Content = (
+        <Box sx={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
             {/* Header */}
             <Box sx={{
                 p: 2,
@@ -161,7 +151,7 @@ export default function SentenceAnalysisPopover({
                 {error && (
                     <Box sx={{ py: 4, textAlign: 'center' }}>
                         <Typography color="error" variant="body2" sx={{ mb: 1 }}>
-                            {t('common:error', 'Analysis failed. Please try again.')}
+                            {t('msg.analysisFailed', 'Analysis failed. Please try again.')}
                         </Typography>
                         <Button size="small" variant="outlined" onClick={handleAnalyze}>
                             {t('button.retry', 'Retry')}
@@ -217,6 +207,51 @@ export default function SentenceAnalysisPopover({
                     </Box>
                 )}
             </Box>
+        </Box>
+    )
+
+    if (isMobile) {
+        return (
+            <Drawer
+                anchor="bottom"
+                open={open}
+                onClose={onClose}
+                PaperProps={{
+                    sx: {
+                        borderRadius: '16px 16px 0 0',
+                        maxHeight: '80vh', // More height for analysis
+                        height: 'auto'
+                    }
+                }}
+            >
+                {Content}
+            </Drawer>
+        )
+    }
+
+    return (
+        <Popover
+            open={open}
+            onClose={onClose}
+            anchorReference="anchorPosition"
+            anchorPosition={anchorPosition || undefined}
+            transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+            }}
+            PaperProps={{
+                sx: {
+                    width: 400,
+                    p: 0, // Remove default padding to handle header/content cleanly
+                    borderRadius: 3,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                    maxHeight: 500,
+                    display: 'flex',
+                    flexDirection: 'column'
+                }
+            }}
+        >
+            {Content}
         </Popover>
     )
 }

@@ -136,6 +136,8 @@ export default function ArticleContent({ title, content, onWordClick, onSelectio
                 <Box
                     className={styles.articleContent}
                     onMouseUp={handleSelection} // Trigger on mouse up
+                    onTouchEnd={handleSelection} // Trigger on touch end (for mobile/tablet)
+                    onContextMenu={(e) => e.preventDefault()} // Block system context menu
                     sx={{
                         mt: 4,
                         fontSize: fontSizeMap[fontSize],

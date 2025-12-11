@@ -33,7 +33,8 @@
         "analyzing": "AI is analyzing..."
     },
     "msg": {
-        "clickToAnalyze": "Click to analyze grammar & translation"
+        "clickToAnalyze": "Click to analyze grammar & translation",
+        "analysisFailed": "Analysis failed. Please try again."
     },
     "label": {
         "translation": "Translation",
