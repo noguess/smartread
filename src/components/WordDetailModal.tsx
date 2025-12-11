@@ -244,8 +244,8 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                             }}>
                                 <iframe
                                     referrerPolicy="no-referrer"
-                                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
-                                    src={`//player.bilibili.com/player.html?bvid=${selectedOccurrence.bvid}&page=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}&high_quality=1&autoplay=0`}
+                                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                                    src={`//player.bilibili.com/player.html?bvid=${selectedOccurrence.bvid}&page=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}&autoplay=0`}
                                     scrolling="no"
                                     frameBorder="0"
                                     allowFullScreen={true}
