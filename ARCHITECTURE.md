@@ -153,6 +153,15 @@ interface ApiResponse<T> {
 
 | **NLP** | **compromise** | 轻量级客户端自然语言处理 (Lemmatization) |
 
+## 7. Video Indexing Pipeline (视频索引工具链)
+
+位于 `scripts/video_indexer/` 下的 Python 工具链，用于生成单词与视频的时间戳映射。
+
+*   **indexer_shared.py**: 核心逻辑库（停用词、词形还原、打分过滤、缓存管理）。
+*   **bilibili_indexer.py**: B站视频索引器 (使用 `you-get`)，输出 `video_map_bilibili.json`。
+*   **youtube_indexer.py**: YouTube 视频索引器 (使用 `yt-dlp`)，输出 `video_map_youtube.json`。支持 Playlist 批量下载与 `--min-score` 过滤参数。
+*   **Data Flow**: `Download (Audio) -> Whisper (ASR) -> Lemmatization -> Indexing -> Sharding (index_{char}.json)`
+
 ## 6. 响应式适配策略 (Responsive Design Strategy)
 
 为了确保在 iPad 及平板设备上的最佳体验，必须遵循以下适配规则：

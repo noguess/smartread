@@ -24,7 +24,10 @@
         "difficultyLevel": "难度等级",
         "difficultyL1": "基础 (初一/L1)",
         "difficultyL2": "进阶 (初二/L2)",
-        "difficultyL3": "挑战 (中考/L3)"
+        "difficultyL3": "挑战 (中考/L3)",
+        "videoSource": "视频源",
+        "videoSourceBilibili": "Bilibili (默认)",
+        "videoSourceYoutube": "YouTube"
     },
     "data": {
         "title": "数据管理",

@@ -10,6 +10,7 @@ export const settingsService = {
                 articleLenPref: 'medium',
                 dailyNewLimit: 10,
                 difficultyLevel: 'L2', // Initialize default difficultyLevel
+                videoSource: 'bilibili', // Default to Bilibili
             }
             const id = await db.settings.add(defaultSettings)
             return { ...defaultSettings, id }
@@ -19,6 +20,10 @@ export const settingsService = {
         if (!currentSettings.difficultyLevel) {
             currentSettings.difficultyLevel = 'L2'
             await db.settings.update(currentSettings.id!, { difficultyLevel: 'L2' })
+        }
+        if (!currentSettings.videoSource) {
+            currentSettings.videoSource = 'bilibili'
+            await db.settings.update(currentSettings.id!, { videoSource: 'bilibili' })
         }
         return currentSettings
     },

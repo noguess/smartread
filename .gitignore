@@ -28,7 +28,14 @@ config.json
 
 # Video Indexer
 temp_downloads/
+temp_downloads_youtube/
 scripts/video_indexer/temp_downloads/
+*.mp4
+*.mkv
+*.flv
+*.mov
+*.wav
+scripts/video_indexer/temp_downloads_youtube/
 *.mp4
 *.mkv
 *.flv

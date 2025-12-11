@@ -1,4 +1,13 @@
 
+## [Feature] Video Source Isolation
+- [x] Task 1 (DB & Settings): Add `videoSource` setting to DB and create settings UI toggle.
+- [x] Task 2 (Service): Refactor `videoIndexService` to support strictly isolated search based on `platform`.
+- [x] Task 3 (UI): Update `WordDetailModal` to conditional render Bilibili/YouTube players based on setting.
+- [x] Task 4 (Backend): Create `youtube_indexer.py` for isolated YouTube data generation.
+- [x] Task 5 (Backend): Update `bilibili_indexer.py` to output isolated filenames.
+- [x] Task 6 (Verification): Verify toggle switches data source and player correctly.
+
+
 ## [Feature] iPad Interaction Optimization (Selection & Menu)
 - [x] Task 1 (Event): Prevent System Context Menu & Enable Touch.
     - **Problem**: Screenshot shows system vertical context menu (right-click/long-press behavior) blocking app interaction. Touch selection doesn't trigger app popover.

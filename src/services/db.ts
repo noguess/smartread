@@ -86,6 +86,7 @@ export interface Setting {
     articleLenPref: 'short' | 'medium' | 'long'
     dailyNewLimit: number
     difficultyLevel: 'L1' | 'L2' | 'L3'
+    videoSource?: 'bilibili' | 'youtube'
 }
 
 export interface SentenceAnalysis {

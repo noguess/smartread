@@ -24,7 +24,10 @@
         "difficultyLevel": "Difficulty Level",
         "difficultyL1": "Basic (Grade 7/L1)",
         "difficultyL2": "Intermediate (Grade 8/L2)",
-        "difficultyL3": "Advanced (Zhongkao/L3)"
+        "difficultyL3": "Advanced (Zhongkao/L3)",
+        "videoSource": "Video Source",
+        "videoSourceBilibili": "Bilibili (Default)",
+        "videoSourceYoutube": "YouTube"
     },
     "data": {
         "title": "Data Management",

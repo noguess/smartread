@@ -1,9 +1,10 @@
 // Video metadata from video_map.json
 interface VideoMapItem {
     bvid: string
-    page: number  // ✅ 修复：匹配 video_map.json 中的 "page" 字段
+    page: number  // ✅ 修复：匹配 video_map.json    page: number
     title: string
-    filename: string  // 添加 filename 字段
+    filename: string
+    platform?: 'bilibili' | 'youtube'
 }
 
 // Video occurrence in index
@@ -17,42 +18,82 @@ export interface VideoOccurrence {
 }
 
 class VideoIndexService {
-    private videoMap: Record<string, VideoMapItem> | null = null
+    // Cache by platform
+    private videoMaps: Record<string, Record<string, VideoMapItem>> = {}
     private indexCache: Record<string, any> = {}
 
-    async loadVideoMap(): Promise<Record<string, VideoMapItem>> {
-        if (this.videoMap) return this.videoMap
+    private getVideoMapPath(platform: 'bilibili' | 'youtube') {
+        return platform === 'youtube' ? '/data/video_map_youtube.json' : '/data/video_map_bilibili.json'
+    }
+
+    private getIndexShardPath(shardKey: string, platform: 'bilibili' | 'youtube') {
+        const prefix = platform === 'youtube' ? 'index_youtube' : 'index_bilibili'
+        return `/data/${prefix}_${shardKey}.json`
+    }
+
+    async loadVideoMap(platform: 'bilibili' | 'youtube' = 'bilibili'): Promise<Record<string, VideoMapItem>> {
+        if (this.videoMaps[platform]) return this.videoMaps[platform]
 
         try {
-            const response = await fetch('/data/video_map.json')
-            if (!response.ok) throw new Error('Video map not found')
+            const path = this.getVideoMapPath(platform)
+            const response = await fetch(path)
+            if (!response.ok) {
+                // Compatibility Fallback for Bilibili: try old video_map.json only if platform is bilibili
+                if (platform === 'bilibili') {
+                    const fallbackResponse = await fetch('/data/video_map.json')
+                    if (fallbackResponse.ok) {
+                        const data = await fallbackResponse.json()
+                        this.videoMaps[platform] = data
+                        return data
+                    }
+                }
+                throw new Error(`Video map for ${platform} not found at ${path}`)
+            }
             const data = await response.json()
-            this.videoMap = data as Record<string, VideoMapItem>
-            return this.videoMap
+            this.videoMaps[platform] = data as Record<string, VideoMapItem>
+            return this.videoMaps[platform]
         } catch (error) {
-            console.warn('Failed to load video map:', error)
+            console.warn(`Failed to load video map (${platform}):`, error)
             return {}
         }
     }
 
-    async searchWord(word: string): Promise<VideoOccurrence[]> {
+    async searchWord(word: string, platform: 'bilibili' | 'youtube' = 'bilibili'): Promise<VideoOccurrence[]> {
         const lemma = word.toLowerCase().trim()
         if (!lemma) return []
 
         // Get first letter for shard lookup
         const firstChar = lemma[0]
         const shardKey = /[a-z]/.test(firstChar) ? firstChar : 'others'
-        const indexFile = `/data/index_${shardKey}.json`
+        // const indexFile = `/data/index_${shardKey}.json` // Old Logic
 
         try {
+            const cacheKey = `${platform}_${shardKey}`
+
             // Load index shard (with caching)
-            if (!this.indexCache[shardKey]) {
-                const response = await fetch(indexFile)
-                if (!response.ok) throw new Error(`Index shard ${shardKey} not found`)
-                this.indexCache[shardKey] = await response.json()
+            if (!this.indexCache[cacheKey]) {
+                const path = this.getIndexShardPath(shardKey, platform)
+                const response = await fetch(path)
+
+                if (!response.ok) {
+                    // Compatibility Fallback: try old index path only if bilibili
+                    if (platform === 'bilibili') {
+                        const fallbackPath = `/data/index_${shardKey}.json`
+                        const fallbackRes = await fetch(fallbackPath)
+                        if (fallbackRes.ok) {
+                            this.indexCache[cacheKey] = await fallbackRes.json()
+                        } else {
+                            throw new Error(`Index shard ${shardKey} not found`)
+                        }
+                    } else {
+                        throw new Error(`Index shard ${shardKey} not found`)
+                    }
+                } else {
+                    this.indexCache[cacheKey] = await response.json()
+                }
             }
 
-            const index = this.indexCache[shardKey]
+            const index = this.indexCache[cacheKey]
             const entries = index[lemma]
 
             if (!entries || entries.length === 0) {
@@ -60,7 +101,7 @@ class VideoIndexService {
             }
 
             // Load video map
-            const videoMap = await this.loadVideoMap()
+            const videoMap = await this.loadVideoMap(platform)
 
             // Transform entries to VideoOccurrence format
             const occurrences: VideoOccurrence[] = []
@@ -88,7 +129,7 @@ class VideoIndexService {
 
     clearCache() {
         this.indexCache = {}
-        this.videoMap = null
+        this.videoMaps = {}
     }
 }
 

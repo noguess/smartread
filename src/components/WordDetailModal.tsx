@@ -23,6 +23,7 @@ import { chineseDictionaryService } from '../services/chineseDictionaryService'
 import { getLemma } from '../utils/textUtils'
 import { VolumeUp, MenuBook } from '@mui/icons-material'
 import { Button, CircularProgress, Snackbar, Alert, AlertColor } from '@mui/material'
+import { settingsService } from '../services/settingsService'
 
 interface WordDetailModalProps {
     word: string
@@ -36,6 +37,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
     const [selectedOccurrence, setSelectedOccurrence] = useState<VideoOccurrence | null>(null)
     const [wordData, setWordData] = useState<any>(null)
     const [loading, setLoading] = useState(false)
+    const [videoSource, setVideoSource] = useState<'bilibili' | 'youtube'>('bilibili')
 
     // Dictionary & TTS states
     const [dictionaryData, setDictionaryData] = useState<DictionaryEntry[] | null>(null)
@@ -71,6 +73,11 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
 
             // 1. Try to get word (Lemma) from DB
             let dbWord = await wordService.getWordBySpelling(lemma)
+
+            // Get Settings
+            const settings = await settingsService.getSettings()
+            const source = settings.videoSource || 'bilibili'
+            setVideoSource(source)
 
             // 2. If not found in DB, fetch from Dictionary API and auto-save
             if (!dbWord) {
@@ -112,7 +119,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
 
             // 3. Search for video occurrences (Use original word for exact context match, or lemma?)
             // Let's use Lemma to find more results, as 'decided' -> 'decide' is likely desired.
-            const results = await videoIndexService.searchWord(lemma)
+            const results = await videoIndexService.searchWord(lemma, source)
 
 
             // Sort results: Score DESC, then Page ASC, then Time ASC
@@ -242,35 +249,61 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                                 borderRadius: 2,
                                 bgcolor: '#000'
                             }}>
-                                <iframe
-                                    referrerPolicy="no-referrer"
-                                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
-                                    src={`//player.bilibili.com/player.html?bvid=${selectedOccurrence.bvid}&page=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}&autoplay=0&danmaku=0`}
-                                    scrolling="no"
-                                    frameBorder="0"
-                                    allowFullScreen={true}
-                                    style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: '100%',
-                                        height: '100%'
-                                    }}
-                                />
+                                {videoSource === 'youtube' ? (
+                                    <iframe
+                                        width="100%"
+                                        height="100%"
+                                        src={`https://www.youtube.com/embed/${selectedOccurrence.bvid}?start=${Math.floor(selectedOccurrence.startTime)}&rel=0&autoplay=1`}
+                                        title="YouTube video player"
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        allowFullScreen
+                                        referrerPolicy="strict-origin-when-cross-origin"
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%'
+                                        }}
+                                    />
+                                ) : (
+                                    <iframe
+                                        referrerPolicy="no-referrer"
+                                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
+                                        src={`//player.bilibili.com/player.html?bvid=${selectedOccurrence.bvid}&page=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}&autoplay=1&danmaku=0`}
+                                        scrolling="no"
+                                        frameBorder="0"
+                                        allowFullScreen={true}
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%'
+                                        }}
+                                    />
+                                )}
                             </Box>
                             <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Typography variant="caption" color="text.secondary">
-                                    {t('vocabulary:modal.source')}: {selectedOccurrence.title} (P{selectedOccurrence.page})
+                                    {t('vocabulary:modal.source')}: {selectedOccurrence.title} (Time: {selectedOccurrence.startTime}s)
                                 </Typography>
                                 <Button
                                     size="small"
                                     endIcon={<OpenInNew sx={{ fontSize: 14 }} />}
-                                    href={`https://www.bilibili.com/video/${selectedOccurrence.bvid}?p=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}`}
+                                    href={videoSource === 'youtube'
+                                        ? `https://www.youtube.com/watch?v=${selectedOccurrence.bvid}&t=${Math.floor(selectedOccurrence.startTime)}s`
+                                        : `https://www.bilibili.com/video/${selectedOccurrence.bvid}?p=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}`
+                                    }
                                     target="_blank"
-                                    referrerPolicy="no-referrer"
+                                    referrerPolicy="strict-origin-when-cross-origin"
                                     sx={{ textTransform: 'none', fontSize: '0.75rem' }}
                                 >
-                                    {t('vocabulary:modal.watchOnBilibili', 'Bilibili')}
+                                    {videoSource === 'youtube'
+                                        ? t('vocabulary:modal.watchOnYoutube', 'YouTube')
+                                        : t('vocabulary:modal.watchOnBilibili', 'Bilibili')
+                                    }
                                 </Button>
                             </Box>
                             <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic', borderLeft: '3px solid #1976d2', pl: 1 }}>

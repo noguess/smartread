@@ -31,6 +31,7 @@ export default function SettingsPage() {
     const [articleLen, setArticleLen] = useState<'short' | 'medium' | 'long'>('medium')
     const [dailyLimit, setDailyLimit] = useState(10)
     const [difficultyLevel, setDifficultyLevel] = useState<'L1' | 'L2' | 'L3'>('L2')
+    const [videoSource, setVideoSource] = useState<'bilibili' | 'youtube'>('bilibili')
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMsg, setSnackbarMsg] = useState('')
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
@@ -50,6 +51,7 @@ export default function SettingsPage() {
             setArticleLen(current.articleLenPref)
             setDailyLimit(current.dailyNewLimit)
             setDifficultyLevel(current.difficultyLevel || 'L2')
+            setVideoSource(current.videoSource || 'bilibili')
         }
     }
 
@@ -60,6 +62,7 @@ export default function SettingsPage() {
             articleLenPref: articleLen,
             dailyNewLimit: dailyLimit,
             difficultyLevel: difficultyLevel,
+            videoSource: videoSource,
         }
         await settingsService.saveSettings(newSettings)
         setSettings(newSettings)
@@ -224,6 +227,18 @@ export default function SettingsPage() {
                         <MenuItem value="L1">L1 - {t('settings:preferences.difficultyL1')}</MenuItem>
                         <MenuItem value="L2">L2 - {t('settings:preferences.difficultyL2')}</MenuItem>
                         <MenuItem value="L3">L3 - {t('settings:preferences.difficultyL3')}</MenuItem>
+                    </Select>
+                </FormControl>
+
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                    <InputLabel>{t('settings:preferences.videoSource')}</InputLabel>
+                    <Select
+                        value={videoSource}
+                        label={t('settings:preferences.videoSource')}
+                        onChange={(e) => setVideoSource(e.target.value as any)}
+                    >
+                        <MenuItem value="bilibili">{t('settings:preferences.videoSourceBilibili')}</MenuItem>
+                        <MenuItem value="youtube">{t('settings:preferences.videoSourceYoutube')}</MenuItem>
                     </Select>
                 </FormControl>
             </Paper>
