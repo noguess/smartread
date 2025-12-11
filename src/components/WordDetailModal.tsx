@@ -14,7 +14,7 @@ import {
     Paper,
     Tooltip,
 } from '@mui/material'
-import { Close, PlayArrow, Recommend } from '@mui/icons-material'
+import { Close, PlayArrow, Recommend, OpenInNew } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import { videoIndexService, VideoOccurrence } from '../services/videoIndexService'
 import { wordService } from '../services/wordService'
@@ -244,8 +244,8 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                             }}>
                                 <iframe
                                     referrerPolicy="no-referrer"
-                                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                                    src={`//player.bilibili.com/player.html?bvid=${selectedOccurrence.bvid}&page=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}&autoplay=0`}
+                                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation-by-user-activation"
+                                    src={`//player.bilibili.com/player.html?bvid=${selectedOccurrence.bvid}&page=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}&autoplay=0&danmaku=0`}
                                     scrolling="no"
                                     frameBorder="0"
                                     allowFullScreen={true}
@@ -262,6 +262,16 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                                 <Typography variant="caption" color="text.secondary">
                                     {t('vocabulary:modal.source')}: {selectedOccurrence.title} (P{selectedOccurrence.page})
                                 </Typography>
+                                <Button
+                                    size="small"
+                                    endIcon={<OpenInNew sx={{ fontSize: 14 }} />}
+                                    href={`https://www.bilibili.com/video/${selectedOccurrence.bvid}?p=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}`}
+                                    target="_blank"
+                                    referrerPolicy="no-referrer"
+                                    sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+                                >
+                                    {t('vocabulary:modal.watchOnBilibili', 'Bilibili')}
+                                </Button>
                             </Box>
                             <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic', borderLeft: '3px solid #1976d2', pl: 1 }}>
                                 "{selectedOccurrence.context}"
