@@ -150,4 +150,22 @@ interface ApiResponse<T> {
 | **持久化** | **Dexie.js** | 所有的用户数据必须存入 IndexedDB，不使用 LocalStorage 存大量数据。 |
 | **测试** | **Vitest + RTL** | 使用 `vitest` 做单元测试，`happy-dom` 模拟环境。 |
 | **图标** | **MUI Icons** | 统一使用 `@mui/icons-material`。 |
+
 | **NLP** | **compromise** | 轻量级客户端自然语言处理 (Lemmatization) |
+
+## 6. 响应式适配策略 (Responsive Design Strategy)
+
+为了确保在 iPad 及平板设备上的最佳体验，必须遵循以下适配规则：
+
+### 6.1 导航栏响应逻辑
+由于侧边栏宽度 (240px) 较大，在平板设备上必须折叠以释放内容空间。
+*   **Desktop (`lg` / ≥1200px)**: `Permanent Drawer` (固定侧边栏)。
+*   **Tablet/Mobile (`md`, `sm`, `xs` / <1200px)**: `Temporary Drawer` (汉堡菜单呼出)。
+    *   *Rationale*: iPad Landscape (1024px) 扣除侧边栏后仅剩 784px，会导致各类卡片严重挤压。
+
+### 6.2 布局断点 (Grid Breakpoints)
+*   **Card Grid**:
+    *   `xs`: 1列 (Stack)
+    *   `md`: 1列 (Stack) - *iPad Portrait 强制堆叠*
+    *   `lg`: 2列 (Split) - *仅在大屏/横屏 Desktop 下分栏*
+

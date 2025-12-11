@@ -1,4 +1,17 @@
 
+## [Feature] iPad & Tablet Adaptation
+- [x] Task 1 (Layout): Implement Responsive Navigation (Drawer).
+    - **Problem**: Permanent sidebar (240px) squeezes content on iPad.
+    - **Fix**: Use `useMediaQuery` (theme.breakpoints.down('lg')) to switch Sidebar to `temporary` variant. Add Hamburger menu to AppBar.
+- [x] Task 2 (Home): Force Vertical Stacking on Tablet.
+    - **Problem**: 2-column layout (Hero + Stats) causes extreme squeezing on iPad.
+    - **Fix**: Update `HomePage.tsx` Grid to use `xs={12} lg={8}` for Hero / `xs={12} lg={4}` for Stats (Stack content on `md` screens).
+- [x] Task 3 (Hero): Fix Internal Layout Compression.
+    - **Problem**: Screenshot shows "Streak/Time" text forced into vertical layout due to lack of width. Blue Word Card squeezes main actions.
+    - **Fix**: Refactor `DashboardHero` to stack internal elements on smaller screens (Text/Stats top, Word Card bottom, or full-width rows). Fix flex/grid constraints on stats circles.
+- [x] Task 4 (Reading): Verify Reading View.
+    - **Action**: Check `ReadingPage` container widths and ensure text readable after Layout fix. (Verified: `maxWidth: 860px` applied via `ArticleContent`, Sidebar hides on `<lg` to allow full width reading).
+
 ## [Feature] Error Handling & Feedback
 - [x] Task 1 (Reading): Improve "Quiz Generation Failed" UX. Use `Snackbar` instead of blocking `error` state, ensuring user stays on 'reading' view with a visible alert.
 - [x] Task 2 (History): Add feedback when loading a review fails. Pass explanation via `navigate` state or use a global notification context.

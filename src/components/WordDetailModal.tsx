@@ -243,6 +243,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                                 bgcolor: '#000'
                             }}>
                                 <iframe
+                                    referrerPolicy="no-referrer"
                                     src={`//player.bilibili.com/player.html?bvid=${selectedOccurrence.bvid}&page=${selectedOccurrence.page}&t=${Math.floor(selectedOccurrence.startTime)}&high_quality=1&autoplay=1`}
                                     scrolling="no"
                                     frameBorder="0"

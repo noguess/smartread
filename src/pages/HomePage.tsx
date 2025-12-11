@@ -238,8 +238,9 @@ export default function HomePage() {
                 </Typography>
 
                 <Grid container spacing={3}>
+
                     {/* Hero Section */}
-                    <Grid item xs={12} md={8}>
+                    <Grid item xs={12} lg={8}>
                         <DashboardHero
                             consecutiveDays={stats.consecutiveDays}
                             totalMinutes={stats.totalMinutes}
@@ -251,7 +252,7 @@ export default function HomePage() {
                     </Grid>
 
                     {/* Stats Section */}
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} lg={4}>
                         <DashboardStats
                             totalWords={allWords.length}
                             masteredCount={statusCounts.Mastered}

@@ -13,6 +13,8 @@ import {
     TextField,
     InputAdornment,
     IconButton,
+    useTheme,
+    useMediaQuery,
 } from '@mui/material'
 import {
     Home as HomeIcon,
@@ -22,6 +24,7 @@ import {
     BarChart as BarChartIcon,
     AutoStories as LibraryIcon,
     History as HistoryIcon,
+    Menu as MenuIcon,
 } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 
@@ -38,9 +41,24 @@ export default function Layout({ children }: LayoutProps) {
     const navigate = useNavigate()
     const location = useLocation()
     const { t } = useTranslation(['common'])
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down('lg'))
+    const [mobileOpen, setMobileOpen] = useState(false)
+
     const [searchQuery, setSearchQuery] = useState('')
     const [wordModalOpen, setWordModalOpen] = useState(false)
     const [selectedWord, setSelectedWord] = useState('')
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen)
+    }
+
+    const handleNavClick = (path: string) => {
+        navigate(path)
+        if (isMobile) {
+            setMobileOpen(false)
+        }
+    }
 
     const menuItems = [
         { text: t('common:nav.home'), icon: <HomeIcon />, path: '/' },
@@ -59,13 +77,48 @@ export default function Layout({ children }: LayoutProps) {
         }
     }
 
+    const drawerContent = (
+        <>
+            <Box sx={{ p: 2, textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                📚 {t('common:appName')}
+            </Box>
+            <List>
+                {menuItems.map((item) => (
+                    <ListItem key={item.text} disablePadding>
+                        <ListItemButton
+                            selected={location.pathname === item.path}
+                            onClick={() => handleNavClick(item.path)}
+                            sx={{
+                                '&.Mui-selected': {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                },
+                                '&:hover': {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                },
+                                color: 'white',
+                            }}
+                        >
+                            <ListItemIcon sx={{ color: 'white' }}>{item.icon}</ListItemIcon>
+                            <ListItemText primary={item.text} />
+                        </ListItemButton>
+                    </ListItem>
+                ))}
+            </List>
+        </>
+    )
+
     return (
         <Box sx={{ display: 'flex', height: '100vh' }}>
-            {/* Left Sidebar */}
+            {/* Sidebar */}
             <Drawer
-                variant="permanent"
+                variant={isMobile ? 'temporary' : 'permanent'}
+                open={isMobile ? mobileOpen : true}
+                onClose={handleDrawerToggle}
+                ModalProps={{
+                    keepMounted: true, // Better open performance on mobile.
+                }}
                 sx={{
-                    width: drawerWidth,
+                    width: isMobile ? 0 : drawerWidth,
                     flexShrink: 0,
                     '& .MuiDrawer-paper': {
                         width: drawerWidth,
@@ -75,31 +128,7 @@ export default function Layout({ children }: LayoutProps) {
                     },
                 }}
             >
-                <Box sx={{ p: 2, textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>
-                    📚 {t('common:appName')}
-                </Box>
-                <List>
-                    {menuItems.map((item) => (
-                        <ListItem key={item.text} disablePadding>
-                            <ListItemButton
-                                selected={location.pathname === item.path}
-                                onClick={() => navigate(item.path)}
-                                sx={{
-                                    '&.Mui-selected': {
-                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                    },
-                                    '&:hover': {
-                                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                    },
-                                    color: 'white',
-                                }}
-                            >
-                                <ListItemIcon sx={{ color: 'white' }}>{item.icon}</ListItemIcon>
-                                <ListItemText primary={item.text} />
-                            </ListItemButton>
-                        </ListItem>
-                    ))}
-                </List>
+                {drawerContent}
             </Drawer>
 
             {/* Main Content Area */}
@@ -112,6 +141,17 @@ export default function Layout({ children }: LayoutProps) {
                     sx={{ backgroundColor: 'background.paper' }}
                 >
                     <Toolbar>
+                        {isMobile && (
+                            <IconButton
+                                color="inherit"
+                                aria-label="open drawer"
+                                edge="start"
+                                onClick={handleDrawerToggle}
+                                sx={{ mr: 2 }}
+                            >
+                                <MenuIcon />
+                            </IconButton>
+                        )}
                         <TextField
                             placeholder={t('common:button.search') + '...'}
                             variant="outlined"

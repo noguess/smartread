@@ -1,23 +1,51 @@
-import { Box, Typography, Button, Grid, Paper, CircularProgress } from '@mui/material'
+import { Box, Typography, Button, Grid, Paper } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { AutoAwesome, Tune, VolumeUp, LocalFireDepartment, AccessTime } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
 import { Word } from '../../services/db'
 
-const StyledCard = styled(Paper)(({ theme }) => ({
+const StyledCard = styled(Paper)(() => ({
     transition: 'all 0.3s ease-in-out',
-    '&:hover': {
-        transform: 'translateY(-4px)',
-        boxShadow: theme.shadows[8],
-    },
+    // Removed hover lift effect for the main container to keep it stable layout-wise
+    // '&:hover': {
+    //     transform: 'translateY(-4px)',
+    //     boxShadow: theme.shadows[8],
+    // },
 }))
 
 const GradientButton = styled(Button)({
     background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
+    borderRadius: '12px',
+    boxShadow: '0 4px 15px rgba(74, 144, 226, 0.3)',
     '&:hover': {
         background: 'linear-gradient(135deg, #3A7BC8 0%, #6B58CE 100%)',
+        boxShadow: '0 6px 20px rgba(74, 144, 226, 0.4)',
     },
 })
+
+const StatBox = ({ icon: Icon, value, label, color }: any) => (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{
+            p: 1.5,
+            borderRadius: '16px',
+            bgcolor: `${color}15`, // 15% opacity
+            color: color,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        }}>
+            <Icon sx={{ fontSize: 32 }} />
+        </Box>
+        <Box>
+            <Typography variant="h5" fontWeight="800" sx={{ lineHeight: 1.1 }}>
+                {value}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" fontWeight="500">
+                {label}
+            </Typography>
+        </Box>
+    </Box>
+)
 
 interface DashboardHeroProps {
     onSmartGenerate: () => void
@@ -46,9 +74,7 @@ export default function DashboardHero({
         }
     }
 
-    // Calculate progress percentages (example: max 7 days, 60 minutes)
-    const daysProgress = Math.min((consecutiveDays / 7) * 100, 100)
-    const minutesProgress = Math.min((totalMinutes / 60) * 100, 100)
+    // Unused progress calculations removed
 
     return (
         <StyledCard
@@ -63,7 +89,7 @@ export default function DashboardHero({
         >
             <Grid container spacing={3} sx={{ alignItems: 'stretch' }}>
                 {/* Left: Content Column */}
-                <Grid item xs={12} md={8}>
+                <Grid item xs={12} lg={8}>
                     <Box sx={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -76,100 +102,40 @@ export default function DashboardHero({
                             <span style={{ fontSize: '2rem' }}>🚀</span>
                         </Typography>
 
-                        {/* 2. Middle: Stats (Centered Vertically) */}
+                        {/* 2. Middle: Stats (Clean & Modern) */}
                         <Box sx={{
-                            flex: 1, // Take up remaining space
+                            flex: 1,
                             display: 'flex',
-                            alignItems: 'center', // Vertically center content
-                            py: 2 // Reduced padding
+                            alignItems: 'center',
+                            py: 4
                         }}>
-                            <Box sx={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-                                {/* Consecutive Days / Last Study */}
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <LocalFireDepartment sx={{ fontSize: 48, color: consecutiveDays > 0 ? '#FF6B6B' : '#BDBDBD' }} />
-                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                        {consecutiveDays > 0 ? (
-                                            <>
-                                                <Typography variant="h5" fontWeight="bold" sx={{ lineHeight: 1 }}>
-                                                    {consecutiveDays}{t('home:hero.days')}
-                                                </Typography>
-                                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
-                                                    {t('home:hero.streak')}
-                                                </Typography>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Typography variant="body1" fontWeight="bold" sx={{ lineHeight: 1, fontSize: '1rem' }}>
-                                                    {lastLearningDate || '--'}
-                                                </Typography>
-                                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
-                                                    {lastLearningDate ? t('home:hero.lastStudy') : t('home:hero.keepGoing')}
-                                                </Typography>
-                                            </>
-                                        )}
-                                    </Box>
-                                    <Box sx={{ position: 'relative', display: 'inline-flex', ml: 2 }}>
-                                        <CircularProgress
-                                            variant="determinate"
-                                            value={100}
-                                            size={56}
-                                            thickness={3}
-                                            sx={{ color: '#E8E8E8' }}
-                                        />
-                                        <CircularProgress
-                                            variant="determinate"
-                                            value={daysProgress}
-                                            size={56}
-                                            thickness={3}
-                                            sx={{
-                                                color: consecutiveDays > 0 ? '#4A90E2' : '#BDBDBD',
-                                                position: 'absolute',
-                                                left: 0,
-                                            }}
-                                        />
-                                    </Box>
-                                </Box>
-
-                                {/* Divider */}
-                                <Box sx={{ width: '1px', height: 50, bgcolor: '#E0E0E0' }} />
-
-                                {/* Today's Minutes */}
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                    <AccessTime sx={{ fontSize: 48, color: '#4A90E2' }} />
-                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                        <Typography variant="h5" fontWeight="bold" sx={{ lineHeight: 1 }}>
-                                            {totalMinutes}{t('home:hero.min')}
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
-                                            {t('home:hero.todayAccumulation')}
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ position: 'relative', display: 'inline-flex', ml: 2 }}>
-                                        <CircularProgress
-                                            variant="determinate"
-                                            value={100}
-                                            size={56}
-                                            thickness={3}
-                                            sx={{ color: '#E8E8E8' }}
-                                        />
-                                        <CircularProgress
-                                            variant="determinate"
-                                            value={minutesProgress}
-                                            size={56}
-                                            thickness={3}
-                                            sx={{
-                                                color: '#4A90E2',
-                                                position: 'absolute',
-                                                left: 0,
-                                            }}
-                                        />
-                                    </Box>
-                                </Box>
-                            </Box>
+                            <Grid container spacing={4}>
+                                <Grid item xs={12} sm={6}>
+                                    <StatBox
+                                        icon={LocalFireDepartment}
+                                        // Restore logic: Show streak if >0, else show Last Study Date or default text
+                                        value={consecutiveDays > 0
+                                            ? `${consecutiveDays} ${t('home:hero.days')}`
+                                            : (lastLearningDate || '--')}
+                                        label={consecutiveDays > 0
+                                            ? t('home:hero.streak')
+                                            : (lastLearningDate ? t('home:hero.lastStudy') : t('home:hero.keepGoing'))}
+                                        color="#FF6B6B"
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <StatBox
+                                        icon={AccessTime}
+                                        value={`${totalMinutes} ${t('home:hero.min')}`}
+                                        label={t('home:hero.todayAccumulation')}
+                                        color="#4A90E2"
+                                    />
+                                </Grid>
+                            </Grid>
                         </Box>
 
                         {/* 3. Bottom: Buttons */}
-                        <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                             <GradientButton
                                 variant="contained"
                                 size="large"
@@ -178,25 +144,35 @@ export default function DashboardHero({
                                 sx={{
                                     px: 4,
                                     py: 1.5,
-                                    fontSize: '1.05rem',
+                                    fontSize: '1rem',
                                     fontWeight: 'bold',
                                     color: 'white',
                                     textTransform: 'none',
+                                    minWidth: 200
                                 }}
                             >
                                 {t('home:hero.smartGenerate')}
                             </GradientButton>
 
                             <Button
-                                variant="text"
+                                variant="outlined"
                                 startIcon={<Tune />}
                                 onClick={onManualMode}
                                 sx={{
                                     px: 3,
                                     py: 1.5,
-                                    fontSize: '1.05rem',
+                                    fontSize: '1rem',
+                                    fontWeight: 'bold',
+                                    borderRadius: '12px',
+                                    borderColor: 'divider',
                                     color: 'text.secondary',
                                     textTransform: 'none',
+                                    borderWidth: '2px', // Thicker border
+                                    '&:hover': {
+                                        borderColor: 'primary.main',
+                                        bgcolor: 'primary.50',
+                                        borderWidth: '2px',
+                                    }
                                 }}
                             >
                                 {t('home:hero.customMode')}
@@ -206,14 +182,14 @@ export default function DashboardHero({
                 </Grid>
 
                 {/* Right: Daily Word Card */}
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} lg={4}>
                     {recommendedWord && (
                         <Paper
                             elevation={0}
                             sx={{
                                 p: 3,
                                 height: '100%',
-                                background: 'linear-gradient(135deg, #56CCF2 0%, #2F80ED 100%)',
+                                background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
                                 color: 'white',
                                 borderRadius: 3,
                                 display: 'flex',
