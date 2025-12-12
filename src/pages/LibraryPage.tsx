@@ -4,34 +4,29 @@ import {
     Container,
     Box,
     Typography,
-    List,
-    ListItem,
     Button,
-    Chip,
-    IconButton,
     Dialog,
     DialogTitle,
     DialogContent,
     DialogContentText,
     DialogActions,
     CircularProgress,
-    Paper,
-    Stack,
-    Divider
+    Stack
 } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
-import AutoStoriesIcon from '@mui/icons-material/AutoStories'
-import QuizIcon from '@mui/icons-material/Quiz'
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
+import SearchIcon from '@mui/icons-material/Search'
+// Keep SearchIcon for future search impl or header visual if needed, 
+// though reader.html header is 'sticky top' global header usually. 
+// We will focus on the in-page header.
+
 import { articleService } from '../services/articleService'
 import { quizRecordService } from '../services/quizRecordService'
-import { Article } from '../services/db'
 import { useTranslation } from 'react-i18next'
+import ArticleListCard, { ArticleCardProps } from '../components/reading/ArticleListCard'
 
-interface ArticleWithStats extends Article {
-    quizCount: number
-    highestScore: number
-}
+// Reusing the type from ArticleListCard or creating a shared one
+// For now, assume it matches.
+// We need to ensure we pass the right shape.
+type ArticleWithStats = ArticleCardProps['article']
 
 export default function LibraryPage() {
     const { t } = useTranslation(['library', 'common'])
@@ -41,14 +36,26 @@ export default function LibraryPage() {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [articleToDelete, setArticleToDelete] = useState<ArticleWithStats | null>(null)
 
+    // Pagination State
+    const [page, setPage] = useState(1)
+    const [hasMore, setHasMore] = useState(true)
+    const PAGE_SIZE = 10
+
     useEffect(() => {
-        loadArticles()
+        loadArticles(1)
     }, [])
 
-    const loadArticles = async () => {
+    const loadArticles = async (pageNum: number) => {
         try {
             setLoading(true)
-            const data = await articleService.getAll()
+            const data = await articleService.getPage(pageNum, PAGE_SIZE)
+
+            if (data.length < PAGE_SIZE) {
+                setHasMore(false)
+            } else {
+                setHasMore(true) // Should remain true if full page returned, unless we want to lookahead. 
+                // Simple logic: if < limit, no more. If == limit, assume more.
+            }
 
             // Load quiz statistics for each article
             const articlesWithStats = await Promise.all(
@@ -62,17 +69,30 @@ export default function LibraryPage() {
                     return {
                         ...article,
                         quizCount,
-                        highestScore
-                    }
+                        highestScore: quizRecords.length > 0 ? highestScore : null
+                    } as any as ArticleWithStats
                 })
             )
 
-            setArticles(articlesWithStats)
+            // Sort by date desc
+            articlesWithStats.sort((a, b) => b.createdAt - a.createdAt)
+
+            if (pageNum === 1) {
+                setArticles(articlesWithStats)
+            } else {
+                setArticles(prev => [...prev, ...articlesWithStats])
+            }
         } catch (error) {
             console.error('Failed to load articles:', error)
         } finally {
             setLoading(false)
         }
+    }
+
+    const handleLoadMore = () => {
+        const nextPage = page + 1
+        setPage(nextPage)
+        loadArticles(nextPage)
     }
 
     const handleRead = (article: ArticleWithStats) => {
@@ -98,24 +118,6 @@ export default function LibraryPage() {
             }
         }
     }
-
-    const formatDate = (timestamp: number) => {
-        return new Date(timestamp).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        })
-    }
-
-    const getDifficultyColor = (level: string) => {
-        switch (level) {
-            case 'L1': return 'success'
-            case 'L2': return 'primary'
-            case 'L3': return 'error'
-            default: return 'default'
-        }
-    }
-
     if (loading) {
         return (
             <Container maxWidth="lg" sx={{ py: 8, textAlign: 'center' }}>
@@ -126,159 +128,59 @@ export default function LibraryPage() {
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
-            <Box sx={{ mb: 4 }}>
-                <Typography variant="h4" gutterBottom fontWeight="bold">
-                    {t('library:title', 'My Library')}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                    {t('library:subtitle', `${articles.length} articles saved`)}
-                </Typography>
+
+            {/* Header Section */}
+            <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 4
+            }}>
+                <Box>
+                    <Typography variant="h4" fontWeight="bold" sx={{ color: 'text.primary', mb: 1 }}>
+                        {t('library:title', '我的阅读列表')}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        {t('library:subtitle', { count: articles.length })}
+                    </Typography>
+                </Box>
             </Box>
 
-            {articles.length === 0 ? (
-                <Box
-                    sx={{
-                        textAlign: 'center',
-                        py: 8,
-                        border: '2px dashed',
-                        borderColor: 'divider',
-                        borderRadius: 2
-                    }}
-                >
-                    <AutoStoriesIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
-                        {t('library:empty.title', 'No articles yet')}
-                    </Typography>
-                    <Typography color="text.secondary" sx={{ mb: 3 }}>
-                        {t('library:empty.description', 'Generate your first article from the home page')}
-                    </Typography>
-                    <Button variant="contained" onClick={() => navigate('/')}>
-                        {t('library:empty.button', 'Go to Home')}
+            {/* Article List */}
+            <Stack spacing={2}>
+                {articles.length > 0 ? (
+                    articles.map((article) => (
+                        <ArticleListCard
+                            key={article.id}
+                            article={article}
+                            onRead={handleRead}
+                            onDelete={handleDeleteClick}
+                        />
+                    ))
+                ) : (
+                    <Box sx={{ py: 8, textAlign: 'center', color: 'text.secondary' }}>
+                        <Typography variant="body1">
+                            {t('library:empty.title', '暂无文章')}
+                        </Typography>
+                    </Box>
+                )}
+            </Stack>
+
+            {/* Load More Button */}
+            {hasMore && articles.length > 0 && (
+                <Box sx={{ mt: 4, textAlign: 'center' }}>
+                    <Button
+                        variant="text"
+                        onClick={handleLoadMore}
+                        disabled={loading}
+                        sx={{ color: 'text.secondary' }}
+                    >
+                        {loading ? <CircularProgress size={24} /> : t('common:button.load_more', '加载更多...')}
                     </Button>
                 </Box>
-            ) : (
-                <Paper elevation={1}>
-                    <List sx={{ p: 0 }}>
-                        {articles.map((article, index) => (
-                            <Box key={article.id}>
-                                <ListItem
-                                    sx={{
-                                        py: 3,
-                                        px: 3,
-                                        display: 'flex',
-                                        alignItems: 'flex-start',
-                                        gap: 2,
-                                        '&:hover': {
-                                            bgcolor: 'action.hover'
-                                        }
-                                    }}
-                                >
-                                    {/* Icon */}
-                                    <AutoStoriesIcon
-                                        sx={{
-                                            fontSize: 40,
-                                            color: 'primary.main',
-                                            mt: 0.5
-                                        }}
-                                    />
-
-                                    {/* Main Content */}
-                                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                                        {/* Title */}
-                                        <Typography
-                                            variant="h6"
-                                            sx={{
-                                                fontWeight: 600,
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                mb: 0.5
-                                            }}
-                                        >
-                                            {article.title}
-                                        </Typography>
-
-                                        {/* Difficulty and Date with target words */}
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                                            <Chip
-                                                label={article.difficultyLevel}
-                                                size="small"
-                                                color={getDifficultyColor(article.difficultyLevel)}
-                                            />
-                                            <Typography variant="body2" color="text.secondary">
-                                                •
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {formatDate(article.createdAt)}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                •
-                                            </Typography>
-                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                {article.targetWords.slice(0, 3).map((word, idx) => (
-                                                    <Chip
-                                                        key={idx}
-                                                        label={word}
-                                                        size="small"
-                                                        variant="outlined"
-                                                        sx={{ height: 20, fontSize: '0.7rem' }}
-                                                    />
-                                                ))}
-                                                {article.targetWords.length > 3 && (
-                                                    <Chip
-                                                        label={`+${article.targetWords.length - 3}`}
-                                                        size="small"
-                                                        variant="outlined"
-                                                        sx={{ height: 20, fontSize: '0.7rem' }}
-                                                    />
-                                                )}
-                                            </Box>
-                                        </Box>
-
-                                        {/* Quiz statistics */}
-                                        <Box sx={{ display: 'flex', gap: 2 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                <QuizIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {article.quizCount} {article.quizCount === 1 ? t('library:card.quiz', 'quiz') : t('library:card.quizzes', 'quizzes')}
-                                                </Typography>
-                                            </Box>
-                                            {article.quizCount > 0 && (
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                    <EmojiEventsIcon sx={{ fontSize: 18, color: 'warning.main' }} />
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        {t('library:card.best', 'Best:')} <strong>{article.highestScore}</strong>
-                                                    </Typography>
-                                                </Box>
-                                            )}
-                                        </Box>
-                                    </Box>
-
-                                    {/* Actions - vertically centered */}
-                                    <Stack direction="row" spacing={1} sx={{ alignSelf: 'center' }}>
-                                        <Button
-                                            variant="contained"
-                                            size="small"
-                                            onClick={() => handleRead(article)}
-                                        >
-                                            {t('library:card.read', 'Read')}
-                                        </Button>
-                                        <IconButton
-                                            size="small"
-                                            color="error"
-                                            onClick={() => handleDeleteClick(article)}
-                                        >
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </Stack>
-                                </ListItem>
-                                {index < articles.length - 1 && <Divider />}
-                            </Box>
-                        ))}
-                    </List>
-                </Paper>
             )}
 
+            {/* Delete Dialog */}
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
                 <DialogTitle>{t('library:delete.title', 'Delete Article')}</DialogTitle>
                 <DialogContent>

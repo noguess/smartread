@@ -7,13 +7,23 @@
         "button": "返回首页"
     },
     "card": {
-        "read": "阅读",
+        "read": "开始阅读",
         "best": "最佳:",
+        "best_score_prefix": "最佳",
         "quiz": "次测试",
         "quizzes": "次测试",
-        "delete": {
-            "title": "删除文章",
-            "message": "确定要删除这篇文章吗？此操作无法撤销。"
-        }
+        "test_count": "次测试"
+    },
+    "tabs": {
+        "all": "全部",
+        "progress": "进行中",
+        "finished": "已完成"
+    },
+    "filter": {
+        "label": "筛选"
+    },
+    "delete": {
+        "title": "删除文章",
+        "message": "确定要删除这篇文章吗？此操作无法撤销。"
     }
 }

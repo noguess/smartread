@@ -22,6 +22,21 @@ export const articleService = {
     },
 
     /**
+     * Get paginated articles, sorted by creation date descending.
+     * @param page Page number (1-based)
+     * @param pageSize Number of items per page
+     */
+    async getPage(page: number, pageSize: number): Promise<Article[]> {
+        const offset = (page - 1) * pageSize
+        return await db.articles
+            .orderBy('createdAt')
+            .reverse()
+            .offset(offset)
+            .limit(pageSize)
+            .toArray()
+    },
+
+    /**
      * Get a single article by its numeric ID.
      */
     async getById(id: number): Promise<Article | undefined> {

@@ -1,3 +1,19 @@
+## [Feature] History UI Refresh
+- [x] Task 1 (Component): Create `HistoryListCard.tsx` adapting `ArticleListCard` style for Quiz Records.
+    - [x] Props: `EnhancedQuizRecord`
+    - [x] Layout: Same as Article Card (Icon Left, Info Middle, Action Right).
+    - [x] Stats: Show Score (emphasized) and Duration/Date.
+- [x] Task 2 (Page): Update `QuizHistoryPage` to use `HistoryListCard`.
+    - [x] Remove old `List/ListItem` layout.
+    - [x] Pass `onReview` handler.
+- [x] Task 3 (Polish): Verify responsive layout and interactions.
+
+## [Feature] Refine Article List UI
+- [x] Task 1 (Component): Create `ArticleListCard.tsx` implementing the new Card UI (replacing `reader.html` styles with MUI).
+- [x] Task 2 (Page): Update `LibraryPage.tsx` to include Tabs (All/Progress/Finished) and Filter Layout.
+- [x] Task 3 (Integration): Integrate `ArticleListCard` into `LibraryPage` and map `ArticleWithStats` data correctly.
+- [x] Task 4 (Polish): adjust responsive layout and verify interaction (Read/Delete).
+
 ## [Feature] Video Pinning
 - [x] Task 1 (DB): Update `Word` schema to support `pinnedVideo`.
 - [x] Task 2 (UI): Add Pin/Unpin button and logic to `WordDetailModal`.
@@ -56,3 +72,12 @@
 - [x] Task 1 (UI): Refactor `GenerationLoading` component to support 'quiz' mode and simplified terminal UI.
 - [x] Task 2 (Logic): Implement `loadQuizReview` to support viewing past quiz results in read-only mode.
 - [x] Task 3 (Navigation): Update `RecentActivityList` and `HomePage` to support smart navigation (Article -> Read, Quiz -> Review).
+
+## [Feature] Library List Optimization
+- [x] Task 1 (UI): Remove Tabs and Filter section (Revert relevant code).
+- [x] Task 2 (Logic): Implement Pagination logic.
+    - Support client-side slicing (e.g., 10 items per page).
+    - Or update `articleService` to support `limit/offset`.
+- [x] Task 3 (UI): Implement "Load More" button.
+    - [x] Show only if `hasMore` is true.
+    - [x] Appends data to list.

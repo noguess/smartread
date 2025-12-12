@@ -9,6 +9,7 @@
         "settings": "设置"
     },
     "button": {
+        "load_more": "加载更多...",
         "confirm": "确认",
         "cancel": "取消",
         "save": "保存",

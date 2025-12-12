@@ -7,13 +7,23 @@
         "button": "Go to Home"
     },
     "card": {
-        "read": "Read",
+        "read": "Start Reading",
         "best": "Best:",
+        "best_score_prefix": "Best",
         "quiz": "quiz",
         "quizzes": "quizzes",
-        "delete": {
-            "title": "Delete Article",
-            "message": "Are you sure you want to delete this article? This action cannot be undone."
-        }
+        "test_count": "tests"
+    },
+    "tabs": {
+        "all": "All",
+        "progress": "In Progress",
+        "finished": "Finished"
+    },
+    "filter": {
+        "label": "Filter"
+    },
+    "delete": {
+        "title": "Delete Article",
+        "message": "Are you sure you want to delete this article? This action cannot be undone."
     }
 }

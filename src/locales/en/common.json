@@ -10,6 +10,7 @@
     },
     "button": {
         "confirm": "Confirm",
+        "load_more": "Load More...",
         "cancel": "Cancel",
         "save": "Save",
         "delete": "Delete",
