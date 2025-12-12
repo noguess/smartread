@@ -1,7 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import LibraryPage from './LibraryPage'
-import { articleService } from '../services/articleService'
 import { quizRecordService } from '../services/quizRecordService'
 import { MemoryRouter } from 'react-router-dom'
 

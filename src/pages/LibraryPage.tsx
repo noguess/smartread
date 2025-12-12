@@ -13,7 +13,6 @@ import {
     CircularProgress,
     Stack
 } from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
 // Keep SearchIcon for future search impl or header visual if needed, 
 // though reader.html header is 'sticky top' global header usually. 
 // We will focus on the in-page header.

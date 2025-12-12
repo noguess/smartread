@@ -31,8 +31,9 @@ const mockRecord: HistoryCardProps['record'] = {
     date: new Date('2023-01-01T12:00:00').getTime(),
     timeSpent: 125, // 2m 5s
     score: 85,
-    answers: [],
     questions: { reading: [], vocabulary: [] },
+    userAnswers: { reading: {}, vocabulary: {} },
+    difficultyFeedback: 3,
     articleTitle: 'Test Article Title',
     articleDifficulty: 'L2',
     attemptNumber: 3
