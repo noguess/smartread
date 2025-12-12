@@ -51,7 +51,7 @@ describe('DashboardVerticalLayout', () => {
         totalMinutes: 45,
         lastLearningDate: '2023-10-01',
         recommendedWord: {
-            id: '1',
+            id: 1,
             spelling: 'test',
             meaning: 'test meaning',
             status: 'New' as WordStatus,

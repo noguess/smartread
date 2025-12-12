@@ -68,6 +68,10 @@ const mockArticles = [
 describe('LibraryPage', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        mockGetPage.mockReset()
+        mockDelete.mockReset()
+        mockGetAll.mockReset()
+
         // Default mocks
         vi.mocked(quizRecordService.getRecordsByArticleUuid).mockResolvedValue([])
         mockGetPage.mockResolvedValue([])

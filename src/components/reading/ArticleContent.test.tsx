@@ -84,7 +84,8 @@ describe('ArticleContent', () => {
         // Mock empty selection
         const mockGetSelectionEmpty = vi.fn().mockReturnValue({
             toString: () => '',
-            rangeCount: 1
+            rangeCount: 1,
+            getRangeAt: () => ({ getBoundingClientRect: () => ({}) })
         })
         Object.defineProperty(window, 'getSelection', { value: mockGetSelectionEmpty })
 
@@ -92,14 +93,24 @@ describe('ArticleContent', () => {
         fireEvent.mouseUp(contentBox)
         expect(mockOnSelection).not.toHaveBeenCalled()
 
-        // Mock multi-word selection
+        // Mock multi-word selection (Now allowed for Sentence Analysis)
         const mockGetSelectionMulti = vi.fn().mockReturnValue({
             toString: () => 'two words',
-            rangeCount: 1
+            rangeCount: 1,
+            getRangeAt: () => ({
+                getBoundingClientRect: () => ({
+                    bottom: 200,
+                    left: 50,
+                    width: 40
+                })
+            })
         })
         Object.defineProperty(window, 'getSelection', { value: mockGetSelectionMulti })
 
         fireEvent.mouseUp(contentBox)
-        expect(mockOnSelection).not.toHaveBeenCalled()
+        expect(mockOnSelection).toHaveBeenCalledWith('two words', {
+            top: 200,
+            left: 70 // 50 + 40/2
+        })
     })
 })
