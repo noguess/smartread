@@ -58,13 +58,14 @@ describe('articleService', () => {
             const mockOrderBy = vi.fn(() => ({ reverse: mockReverse }))
 
             // Re-assign to db.articles for this test
-            // @ts-ignore
+
+            // @ts-expect-error
             db.articles.orderBy = mockOrderBy
 
             const page = 1
             const pageSize = 10
 
-            // @ts-ignore
+
             await articleService.getPage(page, pageSize)
 
             // Verify chain: orderBy('createdAt').reverse().offset(0).limit(10).toArray()
@@ -82,7 +83,8 @@ describe('articleService', () => {
             const mockReverse = vi.fn(() => ({ offset: mockOffset }))
             const mockOrderBy = vi.fn(() => ({ reverse: mockReverse }))
 
-            // @ts-ignore
+
+            // @ts-expect-error
             db.articles.orderBy = mockOrderBy
 
             await articleService.getPage(2, 5) // Page 2, size 5 -> offset 5

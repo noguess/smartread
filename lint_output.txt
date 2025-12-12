@@ -1,0 +1,40 @@
+
+> smart-reader@1.0.0 lint
+> eslint .
+
+
+/Users/noguess/work/english_study/src/components/WordDetailModal.tsx
+  58:8  warning  React Hook useEffect has a missing dependency: 'loadWordData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/noguess/work/english_study/src/components/dashboard/ManualGenerationDialog.tsx
+  46:8  warning  React Hook useEffect has a missing dependency: 'handleAutoFill'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/noguess/work/english_study/src/components/reading/ArticleContent.tsx
+  163:40  warning  'node' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/noguess/work/english_study/src/components/reading/ArticleView.tsx
+  27:36  warning  'node' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/noguess/work/english_study/src/components/reading/DefinitionPopover.tsx
+  47:8  warning  React Hook useEffect has a missing dependency: 'loadDefinition'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/noguess/work/english_study/src/components/reading/VocabularyQuestionRenderer.tsx
+  232:17  error  Unexpected lexical declaration in case block  no-case-declarations
+  318:17  error  Unexpected lexical declaration in case block  no-case-declarations
+  319:17  error  Unexpected lexical declaration in case block  no-case-declarations
+
+/Users/noguess/work/english_study/src/pages/HomePage.tsx
+  52:8  warning  React Hook useEffect has missing dependencies: 'loadData' and 'location.state'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/noguess/work/english_study/src/pages/ReadingPage.tsx
+  230:8  warning  React Hook useEffect has missing dependencies: 'loadReviewContent', 'navigate', and 'step'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  288:8  warning  React Hook useEffect has a missing dependency: 'loadQuizReviewFromRecord'. Either include it or remove the dependency array                     react-hooks/exhaustive-deps
+
+/Users/noguess/work/english_study/src/pages/VocabularyPage.tsx
+  69:8  warning  React Hook useEffect has a missing dependency: 'filterWords'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/noguess/work/english_study/src/theme/ThemeContext.tsx
+  46:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+✖ 13 problems (3 errors, 10 warnings)
+

@@ -1,0 +1,1219 @@
+
+> smart-reader@1.0.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/noguess/work/english_study[39m
+
+ [31m❯[39m src/services/settingsService.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 10[2mms[22m[39m
+     [32m✓[39m should initialize with default videoSource as bilibili[32m 1[2mms[22m[39m
+[31m     [31m×[31m should update videoSource setting[39m[32m 8[2mms[22m[39m
+ [31m❯[39m src/components/reading/ArticleContent.test.tsx [2m([22m[2m3 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 121[2mms[22m[39m
+     [32m✓[39m renders title and content[32m 54[2mms[22m[39m
+     [32m✓[39m handles selection of text[32m 32[2mms[22m[39m
+[31m     [31m×[31m ignores empty or multi-word selection[39m[32m 34[2mms[22m[39m
+ [32m✓[39m src/features/history/HistoryListCard.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 140[2mms[22m[39m
+[90mstderr[2m | src/pages/LibraryPage.test.tsx[2m > [22m[2mLibraryPage[2m > [22m[2mrenders initial list and loads more on button click
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/features/history/QuizResultPage.test.tsx[2m > [22m[2mQuizResultPage[2m > [22m[2mrenders loading state initially
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/features/history/QuizHistoryPage.test.tsx[2m > [22m[2mQuizHistoryPage[2m > [22m[2mrenders list of history records
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/components/reading/ArticleListCard.test.tsx[2m > [22m[2mArticleListCard[2m > [22m[2mrenders article information correctly
+[22m[39mreact-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next { code: [32m'NO_I18NEXT_INSTANCE'[39m }
+
+ [32m✓[39m src/components/reading/ArticleListCard.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 241[2mms[22m[39m
+ [32m✓[39m src/features/history/QuizResultPage.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 265[2mms[22m[39m
+[90mstderr[2m | src/components/reading/SentenceAnalysisPopover.test.tsx[2m > [22m[2mSentenceAnalysisPopover[2m > [22m[2mshows error state and retry button on failure
+[22m[39mSentence analysis failed: Error: API Error
+    at [90m/Users/noguess/work/english_study/[39msrc/components/reading/SentenceAnalysisPopover.test.tsx:70:43
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1210:10[90m)[39m
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+    at Traces.$ [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21[90m)[39m
+    at runTest [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1654:12[90m)[39m
+
+ [32m✓[39m src/features/history/QuizHistoryPage.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 328[2mms[22m[39m
+ [32m✓[39m src/components/reading/QuizView.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 441[2mms[22m[39m
+[90mstdout[2m | src/pages/ReadingPage.test.tsx[2m > [22m[2mReadingPage[2m > [22m[2mshows snackbar and stays on reading view when quiz generation fails
+[22m[39m🔍 ReadingPage useEffect triggered
+📍 URL id: 7
+📦 Navigation state: [1mnull[22m
+✅ Detected article ID - will load existing article: 7
+Loading article by ID: [33m7[39m
+Article loaded: {
+  id: [33m7[39m,
+  uuid: [32m'uuid-fail'[39m,
+  title: [32m'Fail Test'[39m,
+  content: [32m'Content'[39m,
+  targetWords: []
+}
+
+[90mstderr[2m | src/pages/ReadingPage.test.tsx[2m > [22m[2mReadingPage[2m > [22m[2mshows snackbar and stays on reading view when quiz generation fails
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstdout[2m | src/pages/ReadingPage.test.tsx[2m > [22m[2mReadingPage[2m > [22m[2mshows snackbar and stays on reading view when quiz generation fails
+[22m[39mQuiz history loaded: [33m0[39m records
+
+[90mstderr[2m | src/components/Layout.test.tsx[2m > [22m[2mLayout Component Responsive[2m > [22m[2mshows permanent drawer and no menu button on desktop
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/components/reading/ResponsivePopovers.test.tsx[2m > [22m[2mResponsive Popovers[2m > [22m[2mrenders DefinitionPopover as Popover on Desktop
+[22m[39mWarning: An update to DefinitionPopover inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at DefinitionPopover (/Users/noguess/work/english_study/src/components/reading/DefinitionPopover.tsx:20:30)
+    at DefaultPropsProvider (/Users/noguess/work/english_study/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+    at RtlProvider (/Users/noguess/work/english_study/node_modules/@mui/system/RtlProvider/index.js:19:7)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:53:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+[90mstderr[2m | src/components/reading/ResponsivePopovers.test.tsx[2m > [22m[2mResponsive Popovers[2m > [22m[2mrenders DefinitionPopover as Popover on Desktop
+[22m[39mWarning: An update to DefinitionPopover inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at DefinitionPopover (/Users/noguess/work/english_study/src/components/reading/DefinitionPopover.tsx:20:30)
+    at DefaultPropsProvider (/Users/noguess/work/english_study/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+    at RtlProvider (/Users/noguess/work/english_study/node_modules/@mui/system/RtlProvider/index.js:19:7)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:53:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+[90mstdout[2m | src/pages/ReadingPage.test.tsx[2m > [22m[2mReadingPage[2m > [22m[2mshows snackbar and stays on reading view when quiz generation fails
+[22m[39mStarting quiz generation for article: Fail Test
+
+[90mstderr[2m | src/pages/ReadingPage.test.tsx[2m > [22m[2mReadingPage[2m > [22m[2mshows snackbar and stays on reading view when quiz generation fails
+[22m[39mWarning: An update to ReadingPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at ReadingPage (/Users/noguess/work/english_study/src/pages/ReadingPage.tsx:61:55)
+    at RenderedRoute (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:539:7)
+    at Routes (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1273:7)
+    at Router (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1207:17)
+    at MemoryRouter (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1101:7)
+Warning: An update to ReadingPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at ReadingPage (/Users/noguess/work/english_study/src/pages/ReadingPage.tsx:61:55)
+    at RenderedRoute (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:539:7)
+    at Routes (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1273:7)
+    at Router (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1207:17)
+    at MemoryRouter (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1101:7)
+Warning: An update to ReadingPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at ReadingPage (/Users/noguess/work/english_study/src/pages/ReadingPage.tsx:61:55)
+    at RenderedRoute (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:539:7)
+    at Routes (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1273:7)
+    at Router (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1207:17)
+    at MemoryRouter (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1101:7)
+Warning: An update to ReadingPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at ReadingPage (/Users/noguess/work/english_study/src/pages/ReadingPage.tsx:61:55)
+    at RenderedRoute (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:539:7)
+    at Routes (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1273:7)
+    at Router (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1207:17)
+    at MemoryRouter (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1101:7)
+
+ [32m✓[39m src/components/Layout.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 344[2mms[22m[39m
+[90mstderr[2m | src/components/reading/ResponsivePopovers.test.tsx[2m > [22m[2mResponsive Popovers[2m > [22m[2mrenders DefinitionPopover as BottomSheet (Drawer) on Mobile
+[22m[39mWarning: An update to DefinitionPopover inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at DefinitionPopover (/Users/noguess/work/english_study/src/components/reading/DefinitionPopover.tsx:20:30)
+    at DefaultPropsProvider (/Users/noguess/work/english_study/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+    at RtlProvider (/Users/noguess/work/english_study/node_modules/@mui/system/RtlProvider/index.js:19:7)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:53:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+[90mstderr[2m | src/components/reading/ResponsivePopovers.test.tsx[2m > [22m[2mResponsive Popovers[2m > [22m[2mrenders DefinitionPopover as BottomSheet (Drawer) on Mobile
+[22m[39mWarning: An update to DefinitionPopover inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at DefinitionPopover (/Users/noguess/work/english_study/src/components/reading/DefinitionPopover.tsx:20:30)
+    at DefaultPropsProvider (/Users/noguess/work/english_study/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+    at RtlProvider (/Users/noguess/work/english_study/node_modules/@mui/system/RtlProvider/index.js:19:7)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:53:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+ [32m✓[39m src/components/reading/ResponsivePopovers.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 306[2mms[22m[39m
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/nodes/node/Node.js:788:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "https://www.youtube.com/embed/dQw4w9WgXcQ?start=10&rel=0&autoplay=1": The operation was aborted.
+    at Fetch.onError (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:511:28)
+    at TLSSocket.socketErrorListener (node:_http_client:495:9)
+    at TLSSocket.emit (node:events:511:28)
+    at emitErrorNT (node:internal/streams/destroy:151:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:116:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at runNextTicks (node:internal/process/task_queues:64:3)
+    at listOnTimeout (node:internal/timers:540:9)
+    at processTimers (node:internal/timers:514:7)
+[90mstderr[2m | src/pages/ReadingPage.test.tsx[2m > [22m[2mReadingPage[2m > [22m[2mshows snackbar and stays on reading view when quiz generation fails
+[22m[39mFailed to generate quiz: Error: API Quota Exceeded
+    at Object.<anonymous> [90m(/Users/noguess/work/english_study/[39msrc/pages/ReadingPage.test.tsx:132:19[90m)[39m
+
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.destroy (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:64:21)
+    at file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:43:22
+    at new Promise (<anonymous>)
+    at Function.destroyFrame (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/browser/utilities/BrowserFrameFactory.js:30:16)
+    at HTMLIFrameElement.#unloadPage (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:363:33)
+    at HTMLIFrameElement.[disconnectedFromDocument] (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/nodes/html-iframe-element/HTMLIFrameElement.js:238:25)
+    at HTMLIFrameElement.[connectedToNode] (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/nodes/node/Node.js:788:58)
+DOMException [NetworkError]: Failed to execute "fetch()" on "Window" with URL "https://www.youtube.com/embed/YT_ID?start=30&rel=0&autoplay=1": The operation was aborted.
+    at Fetch.onError (file:///Users/noguess/work/english_study/node_modules/happy-dom/lib/fetch/Fetch.js:540:21)
+    at ClientRequest.emit (node:events:511:28)
+    at TLSSocket.socketErrorListener (node:_http_client:495:9)
+    at TLSSocket.emit (node:events:511:28)
+    at emitErrorNT (node:internal/streams/destroy:151:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:116:3)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+ [32m✓[39m src/components/WordDetailModal.video.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 457[2mms[22m[39m
+     [33m[2m✓[22m[39m should fetch video from youtube when setting is youtube [33m 337[2mms[22m[39m
+ [32m✓[39m src/components/reading/DefinitionPopover.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 423[2mms[22m[39m
+[90mstderr[2m | src/components/WordDetailModal.test.tsx[2m > [22m[2mWordDetailModal[2m > [22m[2mhandles dictionary fetch failure gracefully
+[22m[39mAuto-fetch dictionary failed: Error: API Error
+    at [90m/Users/noguess/work/english_study/[39msrc/components/WordDetailModal.test.tsx:130:70
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1210:10[90m)[39m
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+    at Traces.$ [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21[90m)[39m
+    at runTest [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1654:12[90m)[39m
+
+[90mstdout[2m | src/pages/ReadingPage.test.tsx[2m > [22m[2mReadingPage[2m > [22m[2mshows error UI when article generation fails
+[22m[39mSetup mocks complete
+🔍 ReadingPage useEffect triggered
+📍 URL id: [90mundefined[39m
+📦 Navigation state: {
+  mode: [32m'generate'[39m,
+  words: [ { id: [33m1[39m, spelling: [32m'test'[39m } ],
+  settings: { difficultyLevel: [32m'L2'[39m, apiKey: [32m'sk-test'[39m }
+}
+✅ Detected generation mode. UUID: [90mundefined[39m
+Starting V2.0 article generation for words: [ [32m'test'[39m ]
+
+[90mstderr[2m | src/pages/ReadingPage.test.tsx[2m > [22m[2mReadingPage[2m > [22m[2mshows error UI when article generation fails
+[22m[39mFailed to generate and save article: Error: LLM Error
+    at [90m/Users/noguess/work/english_study/[39msrc/pages/ReadingPage.test.tsx:174:69
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1210:10[90m)[39m
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+    at Traces.$ [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21[90m)[39m
+    at runTest [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1654:12[90m)[39m
+
+ [32m✓[39m src/pages/ReadingPage.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 443[2mms[22m[39m
+     [33m[2m✓[22m[39m shows snackbar and stays on reading view when quiz generation fails [33m 409[2mms[22m[39m
+[90mstderr[2m | src/components/WordDetailModal.test.tsx[2m > [22m[2mWordDetailModal[2m > [22m[2mshows error state when manual dictionary check fails
+[22m[39mFailed to load dictionary data Error: Network Error
+    at [90m/Users/noguess/work/english_study/[39msrc/components/WordDetailModal.test.tsx:211:70
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:919:26
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1244:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1210:10[90m)[39m
+    at [90mfile:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1654:37
+    at Traces.$ [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4mvitest[24m/dist/chunks/test.DqQZzsWf.js:234:21[90m)[39m
+    at runTest [90m(file:///Users/noguess/work/english_study/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1654:12[90m)[39m
+
+ [32m✓[39m src/components/WordDetailModal.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 651[2mms[22m[39m
+ [31m❯[39m src/pages/LibraryPage.test.tsx [2m([22m[2m2 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 1384[2mms[22m[39m
+[31m     [31m×[31m renders initial list and loads more on button click[39m[33m 364[2mms[22m[39m
+[31m     [31m×[31m shows delete confirmation and deletes article[39m[33m 1017[2mms[22m[39m
+ [31m❯[39m src/components/reading/SentenceAnalysisPopover.test.tsx [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[33m 1234[2mms[22m[39m
+     [32m✓[39m renders analysis markdown correctly after loading[32m 192[2mms[22m[39m
+[31m     [31m×[31m shows error state and retry button on failure[39m[33m 1041[2mms[22m[39m
+ [32m✓[39m src/services/analysisStorageService.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/services/articleService.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/utils/textUtils.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 159[2mms[22m[39m
+[90mstdout[2m | src/services/llmService.test.ts[2m > [22m[2mllmService[2m > [22m[2manalyzeSentence sends correct 5-step analysis prompt
+[22m[39mStarting LLM generation...
+
+[90mstdout[2m | src/services/llmService.test.ts[2m > [22m[2mllmService[2m > [22m[2mgenerateArticleOnly sends prompt with Word Study instructions
+[22m[39mStarting LLM generation...
+
+[90mstdout[2m | src/services/llmService.test.ts[2m > [22m[2mllmService[2m > [22m[2mgenerateQuizForArticle injects IDs if missing
+[22m[39mStarting LLM generation...
+
+ [32m✓[39m src/services/llmService.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/services/videoIndexService.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/utils/__tests__/SRSAlgorithm.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/utils/difficultyLogic.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/components/reading/GenerationLoading.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/utils/__tests__/WordSelector.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+[90mstderr[2m | src/pages/HomePage.test.tsx[2m > [22m[2mHomePage Responsiveness[2m > [22m[2muses correct grid breakpoints for Tablet adaptation
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/components/reading/ArticleInteraction.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+[90mstderr[2m | src/pages/HomePage.test.tsx[2m > [22m[2mHomePage Responsiveness[2m > [22m[2muses correct grid breakpoints for Tablet adaptation
+[22m[39mWarning: An update to HomePage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at HomePage (/Users/noguess/work/english_study/src/pages/HomePage.tsx:36:59)
+    at Router (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1207:17)
+    at BrowserRouter (/Users/noguess/work/english_study/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:695:7)
+    at DefaultPropsProvider (/Users/noguess/work/english_study/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+    at RtlProvider (/Users/noguess/work/english_study/node_modules/@mui/system/RtlProvider/index.js:19:7)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:53:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+Warning: An update to HomePage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at HomePage (/Users/noguess/work/english_study/src/pages/HomePage.tsx:36:59)
+    at Router (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1207:17)
+    at BrowserRouter (/Users/noguess/work/english_study/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:695:7)
+    at DefaultPropsProvider (/Users/noguess/work/english_study/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+    at RtlProvider (/Users/noguess/work/english_study/node_modules/@mui/system/RtlProvider/index.js:19:7)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:53:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+Warning: An update to HomePage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at HomePage (/Users/noguess/work/english_study/src/pages/HomePage.tsx:36:59)
+    at Router (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1207:17)
+    at BrowserRouter (/Users/noguess/work/english_study/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:695:7)
+    at DefaultPropsProvider (/Users/noguess/work/english_study/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+    at RtlProvider (/Users/noguess/work/english_study/node_modules/@mui/system/RtlProvider/index.js:19:7)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:53:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+Warning: An update to HomePage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at HomePage (/Users/noguess/work/english_study/src/pages/HomePage.tsx:36:59)
+    at Router (/Users/noguess/work/english_study/node_modules/react-router/dist/umd/react-router.development.js:1207:17)
+    at BrowserRouter (/Users/noguess/work/english_study/node_modules/react-router-dom/dist/umd/react-router-dom.development.js:695:7)
+    at DefaultPropsProvider (/Users/noguess/work/english_study/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+    at RtlProvider (/Users/noguess/work/english_study/node_modules/@mui/system/RtlProvider/index.js:19:7)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:53:5)
+    at ThemeProvider (/Users/noguess/work/english_study/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+ [32m✓[39m src/pages/HomePage.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 50[2mms[22m[39m
+[90mstdout[2m | src/pages/ReadingPageLayout.test.tsx[2m > [22m[2mReadingPage Layout[2m > [22m[2madapts layout for Mobile/Tablet vs Desktop
+[22m[39m🔍 ReadingPage useEffect triggered
+📍 URL id: 1
+📦 Navigation state: [1mnull[22m
+✅ Detected article ID - will load existing article: 1
+Loading article by ID: [33m1[39m
+Article loaded: {
+  id: [33m1[39m,
+  uuid: [32m'test-uuid'[39m,
+  title: [32m'Test Article'[39m,
+  content: [32m'Content'[39m,
+  targetWords: [ [32m'word'[39m ],
+  difficultyLevel: [32m'L2'[39m,
+  wordCtxMeanings: []
+}
+
+[90mstderr[2m | src/pages/ReadingPageLayout.test.tsx[2m > [22m[2mReadingPage Layout[2m > [22m[2madapts layout for Mobile/Tablet vs Desktop
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstdout[2m | src/pages/ReadingPageLayout.test.tsx[2m > [22m[2mReadingPage Layout[2m > [22m[2madapts layout for Mobile/Tablet vs Desktop
+[22m[39mQuiz history loaded: [33m0[39m records
+
+ [32m✓[39m src/pages/ReadingPageLayout.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 117[2mms[22m[39m
+ [32m✓[39m src/features/history/components/QuestionReviewCard.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 154[2mms[22m[39m
+[90mstderr[2m | src/components/dashboard/RecentActivityList.test.tsx[2m > [22m[2mRecentActivityList[2m > [22m[2mrenders activities correctly
+[22m[39mWarning: validateDOMNesting(...): <div> cannot appear as a descendant of <p>.
+    at div
+    at /Users/noguess/work/english_study/node_modules/@emotion/react/dist/emotion-element-e8f4cc37.development.cjs.js:60:23
+    at Chip (/Users/noguess/work/english_study/node_modules/@mui/material/node/Chip/Chip.js:290:59)
+    at div
+    at /Users/noguess/work/english_study/node_modules/@emotion/react/dist/emotion-element-e8f4cc37.development.cjs.js:60:23
+    at Box (/Users/noguess/work/english_study/node_modules/@mui/system/createBox.js:31:41)
+    at p
+    at /Users/noguess/work/english_study/node_modules/@emotion/react/dist/emotion-element-e8f4cc37.development.cjs.js:60:23
+    at Typography (/Users/noguess/work/english_study/node_modules/@mui/material/node/Typography/Typography.js:92:64)
+    at div
+    at /Users/noguess/work/english_study/node_modules/@emotion/react/dist/emotion-element-e8f4cc37.development.cjs.js:60:23
+    at ListItemText (/Users/noguess/work/english_study/node_modules/@mui/material/node/ListItemText/ListItemText.js:66:59)
+    at li
+    at /Users/noguess/work/english_study/node_modules/@emotion/react/dist/emotion-element-e8f4cc37.development.cjs.js:60:23
+    at ListItem (/Users/noguess/work/english_study/node_modules/@mui/material/node/ListItem/ListItem.js:147:59)
+    at ul
+    at /Users/noguess/work/english_study/node_modules/@emotion/react/dist/emotion-element-e8f4cc37.development.cjs.js:60:23
+    at List (/Users/noguess/work/english_study/node_modules/@mui/material/node/List/List.js:58:59)
+    at div
+    at /Users/noguess/work/english_study/node_modules/@emotion/react/dist/emotion-element-e8f4cc37.development.cjs.js:60:23
+    at Paper (/Users/noguess/work/english_study/node_modules/@mui/material/node/Paper/Paper.js:70:59)
+    at /Users/noguess/work/english_study/node_modules/@emotion/react/dist/emotion-element-e8f4cc37.development.cjs.js:60:23
+    at Card (/Users/noguess/work/english_study/node_modules/@mui/material/node/Card/Card.js:43:59)
+    at /Users/noguess/work/english_study/node_modules/@emotion/react/dist/emotion-element-e8f4cc37.development.cjs.js:60:23
+    at RecentActivityList (/Users/noguess/work/english_study/src/components/dashboard/RecentActivityList.tsx:14:31)
+
+ [32m✓[39m src/components/dashboard/RecentActivityList.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 99[2mms[22m[39m
+ [32m✓[39m src/components/reading/VocabularyQuestionRenderer.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 134[2mms[22m[39m
+ [32m✓[39m src/components/dashboard/DashboardHero.test.tsx [2m([22m[2m1 test[22m[2m)[22m[32m 85[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/pages/LibraryPage.test.tsx[2m > [22mLibraryPage[2m > [22mrenders initial list and loads more on button click
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: 加载更多.... This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"MuiContainer-root MuiContainer-maxWidthLg css-1sqq6so-MuiContainer-root"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"MuiBox-root css-4ddkzq"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiBox-root css-0"[39m
+        [36m>[39m
+          [36m<h4[39m
+            [33mclass[39m=[32m"MuiTypography-root MuiTypography-h4 css-1bskoqe-MuiTypography-root"[39m
+          [36m>[39m
+            [0m我的阅读列表[0m
+          [36m</h4>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-r40f8v-MuiTypography-root"[39m
+          [36m>[39m
+            [0mlibrary:subtitle[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"MuiStack-root css-1sazv7p-MuiStack-root"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-1hzf619-MuiPaper-root"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-6su6fj"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiBox-root css-r1ftwk"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-5is9kj-MuiSvgIcon-root"[39m
+                [33mdata-testid[39m=[32m"MenuBookIcon"[39m
+                [33mfocusable[39m=[32m"false"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1m0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5z"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M17.5 10.5c.88 0 1.73.09 2.5.26V9.24c-.79-.15-1.64-.24-2.5-.24-1.7 0-3.24.29-4.5.83v1.66c1.13-.64 2.7-.99 4.5-.99M13 12.49v1.66c1.13-.64 2.7-.99 4.5-.99.88 0 1.73.09 2.5.26V11.9c-.79-.15-1.64-.24-2.5-.24-1.7 0-3.24.3-4.5.83m4.5 1.84c-1.7 0-3.24.29-4.5.83v1.66c1.13-.64 2.7-.99 4.5-.99.88 0 1.73.09 2.5.26v-1.52c-.79-.16-1.64-.24-2.5-.24"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-120jdh0"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiBox-root css-1k4gk5u"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-nhsffw"[39m
+              [36m>[39m
+                [36m<h3[39m
+                  [33mclass[39m=[32m"MuiTypography-root MuiTypography-h6 css-1ugrisl-MuiTypography-root"[39m
+                [36m>[39m
+                  [0mArticle 1[0m
+                [36m</h3>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiChip-root MuiChip-filled MuiChip-sizeSmall MuiChip-colorDefault MuiChip-filledDefault css-1e9evqq-MuiChip-root"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"MuiChip-label MuiChip-labelSmall css-wjsjww-MuiChip-label"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiStack-root css-ydneq8-MuiStack-root"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-171onha"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ej1pre-MuiSvgIcon-root"[39m
+                  [33mdata-testid[39m=[32m"CalendarTodayIcon"[39m
+                  [33mfocusable[39m=[32m"false"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m0 18H4V8h16z"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-1pfogwc-MuiTypography-root"[39m
+                [36m>[39m
+                  [0m1970年1月1日[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-1qv9g2j"[39m
+              [36m/>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-2vbkvp"[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiStack-root css-1sos3zc-MuiStack-root"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-zkthky"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ikvye5-MuiSvgIcon-root"[39m
+                  [33mdata-testid[39m=[32m"DescriptionIcon"[39m
+                  [33mfocusable[39m=[32m"false"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8zm2 16H8v-2h8zm0-4H8v-2h8zm-3-5V3.5L18.5 9z"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"MuiTypography-root MuiTypography-caption css-1dselk6-MuiTypography-root"[39m
+                [36m>[39m
+                  [0m0[0m
+                  [0m [0m
+                  [0mlibrary:card.test_count[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-pjn43f"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mu...
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m getByText node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/pages/LibraryPage.test.tsx:[2m108:36[22m[39m
+    [90m106| [39m
+    [90m107| [39m        [90m// Find and click "Load More"[39m
+    [90m108| [39m        [35mconst[39m loadMoreBtn [33m=[39m screen[33m.[39m[34mgetByText[39m([32m'加载更多...'[39m)
+    [90m   | [39m                                   [31m^[39m
+    [90m109| [39m        fireEvent[33m.[39m[34mclick[39m(loadMoreBtn)
+    [90m110| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/pages/LibraryPage.test.tsx[2m > [22mLibraryPage[2m > [22mshows delete confirmation and deletes article
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: Article 1. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"MuiContainer-root MuiContainer-maxWidthLg css-1sqq6so-MuiContainer-root"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"MuiBox-root css-4ddkzq"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiBox-root css-0"[39m
+        [36m>[39m
+          [36m<h4[39m
+            [33mclass[39m=[32m"MuiTypography-root MuiTypography-h4 css-1bskoqe-MuiTypography-root"[39m
+          [36m>[39m
+            [0m我的阅读列表[0m
+          [36m</h4>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-r40f8v-MuiTypography-root"[39m
+          [36m>[39m
+            [0mlibrary:subtitle[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"MuiStack-root css-1sazv7p-MuiStack-root"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-1hzf619-MuiPaper-root"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-6su6fj"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiBox-root css-r1ftwk"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-5is9kj-MuiSvgIcon-root"[39m
+                [33mdata-testid[39m=[32m"MenuBookIcon"[39m
+                [33mfocusable[39m=[32m"false"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1m0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5z"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M17.5 10.5c.88 0 1.73.09 2.5.26V9.24c-.79-.15-1.64-.24-2.5-.24-1.7 0-3.24.29-4.5.83v1.66c1.13-.64 2.7-.99 4.5-.99M13 12.49v1.66c1.13-.64 2.7-.99 4.5-.99.88 0 1.73.09 2.5.26V11.9c-.79-.15-1.64-.24-2.5-.24-1.7 0-3.24.3-4.5.83m4.5 1.84c-1.7 0-3.24.29-4.5.83v1.66c1.13-.64 2.7-.99 4.5-.99.88 0 1.73.09 2.5.26v-1.52c-.79-.16-1.64-.24-2.5-.24"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-120jdh0"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiBox-root css-1k4gk5u"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-nhsffw"[39m
+              [36m>[39m
+                [36m<h3[39m
+                  [33mclass[39m=[32m"MuiTypography-root MuiTypography-h6 css-1ugrisl-MuiTypography-root"[39m
+                [36m>[39m
+                  [0mArticle 3[0m
+                [36m</h3>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiChip-root MuiChip-filled MuiChip-sizeSmall MuiChip-colorDefault MuiChip-filledDefault css-1e9evqq-MuiChip-root"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"MuiChip-label MuiChip-labelSmall css-wjsjww-MuiChip-label"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiStack-root css-ydneq8-MuiStack-root"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-171onha"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ej1pre-MuiSvgIcon-root"[39m
+                  [33mdata-testid[39m=[32m"CalendarTodayIcon"[39m
+                  [33mfocusable[39m=[32m"false"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m0 18H4V8h16z"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-1pfogwc-MuiTypography-root"[39m
+                [36m>[39m
+                  [0m1970年1月1日[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-1qv9g2j"[39m
+              [36m/>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-2vbkvp"[39m
+              [36m/>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiStack-root css-1sos3zc-MuiStack-root"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-zkthky"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ikvye5-MuiSvgIcon-root"[39m
+                  [33mdata-testid[39m=[32m"DescriptionIcon"[39m
+                  [33mfocusable[39m=[32m"false"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8zm2 16H8v-2h8zm0-4H8v-2h8zm-3-5V3.5L18.5 9z"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"MuiTypography-root MuiTypography-caption css-1dselk6-MuiTypography-root"[39m
+                [36m>[39m
+                  [0m0[0m
+                  [0m [0m
+                  [0mlibrary:card.test_count[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-pjn43f"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-5py1r3-MuiButtonBase-root-MuiButton-root"[39m
+              [33mtabindex[39m=[32m"0"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mlibrary:card.read[0m
+              [36m<span[39m
+                [33mclass[39m=[32m"MuiButton-icon MuiButton-endIcon MuiButton-iconSizeMedium css-9tj150-MuiButton-endIcon"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"[39m
+                  [33mdata-testid[39m=[32m"ChevronRightIcon"[39m
+                  [33mfocusable[39m=[32m"false"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"[39m
+              [36m/>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"delete"[39m
+              [33mclass[39m=[32m"MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-e89h7i-MuiButtonBase-root-MuiIconButton-root"[39m
+              [33mtabindex[39m=[32m"0"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"[39m
+                [33mdata-testid[39m=[32m"DeleteOutlineIcon"[39m
+                [33mfocusable[39m=[32m"false"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM8 9h8v10H8zm7.5-5-1-1h-5l-1 1H5v2h14V4z"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"[39m
+              [36m/>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"MuiContainer-root MuiContainer-maxWidthLg css-1sqq6so-MuiContainer-root"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiBox-root css-4ddkzq"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-0"[39m
+          [36m>[39m
+            [36m<h4[39m
+              [33mclass[39m=[32m"MuiTypography-root MuiTypography-h4 css-1bskoqe-MuiTypography-root"[39m
+            [36m>[39m
+              [0m我的阅读列表[0m
+            [36m</h4>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-r40f8v-MuiTypography-root"[39m
+            [36m>[39m
+              [0mlibrary:subtitle[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiStack-root css-1sazv7p-MuiStack-root"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-1hzf619-MuiPaper-root"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiBox-root css-6su6fj"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-r1ftwk"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-5is9kj-MuiSvgIcon-root"[39m
+                  [33mdata-testid[39m=[32m"MenuBookIcon"[39m
+                  [33mfocusable[39m=[32m"false"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1m0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5z"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M17.5 10.5c.88 0 1.73.09 2.5.26V9.24c-.79-.15-1.64-.24-2.5-.24-1.7 0-3.24.29-4.5.83v1.66c1.13-.64 2.7-.99 4.5-.99M13 12.49v1.66c1.13-.64 2.7-.99 4.5-.99.88 0 1.73.09 2.5.26V11.9c-.79-.15-1.64-.24-2.5-.24-1.7 0-3.24.3-4.5.83m4.5 1.84c-1.7 0-3.24.29-4.5.83v1.66c1.13-.64 2.7-.99 4.5-.99.88 0 1.73.09 2.5.26v-1.52c-.79-.16-1.64-.24-2.5-.24"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiBox-root css-120jdh0"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiBox-root css-1k4gk5u"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiBox-root css-nhsffw"[39m
+                [36m>[39m
+                  [36m<h3[39m
+                    [33mclass[39m=[32m"MuiTypography-root MuiTypography-h6 css-1ugrisl-MuiTypography-root"[39m
+                  [36m>[39m
+                    [0mArticle 3[0m
+                  [36m</h3>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"MuiChip-root MuiChip-filled MuiChip-sizeSmall MuiChip-colorDefault MuiChip-filledDefault css-1e9evqq-MuiChip-root"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"MuiChip-label MuiChip-labelSmall css-wjsjww-MuiChip-label"[39m
+                    [36m/>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiStack-root css-ydneq8-MuiStack-root"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiBox-root css-171onha"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ej1pre-MuiSvgIcon-root"[39m
+                    [33mdata-testid[39m=[32m"CalendarTodayIcon"[39m
+                    [33mfocusable[39m=[32m"false"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m0 18H4V8h16z"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-1pfogwc-MuiTypography-root"[39m
+                  [36m>[39m
+                    [0m1970年1月1日[0m
+                  [36m</p>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiBox-root css-1qv9g2j"[39m
+                [36m/>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiBox-root css-2vbkvp"[39m
+                [36m/>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"MuiStack-root css-1sos3zc-MuiStack-root"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"MuiBox-root css-zkthky"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ikvye5-MuiSvgIcon-root"[39m
+                    [33mdata-testid[39m=[32m"DescriptionIcon"[39m
+                    [33mfocusable[39m=[32m"false"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8zm2 16H8v-2h8zm0-4H8v-2h8zm-3-5V3.5L18.5 9z"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"MuiTypography-root MuiTypography-caption css-1dselk6-MuiTypography-root"[39m
+                  [36m>[39m
+                    [0m0[0m
+                    [0m [0m
+                    [0mlibrary:card.test_count[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[3...
+[90m [2m❯[22m Proxy.waitFor node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m src/pages/LibraryPage.test.tsx:[2m132:15[22m[39m
+    [90m130| [39m
+    [90m131| [39m        [90m// Wait for list[39m
+    [90m132| [39m        [35mawait[39m [34mwaitFor[39m(() [33m=>[39m {
+    [90m   | [39m              [31m^[39m
+    [90m133| [39m            [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'Article 1'[39m))[33m.[39m[34mtoBeInTheDocument[39m()
+    [90m134| [39m        })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/services/settingsService.test.ts[2m > [22mSettingsService[2m > [22mshould update videoSource setting
+[31m[1mAssertionError[22m: expected 'bilibili' to be 'youtube' // Object.is equality[39m
+
+Expected: [32m"youtube"[39m
+Received: [31m"bilibili"[39m
+
+[36m [2m❯[22m src/services/settingsService.test.ts:[2m32:38[22m[39m
+    [90m 30| [39m        await settingsService.saveSettings({ videoSource: 'youtube', a…
+    [90m 31| [39m        [35mconst[39m settings [33m=[39m [35mawait[39m settingsService[33m.[39m[34mgetSettings[39m()
+    [90m 32| [39m        [34mexpect[39m(settings[33m.[39mvideoSource)[33m.[39m[34mtoBe[39m([32m'youtube'[39m)
+    [90m   | [39m                                     [31m^[39m
+    [90m 33| [39m    })
+    [90m 34| [39m})
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/reading/ArticleContent.test.tsx[2m > [22mArticleContent[2m > [22mignores empty or multi-word selection
+[31m[1mTypeError[22m: selection.getRangeAt is not a function[39m
+[36m [2m❯[22m handleSelection src/components/reading/ArticleContent.tsx:[2m56:37[22m[39m
+    [90m 54| [39m        // Allow any selection longer than 1 char (single words or sen…
+    [90m 55| [39m        [35mif[39m (text [33m&&[39m text[33m.[39mlength [33m>[39m [34m1[39m) {
+    [90m 56| [39m            [35mconst[39m range [33m=[39m selection[33m.[39m[34mgetRangeAt[39m([34m0[39m)
+    [90m   | [39m                                    [31m^[39m
+    [90m 57| [39m            [35mconst[39m rect [33m=[39m range[33m.[39m[34mgetBoundingClientRect[39m()
+    [90m 58| [39m
+[90m [2m❯[22m HTMLUnknownElement.callCallback node_modules/react-dom/cjs/react-dom.development.js:[2m4164:14[22m[39m
+[90m [2m❯[22m HTMLUnknownElement.#callDispatchEventListeners node_modules/happy-dom/lib/event/EventTarget.js:[2m237:34[22m[39m
+[90m [2m❯[22m HTMLUnknownElement.dispatchEvent node_modules/happy-dom/lib/event/EventTarget.js:[2m100:41[22m[39m
+[90m [2m❯[22m HTMLUnknownElement.#goThroughDispatchEventPhases node_modules/happy-dom/lib/event/EventTarget.js:[2m160:38[22m[39m
+[90m [2m❯[22m HTMLUnknownElement.dispatchEvent node_modules/happy-dom/lib/event/EventTarget.js:[2m96:47[22m[39m
+[90m [2m❯[22m Object.invokeGuardedCallbackDev node_modules/react-dom/cjs/react-dom.development.js:[2m4213:16[22m[39m
+[90m [2m❯[22m invokeGuardedCallback node_modules/react-dom/cjs/react-dom.development.js:[2m4277:31[22m[39m
+[90m [2m❯[22m invokeGuardedCallbackAndCatchFirstError node_modules/react-dom/cjs/react-dom.development.js:[2m4291:25[22m[39m
+[90m [2m❯[22m executeDispatch node_modules/react-dom/cjs/react-dom.development.js:[2m9041:3[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/reading/SentenceAnalysisPopover.test.tsx[2m > [22mSentenceAnalysisPopover[2m > [22mshows error state and retry button on failure
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: msg.analysisFailed. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m"padding-right: 1024px; overflow: hidden;"[39m
+[36m>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"MuiPopover-root MuiModal-root css-1i0e6f3-MuiModal-root-MuiPopover-root"[39m
+    [33mrole[39m=[32m"presentation"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"MuiBackdrop-root MuiBackdrop-invisible MuiModal-backdrop css-g3hgs1-MuiBackdrop-root-MuiModal-backdrop"[39m
+      [33mstyle[39m=[32m"opacity: 1; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33mdata-testid[39m=[32m"sentinelStart"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiPopover-paper css-1v4fy2z-MuiPaper-root-MuiPopover-paper"[39m
+      [33mstyle[39m=[32m"opacity: 1; transform: none; transition: opacity 0ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,transform 0ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; top: 100px; left: 100px; transform-origin: 0px 0px;"[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"MuiBox-root css-1sm2s1z"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiBox-root css-14zrsmj"[39m
+        [36m>[39m
+          [36m<h6[39m
+            [33mclass[39m=[32m"MuiTypography-root MuiTypography-subtitle2 css-1gtqqpc-MuiTypography-root"[39m
+          [36m>[39m
+            [0mSentence Analysis[0m
+          [36m</h6>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1pe4mpk-MuiButtonBase-root-MuiIconButton-root"[39m
+            [33mtabindex[39m=[32m"0"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"[39m
+              [33mdata-testid[39m=[32m"CloseIcon"[39m
+              [33mfocusable[39m=[32m"false"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"[39m
+            [36m/>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiBox-root css-1i5bq1w"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-1tr030m-MuiTypography-root"[39m
+          [36m>[39m
+            [0m"[0m
+            [0mFail sentence[0m
+            [0m"[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-1aicb05"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-1u9td26-MuiTypography-root"[39m
+            [36m>[39m
+              [0mAnalysis failed. Please try again.[0m
+            [36m</p>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-1k23hlb-MuiButtonBase-root-MuiButton-root"[39m
+              [33mtabindex[39m=[32m"0"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mRetry[0m
+              [36m<span[39m
+                [33mclass[39m=[32m"MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"[39m
+              [36m/>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mdata-testid[39m=[32m"sentinelEnd"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body[39m
+    [33mstyle[39m=[32m"padding-right: 1024px; overflow: hidden;"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"MuiPopover-root MuiModal-root css-1i0e6f3-MuiModal-root-MuiPopover-root"[39m
+      [33mrole[39m=[32m"presentation"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33maria-hidden[39m=[32m"true"[39m
+        [33mclass[39m=[32m"MuiBackdrop-root MuiBackdrop-invisible MuiModal-backdrop css-g3hgs1-MuiBackdrop-root-MuiModal-backdrop"[39m
+        [33mstyle[39m=[32m"opacity: 1; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33mdata-testid[39m=[32m"sentinelStart"[39m
+        [33mtabindex[39m=[32m"0"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiPopover-paper css-1v4fy2z-MuiPaper-root-MuiPopover-paper"[39m
+        [33mstyle[39m=[32m"opacity: 1; transform: none; transition: opacity 0ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,transform 0ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; top: 100px; left: 100px; transform-origin: 0px 0px;"[39m
+        [33mtabindex[39m=[32m"-1"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiBox-root css-1sm2s1z"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-14zrsmj"[39m
+          [36m>[39m
+            [36m<h6[39m
+              [33mclass[39m=[32m"MuiTypography-root MuiTypography-subtitle2 css-1gtqqpc-MuiTypography-root"[39m
+            [36m>[39m
+              [0mSentence Analysis[0m
+            [36m</h6>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1pe4mpk-MuiButtonBase-root-MuiIconButton-root"[39m
+              [33mtabindex[39m=[32m"0"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"[39m
+                [33mdata-testid[39m=[32m"CloseIcon"[39m
+                [33mfocusable[39m=[32m"false"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"[39m
+              [36m/>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-1i5bq1w"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-1tr030m-MuiTypography-root"[39m
+            [36m>[39m
+              [0m"[0m
+              [0mFail sentence[0m
+              [0m"[0m
+            [36m</p>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiBox-root css-1aicb05"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"MuiTypography-root MuiTypography-body2 css-1u9td26-MuiTypography-root"[39m
+              [36m>[39m
+                [0mAnalysis failed. Please try again.[0m
+              [36m</p>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary css-1k23hlb-MuiButtonBase-root-MuiButton-root"[39m
+                [33mtabindex[39m=[32m"0"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0mRetry[0m
+                [36m<span[39m
+                  [33mclass[39m=[32m"MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"[39m
+                [36m/>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mdata-testid[39m=[32m"sentinelEnd"[39m
+        [33mtabindex[39m=[32m"0"[39m
+      [36m/>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m...
+[90m [2m❯[22m Proxy.waitFor node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m src/components/reading/SentenceAnalysisPopover.test.tsx:[2m84:15[22m[39m
+    [90m 82| [39m        fireEvent[33m.[39m[34mclick[39m(screen[33m.[39m[34mgetByText[39m([32m'Analyze'[39m))
+    [90m 83| [39m
+    [90m 84| [39m        [35mawait[39m [34mwaitFor[39m(() [33m=>[39m {
+    [90m   | [39m              [31m^[39m
+    [90m 85| [39m            expect(screen.getByText('msg.analysisFailed')).toBeInTheDo…
+    [90m 86| [39m        })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m27 passed[39m[22m[90m (31)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m98 passed[39m[22m[90m (103)[39m
+[2m   Start at [22m 14:57:57
+[2m   Duration [22m 9.43s[2m (transform 6.06s, setup 2.75s, import 78.54s, tests 7.71s, environment 9.18s)[22m
+

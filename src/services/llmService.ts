@@ -161,7 +161,7 @@ export const llmService = {
          }
       };
 
-      // @ts-ignore
+
       const config = questionConfig[difficultyLevel] || questionConfig['L2'];
 
       const difficultyContextMap = {

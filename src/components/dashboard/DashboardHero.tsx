@@ -54,6 +54,7 @@ interface DashboardHeroProps {
     totalMinutes: number
     lastLearningDate: string
     recommendedWord?: Word | null
+    onOpenDetail: (word: string) => void
 }
 
 export default function DashboardHero({
@@ -63,6 +64,7 @@ export default function DashboardHero({
     totalMinutes,
     lastLearningDate,
     recommendedWord,
+    onOpenDetail,
 }: DashboardHeroProps) {
     const { t } = useTranslation(['home'])
     const playPronunciation = () => {
@@ -224,6 +226,20 @@ export default function DashboardHero({
 
                                 <Typography variant="h6">
                                     v.{recommendedWord.meaning}
+                                </Typography>
+
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        mt: 1,
+                                        opacity: 0.8,
+                                        textDecoration: 'underline',
+                                        cursor: 'pointer',
+                                        '&:hover': { opacity: 1 }
+                                    }}
+                                    onClick={() => onOpenDetail(recommendedWord.spelling)}
+                                >
+                                    {t('home:hero.deepLearning')}
                                 </Typography>
                             </Box>
                         </Paper>

@@ -228,164 +228,168 @@ export default function VocabularyQuestionRenderer({
             case 'audio':
             case 'audioSelection': // Support L1 Audio Selection
             case 'audioDictation': // Support LLM variant
-                // 音频题型 - 音频播放器 + 选择或输入
-                const hasOptions = question.options && question.options.length > 0
-                return (
-                    <Box>
-                        {/* 音频播放按钮 */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                            <IconButton
-                                onClick={handlePlayAudio}
-                                color="primary"
-                                sx={{
-                                    bgcolor: isPlaying ? 'primary.light' : 'action.hover',
-                                    '&:hover': {
-                                        bgcolor: 'primary.light',
-                                    },
-                                }}
-                            >
-                                <VolumeUpIcon />
-                            </IconButton>
-                            <Typography variant="body2" color="text.secondary">
-                                {isPlaying ? 'Playing...' : 'Click to play audio'}
-                            </Typography>
-                            {question.phonetic && (
-                                <Chip
-                                    label={question.phonetic}
-                                    size="small"
-                                    variant="outlined"
-                                />
-                            )}
-                        </Box>
-
-                        {/* 答题区域 */}
-                        {hasOptions ? (
-                            // 听音选择
-                            <FormControl fullWidth disabled={readOnly}>
-                                <RadioGroup
-                                    value={(answer as string) || ''}
-                                    onChange={(e) => onChange(e.target.value)}
-                                >
-                                    {question.options!.map((opt) => {
-                                        const isSelected = (answer as string) === opt
-                                        const isTheCorrectAnswer = (correctAnswer as string) === opt
-
-                                        let color = 'text.primary'
-                                        if (readOnly) {
-                                            if (isTheCorrectAnswer) color = 'success.main'
-                                            else if (isSelected && !isCorrect) color = 'error.main'
-                                        }
-
-                                        return (
-                                            <FormControlLabel
-                                                key={opt}
-                                                value={opt}
-                                                control={<Radio color={readOnly ? (isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary') : 'primary'} />}
-                                                label={
-                                                    <Typography color={color} fontWeight={readOnly && isTheCorrectAnswer ? 'bold' : 'normal'}>
-                                                        {opt} {readOnly && isTheCorrectAnswer && '(Correct)'} {readOnly && isSelected && !isCorrect && '(Your Answer)'}
-                                                    </Typography>
-                                                }
-                                            />
-                                        )
-                                    })}
-                                </RadioGroup>
-                            </FormControl>
-                        ) : (
-                            // 听音输入
-                            <Box>
-                                <TextField
-                                    fullWidth
-                                    variant="outlined"
-                                    placeholder="Type what you hear..."
-                                    value={(answer as string) || ''}
-                                    onChange={(e) => onChange(e.target.value)}
-                                    disabled={readOnly}
-                                    error={readOnly && !isCorrect}
-                                />
-                                {readOnly && !isCorrect && (
-                                    <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>
-                                        Correct Answer: {correctAnswer as string}
-                                    </Typography>
-                                )}
-                            </Box>
-                        )}
-                    </Box>
-                )
-
-            case 'matching':
-                // 匹配题型 - 使用下拉选择
-                const pairs = question.pairs || []
-                const currentAnswers = (answer as string[]) || Array(pairs.length).fill('')
-
-                return (
-                    <Box sx={{ mt: 2 }}>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Match each word with its definition:
-                        </Typography>
-                        {pairs.map((pair, idx) => {
-                            const userAnswer = currentAnswers[idx]
-                            const correctPairAnswer = Array.isArray(correctAnswer) ? correctAnswer[idx] : ''
-                            const isPairCorrect = userAnswer === correctPairAnswer
-
-                            return (
-                                <Paper
-                                    key={idx}
-                                    elevation={0}
+                {
+                    // 音频题型 - 音频播放器 + 选择或输入
+                    const hasOptions = question.options && question.options.length > 0
+                    return (
+                        <Box>
+                            {/* 音频播放按钮 */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                <IconButton
+                                    onClick={handlePlayAudio}
+                                    color="primary"
                                     sx={{
-                                        p: 2,
-                                        mb: 1.5,
-                                        bgcolor: readOnly
-                                            ? (isPairCorrect ? 'success.light' : 'error.light')
-                                            : 'action.hover',
-                                        borderRadius: 2,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 2,
+                                        bgcolor: isPlaying ? 'primary.light' : 'action.hover',
+                                        '&:hover': {
+                                            bgcolor: 'primary.light',
+                                        },
                                     }}
                                 >
-                                    <Typography
-                                        variant="body1"
-                                        fontWeight="bold"
-                                        sx={{ minWidth: 120 }}
+                                    <VolumeUpIcon />
+                                </IconButton>
+                                <Typography variant="body2" color="text.secondary">
+                                    {isPlaying ? 'Playing...' : 'Click to play audio'}
+                                </Typography>
+                                {question.phonetic && (
+                                    <Chip
+                                        label={question.phonetic}
+                                        size="small"
+                                        variant="outlined"
+                                    />
+                                )}
+                            </Box>
+
+                            {/* 答题区域 */}
+                            {hasOptions ? (
+                                // 听音选择
+                                <FormControl fullWidth disabled={readOnly}>
+                                    <RadioGroup
+                                        value={(answer as string) || ''}
+                                        onChange={(e) => onChange(e.target.value)}
                                     >
-                                        {pair.word}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ mx: 2 }}>
-                                        →
-                                    </Typography>
-                                    <Box sx={{ flex: 1 }}>
-                                        <Select
-                                            fullWidth
-                                            value={userAnswer || ''}
-                                            onChange={(e) => {
-                                                const newAnswers = [...currentAnswers]
-                                                newAnswers[idx] = e.target.value
-                                                onChange(newAnswers)
-                                            }}
-                                            displayEmpty
-                                            disabled={readOnly}
+                                        {question.options!.map((opt) => {
+                                            const isSelected = (answer as string) === opt
+                                            const isTheCorrectAnswer = (correctAnswer as string) === opt
+
+                                            let color = 'text.primary'
+                                            if (readOnly) {
+                                                if (isTheCorrectAnswer) color = 'success.main'
+                                                else if (isSelected && !isCorrect) color = 'error.main'
+                                            }
+
+                                            return (
+                                                <FormControlLabel
+                                                    key={opt}
+                                                    value={opt}
+                                                    control={<Radio color={readOnly ? (isTheCorrectAnswer ? 'success' : isSelected && !isCorrect ? 'error' : 'primary') : 'primary'} />}
+                                                    label={
+                                                        <Typography color={color} fontWeight={readOnly && isTheCorrectAnswer ? 'bold' : 'normal'}>
+                                                            {opt} {readOnly && isTheCorrectAnswer && '(Correct)'} {readOnly && isSelected && !isCorrect && '(Your Answer)'}
+                                                        </Typography>
+                                                    }
+                                                />
+                                            )
+                                        })}
+                                    </RadioGroup>
+                                </FormControl>
+                            ) : (
+                                // 听音输入
+                                <Box>
+                                    <TextField
+                                        fullWidth
+                                        variant="outlined"
+                                        placeholder="Type what you hear..."
+                                        value={(answer as string) || ''}
+                                        onChange={(e) => onChange(e.target.value)}
+                                        disabled={readOnly}
+                                        error={readOnly && !isCorrect}
+                                    />
+                                    {readOnly && !isCorrect && (
+                                        <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>
+                                            Correct Answer: {correctAnswer as string}
+                                        </Typography>
+                                    )}
+                                </Box>
+                            )}
+                        </Box>
+                    )
+                }
+
+            case 'matching':
+                {
+                    // 匹配题型 - 使用下拉选择
+                    const pairs = question.pairs || []
+                    const currentAnswers = (answer as string[]) || Array(pairs.length).fill('')
+
+                    return (
+                        <Box sx={{ mt: 2 }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                Match each word with its definition:
+                            </Typography>
+                            {pairs.map((pair, idx) => {
+                                const userAnswer = currentAnswers[idx]
+                                const correctPairAnswer = Array.isArray(correctAnswer) ? correctAnswer[idx] : ''
+                                const isPairCorrect = userAnswer === correctPairAnswer
+
+                                return (
+                                    <Paper
+                                        key={idx}
+                                        elevation={0}
+                                        sx={{
+                                            p: 2,
+                                            mb: 1.5,
+                                            bgcolor: readOnly
+                                                ? (isPairCorrect ? 'success.light' : 'error.light')
+                                                : 'action.hover',
+                                            borderRadius: 2,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 2,
+                                        }}
+                                    >
+                                        <Typography
+                                            variant="body1"
+                                            fontWeight="bold"
+                                            sx={{ minWidth: 120 }}
                                         >
-                                            <MenuItem value="" disabled>
-                                                <em>Select definition...</em>
-                                            </MenuItem>
-                                            {pairs.map((p, defIdx) => (
-                                                <MenuItem key={defIdx} value={`${pair.word}-def${defIdx}`}>
-                                                    {p.definition}
+                                            {pair.word}
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ mx: 2 }}>
+                                            →
+                                        </Typography>
+                                        <Box sx={{ flex: 1 }}>
+                                            <Select
+                                                fullWidth
+                                                value={userAnswer || ''}
+                                                onChange={(e) => {
+                                                    const newAnswers = [...currentAnswers]
+                                                    newAnswers[idx] = e.target.value
+                                                    onChange(newAnswers)
+                                                }}
+                                                displayEmpty
+                                                disabled={readOnly}
+                                            >
+                                                <MenuItem value="" disabled>
+                                                    <em>Select definition...</em>
                                                 </MenuItem>
-                                            ))}
-                                        </Select>
-                                        {readOnly && !isPairCorrect && (
-                                            <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
-                                                Correct: {pairs.find(p => `${pair.word}-def${pairs.indexOf(p)}` === correctPairAnswer)?.definition || 'Unknown'}
-                                            </Typography>
-                                        )}
-                                    </Box>
-                                </Paper>
-                            )
-                        })}
-                    </Box>
-                )
+                                                {pairs.map((p, defIdx) => (
+                                                    <MenuItem key={defIdx} value={`${pair.word}-def${defIdx}`}>
+                                                        {p.definition}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                            {readOnly && !isPairCorrect && (
+                                                <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
+                                                    Correct: {pairs.find(p => `${pair.word}-def${pairs.indexOf(p)}` === correctPairAnswer)?.definition || 'Unknown'}
+                                                </Typography>
+                                            )}
+                                        </Box>
+                                    </Paper>
+                                )
+                            })}
+                        </Box>
+                    )
+                }
 
             default:
                 return (

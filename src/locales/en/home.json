@@ -10,7 +10,9 @@
         "min": "min",
         "dailyWord": "Daily Word",
         "lastStudy": "Last Study",
-        "keepGoing": "Keep Going!"
+        "keepGoing": "Keep Going!",
+        "deepLearning": "Deep Study",
+        "dailyLabel": "DAILY"
     },
     "stats": {
         "title": "Memory Status",
@@ -19,7 +21,8 @@
         "reviewNeeded": "Review Needed",
         "newWords": "New Words",
         "learning": "Learning",
-        "total": "Total"
+        "total": "Total",
+        "wordsMastered": "Words Mastered"
     },
     "recentActivity": {
         "title": "Recent Activity",
@@ -38,5 +41,9 @@
         "noWords": "No words selected. Adjust slider or add words manually.",
         "searchPlaceholder": "Search and add specific word...",
         "generate": "Generate Now"
+    },
+    "actions": {
+        "configureSettings": "Please configure settings first",
+        "navigationFailed": "Failed to navigate. Please try again."
     }
 }

@@ -74,18 +74,20 @@ describe('LibraryPage', () => {
     })
 
     it('renders initial list and loads more on button click', async () => {
-        // Setup Mocks
-        const initialArticles = [
-            { id: 1, uuid: 'u1', title: 'Article 1', createdAt: 100 },
-            { id: 2, uuid: 'u2', title: 'Article 2', createdAt: 90 }
-        ]
+        // Setup Mocks - Need 10 items to trigger hasMore=true
+        const initialArticles = Array.from({ length: 10 }, (_, i) => ({
+            id: i + 1,
+            uuid: `u${i + 1}`,
+            title: `Article ${i + 1}`,
+            createdAt: 100 - i
+        }))
         const nextArticles = [
-            { id: 3, uuid: 'u3', title: 'Article 3', createdAt: 80 }
+            { id: 11, uuid: 'u11', title: 'Article 11', createdAt: 80 }
         ]
 
         // Mock getPage to return chunks
         mockGetPage
-            .mockResolvedValueOnce(initialArticles as any) // Valid for initial load
+            .mockResolvedValueOnce(initialArticles as any) // Valid for initial load (10 items)
             .mockResolvedValueOnce(nextArticles as any)    // Valid for second page
             .mockResolvedValueOnce([])                     // Empty for third page (no more data)
 
@@ -98,22 +100,16 @@ describe('LibraryPage', () => {
         )
 
         // Verify initial load (Page 1)
-        await waitFor(() => {
-            expect(screen.getByText('Article 1')).toBeInTheDocument()
-            expect(screen.getByText('Article 2')).toBeInTheDocument()
-            expect(screen.queryByText('Article 3')).not.toBeInTheDocument()
-        })
+        expect(await screen.findByText('Article 1')).toBeInTheDocument()
+        expect(screen.getByText('Article 10')).toBeInTheDocument()
+        expect(screen.queryByText('Article 11')).not.toBeInTheDocument()
 
-        // Find and click "Load More"
-        const loadMoreBtn = screen.getByText('加载更多...')
+        // Find and click "Load More" - wait for it to appear
+        const loadMoreBtn = await screen.findByText('加载更多...')
         fireEvent.click(loadMoreBtn)
 
         // Verify appended load (Page 2)
-        await waitFor(() => {
-            expect(screen.getByText('Article 1')).toBeInTheDocument()
-            expect(screen.getByText('Article 2')).toBeInTheDocument()
-            expect(screen.getByText('Article 3')).toBeInTheDocument()
-        })
+        expect(await screen.findByText('Article 11')).toBeInTheDocument()
     })
 
     it('shows delete confirmation and deletes article', async () => {

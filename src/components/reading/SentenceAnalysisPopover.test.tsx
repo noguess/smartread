@@ -22,6 +22,13 @@ vi.mock('../../services/llmService', () => ({
     }
 }))
 
+vi.mock('../../services/analysisStorageService', () => ({
+    analysisStorageService: {
+        findMatchingAnalysis: vi.fn().mockResolvedValue(null),
+        saveAnalysis: vi.fn().mockResolvedValue(1)
+    }
+}))
+
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string, def?: string) => {
@@ -75,7 +82,7 @@ describe('SentenceAnalysisPopover', () => {
         fireEvent.click(screen.getByText('Analyze'))
 
         await waitFor(() => {
-            expect(screen.getByText('Error')).toBeInTheDocument()
+            expect(screen.getByText('Analysis failed. Please try again.')).toBeInTheDocument()
         })
 
         expect(screen.getByText('Retry')).toBeInTheDocument()

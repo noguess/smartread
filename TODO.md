@@ -1,3 +1,16 @@
+## [Feature] iPad Portrait UI (DashboardVertical)
+- [x] Task 1 (Component): Create `DashboardVerticalLayout.tsx`.
+    -   Implement the "Vertical Dashboard" design from `hero.html` using MUI components.
+    -   Use `t()` for i18n key reuse.
+    -   Map `lucide-react` icons to `@mui/icons-material`.
+- [x] Task 2 (Page): Update `HomePage.tsx`.
+    -   Integrate `DashboardVerticalLayout`.
+    -   Use `useMediaQuery` to switch between `Desktop Layout` (existing) and `Vertical Layout` (new) based on breakpoint (`down('lg')`).
+
+## [Feature] Deep Learning Link
+- [x] Task 1: Replace "View Examples" with "Deep Learning" link in Dashboard components (Hero/Vertical) and connect to global search.
+
+
 ## [Feature] History UI Refresh
 - [x] Task 1 (Component): Create `HistoryListCard.tsx` adapting `ArticleListCard` style for Quiz Records.
     - [x] Props: `EnhancedQuizRecord`

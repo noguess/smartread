@@ -4,8 +4,9 @@ import { render, screen } from '@testing-library/react'
 import HomePage from '../pages/HomePage'
 import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
+import * as MuiMaterial from '@mui/material'
 
-// Mock sub-components to focus on grid layout structure
+// Mock sub-components
 vi.mock('../components/dashboard/DashboardHero', () => ({
     default: () => <div data-testid="dashboard-hero">Hero</div>
 }))
@@ -17,6 +18,9 @@ vi.mock('../components/dashboard/RecentActivityList', () => ({
 }))
 vi.mock('../components/dashboard/ManualGenerationDialog', () => ({
     default: () => <div data-testid="manual-dialog">Dialog</div>
+}))
+vi.mock('../components/dashboard/DashboardVerticalLayout', () => ({
+    default: () => <div data-testid="dashboard-vertical">Vertical Layout</div>
 }))
 
 // Mock services
@@ -53,6 +57,16 @@ vi.mock('react-i18next', () => ({
     }),
 }))
 
+// Mock useMediaQuery
+const mockUseMediaQuery = vi.fn()
+vi.mock('@mui/material', async (importOriginal) => {
+    const actual = await importOriginal<typeof MuiMaterial>()
+    return {
+        ...actual,
+        useMediaQuery: (query: any) => mockUseMediaQuery(query),
+    }
+})
+
 const theme = createTheme()
 
 describe('HomePage Responsiveness', () => {
@@ -70,44 +84,27 @@ describe('HomePage Responsiveness', () => {
         )
     }
 
-    it('uses correct grid breakpoints for Tablet adaptation', async () => {
+    it('renders Desktop layout (Hero + Stats) when screen is large', () => {
+        // Mock isMobile = false
+        mockUseMediaQuery.mockReturnValue(false)
+
         renderPage()
 
-        // Find the Grid items wrapping Hero and Stats
-        // We look for the parent Grid item of our mocked components
-        const hero = screen.getByTestId('dashboard-hero')
-        const stats = screen.getByTestId('dashboard-stats')
+        expect(screen.getByTestId('dashboard-hero')).toBeInTheDocument()
+        expect(screen.getByTestId('dashboard-stats')).toBeInTheDocument()
+        expect(screen.queryByTestId('dashboard-vertical')).not.toBeInTheDocument()
+    })
 
-        // In MUI v5, the Grid component passes classes like 'MuiGrid-grid-xs-12' 'MuiGrid-grid-lg-8'
-        // We need to traverse up to the Grid Item div
-        const heroGridItem = hero.closest('.MuiGrid-item')
-        const statsGridItem = stats.closest('.MuiGrid-item')
+    it('renders Vertical Layout when screen is small (Tablet/Mobile)', () => {
+        // Mock isMobile = true (matches theme.breakpoints.down('lg'))
+        mockUseMediaQuery.mockReturnValue(true)
 
-        expect(heroGridItem).not.toBeNull()
-        expect(statsGridItem).not.toBeNull()
+        renderPage()
 
-        // Check for Tablet Adaptation strategy:
-        // Before Fix: md={8} / md={4} (Split on Tablet)
-        // After Fix Goal: lg={8} / lg={4} (Stack on Tablet which is < lg)
-        // Note: class names might vary slightly in test env but usually follow pattern
+        expect(screen.getByTestId('dashboard-vertical')).toBeInTheDocument()
 
-        // We verify that they HAVE 'MuiGrid-grid-lg-8' and 'MuiGrid-grid-lg-4'
-        // And they should typically default to xs-12 stack behaviors if screen is smaller than lg.
-        // The key is ensuring 'lg' breakpoint is used for the split, not 'md'.
-
-        // Note: Since we haven't implemented the fix yet, these expectations might fail if we assert strict new classes.
-        // We want to write the test to expect the NEW behavior.
-
-        // Check Hero classes
-        expect(heroGridItem).toHaveClass('MuiGrid-grid-xs-12')
-        // We want to force it to be stacked on md, so it should NOT have MuiGrid-grid-md-8 anymore
-        // It SHOULD have MuiGrid-grid-lg-8
-        expect(heroGridItem).toHaveClass('MuiGrid-grid-lg-8')
-        expect(heroGridItem).not.toHaveClass('MuiGrid-grid-md-8')
-
-        // Check Stats classes
-        expect(statsGridItem).toHaveClass('MuiGrid-grid-xs-12')
-        expect(statsGridItem).toHaveClass('MuiGrid-grid-lg-4')
-        expect(statsGridItem).not.toHaveClass('MuiGrid-grid-md-4')
+        // Ensure Desktop components are NOT rendered
+        expect(screen.queryByTestId('dashboard-hero')).not.toBeInTheDocument()
+        expect(screen.queryByTestId('dashboard-stats')).not.toBeInTheDocument()
     })
 })

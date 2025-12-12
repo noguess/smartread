@@ -40,7 +40,8 @@ vi.mock('../components/reading/ReadingToolbar', () => ({
 
 // I18n Mock
 vi.mock('react-i18next', () => ({
-    useTranslation: () => ({ t: (key: string) => key })
+    useTranslation: () => ({ t: (key: string) => key }),
+    initReactI18next: { type: '3rdParty', init: () => { } }
 }))
 
 const theme = createTheme()

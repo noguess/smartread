@@ -5,9 +5,13 @@ export const analysisStorageService = {
      * Save a new analysis result to local database
      */
     async saveAnalysis(articleId: string, originalSentence: string, analysisResult: string): Promise<number> {
+        // Simple sanitization to prevent special chars from breaking usage
+        const [sanitizedArticleId, sanitizedOriginalSentence] = [articleId, originalSentence].map(p =>
+            String(p).replace(/[^\w\s-]/g, '_')
+        )
         return await db.sentenceAnalysis.add({
-            articleId,
-            originalSentence,
+            articleId: sanitizedArticleId,
+            originalSentence: sanitizedOriginalSentence,
             analysisResult,
             createdAt: Date.now()
         })
@@ -52,7 +56,7 @@ export const analysisStorageService = {
     _tokenize(text: string): Set<string> {
         return new Set(
             text.toLowerCase()
-                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "") // Remove punctuation
+                .replace(/[.,/#!$%^&*;:{}=\-_`~()?"']/g, "") // Remove punctuation
                 .split(/\s+/)
                 .filter(w => w.length > 0)
         )

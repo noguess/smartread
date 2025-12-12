@@ -8,16 +8,21 @@ import { Word, History, WordStatus } from '../services/db'
 import { WordSelector } from '../utils/WordSelector'
 import DashboardHero from '../components/dashboard/DashboardHero'
 import DashboardStats from '../components/dashboard/DashboardStats'
+import DashboardVerticalLayout from '../components/dashboard/DashboardVerticalLayout'
 import { articleService } from '../services/articleService'
 import { quizRecordService } from '../services/quizRecordService'
 import RecentActivityList, { DashboardActivity } from '../components/dashboard/RecentActivityList'
 import ManualGenerationDialog from '../components/dashboard/ManualGenerationDialog'
 import { useTranslation } from 'react-i18next'
+import { useTheme, useMediaQuery } from '@mui/material'
+import WordDetailModal from '../components/WordDetailModal'
 
 export default function HomePage() {
     const { t } = useTranslation(['home'])
     const navigate = useNavigate()
     const location = useLocation()
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down('lg'))
     const [allWords, setAllWords] = useState<Word[]>([])
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMsg, setSnackbarMsg] = useState('')
@@ -28,6 +33,13 @@ export default function HomePage() {
         Mastered: 0,
     })
     const [isManualDialogOpen, setIsManualDialogOpen] = useState(false)
+    const [detailWord, setDetailWord] = useState('')
+    const [isDetailOpen, setIsDetailOpen] = useState(false)
+
+    const handleOpenDetail = (word: string) => {
+        setDetailWord(word)
+        setIsDetailOpen(true)
+    }
 
     const [stats, setStats] = useState({
         consecutiveDays: 0,
@@ -194,7 +206,7 @@ export default function HomePage() {
             // Get settings
             const settings = await settingsService.getSettings()
             if (!settings) {
-                setSnackbarMsg('Please configure settings first')
+                setSnackbarMsg(t('home:actions.configureSettings'))
                 setSnackbarOpen(true)
                 return
             }
@@ -214,7 +226,7 @@ export default function HomePage() {
             })
         } catch (error) {
             console.error('Failed to navigate to reading page:', error)
-            setSnackbarMsg('Failed to navigate. Please try again.')
+            setSnackbarMsg(t('home:actions.navigationFailed'))
             setSnackbarOpen(true)
         }
     }
@@ -240,25 +252,45 @@ export default function HomePage() {
                 <Grid container spacing={3}>
 
                     {/* Hero Section */}
-                    <Grid item xs={12} lg={8}>
-                        <DashboardHero
-                            consecutiveDays={stats.consecutiveDays}
-                            totalMinutes={stats.totalMinutes}
-                            lastLearningDate={stats.lastLearningDate}
-                            recommendedWord={recommendedWord}
-                            onSmartGenerate={handleSmartGenerate}
-                            onManualMode={() => setIsManualDialogOpen(true)}
-                        />
-                    </Grid>
+                    {isMobile ? (
+                        <Grid item xs={12}>
+                            <DashboardVerticalLayout
+                                onSmartGenerate={handleSmartGenerate}
+                                onManualMode={() => setIsManualDialogOpen(true)}
+                                consecutiveDays={stats.consecutiveDays}
+                                totalMinutes={stats.totalMinutes}
+                                lastLearningDate={stats.lastLearningDate}
+                                recommendedWord={recommendedWord}
+                                totalWords={allWords.length}
+                                masteredCount={statusCounts.Mastered}
+                                statusCounts={statusCounts}
+                                onOpenDetail={handleOpenDetail}
+                            />
+                        </Grid>
+                    ) : (
+                        <>
+                            <Grid item xs={12} lg={8}>
+                                <DashboardHero
+                                    consecutiveDays={stats.consecutiveDays}
+                                    totalMinutes={stats.totalMinutes}
+                                    lastLearningDate={stats.lastLearningDate}
+                                    recommendedWord={recommendedWord}
+                                    onSmartGenerate={handleSmartGenerate}
+                                    onManualMode={() => setIsManualDialogOpen(true)}
+                                    onOpenDetail={handleOpenDetail}
+                                />
+                            </Grid>
 
-                    {/* Stats Section */}
-                    <Grid item xs={12} lg={4}>
-                        <DashboardStats
-                            totalWords={allWords.length}
-                            masteredCount={statusCounts.Mastered}
-                            statusCounts={statusCounts}
-                        />
-                    </Grid>
+                            {/* Stats Section */}
+                            <Grid item xs={12} lg={4}>
+                                <DashboardStats
+                                    totalWords={allWords.length}
+                                    masteredCount={statusCounts.Mastered}
+                                    statusCounts={statusCounts}
+                                />
+                            </Grid>
+                        </>
+                    )}
 
                     {/* Recent Activity Section */}
                     <Grid item xs={12}>
@@ -274,6 +306,13 @@ export default function HomePage() {
                     onClose={() => setIsManualDialogOpen(false)}
                     onGenerate={handleManualGenerate}
                     allWords={allWords}
+                />
+
+                {/* Word Detail Modal */}
+                <WordDetailModal
+                    word={detailWord}
+                    open={isDetailOpen}
+                    onClose={() => setIsDetailOpen(false)}
                 />
 
                 <Snackbar

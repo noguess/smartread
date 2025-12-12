@@ -16,7 +16,7 @@ describe('VideoIndexService', () => {
             "0": { bvid: "BV123", page: 1, title: "Test Video", filename: "test.mp4", platform: "bilibili" }
         }
 
-        // @ts-ignore - Accessing private method for testing or simply testing public search which triggers load
+
         // But since loadVideoMap is private or protected, we test via searchWord side effects or we can export it/make public.
         // Let's assume searchWord triggers it.
 
