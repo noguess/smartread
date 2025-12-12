@@ -8,6 +8,6 @@
 
 3. 增加不同难度的做题时间的趋势图，用来观测相同难度下做题时间的变化。
 
-4.视频列表增加手动置顶功能，允许用户手动将其认为最准确的视频置顶，后续默认播放置顶视频
+4.修改所有prompt，提高分析和生成质量
 
-5.修改所有prompt，提高分析和生成质量
+5.https://www.youtube.com/watch?v=lWic16pxSwI&list=PLv62PVNSGzGDO6iCBvmGoKn30FksODEX6
