@@ -49,6 +49,7 @@ erDiagram
         int interval "Days (SRS Interval)"
         int repetitionCount "Review Count"
         int lastSeenAt "Timestamp"
+        json pinnedVideo "Optional: { bvid, page, startTime }"
     }
 
     ARTICLES {

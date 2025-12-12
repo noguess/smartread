@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
     Dialog,
     DialogTitle,
@@ -14,7 +14,7 @@ import {
     Paper,
     Tooltip,
 } from '@mui/material'
-import { Close, PlayArrow, Recommend, OpenInNew } from '@mui/icons-material'
+import { Close, PlayArrow, Recommend, OpenInNew, PushPin, PushPinOutlined } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import { videoIndexService, VideoOccurrence } from '../services/videoIndexService'
 import { wordService } from '../services/wordService'
@@ -48,6 +48,8 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
     const [snackbarSeverity, setSnackbarSeverity] = useState<AlertColor>('success')
+
+    const listRef = useRef<HTMLUListElement>(null)
 
     useEffect(() => {
         if (open && word) {
@@ -123,18 +125,14 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
 
 
             // Sort results: Score DESC, then Page ASC, then Time ASC
-            results.sort((a, b) => {
-                const scoreA = a.score || 0
-                const scoreB = b.score || 0
-                if (scoreA !== scoreB) return scoreB - scoreA
-                if (a.page !== b.page) return a.page - b.page
-                return a.startTime - b.startTime
-            })
+            // Sort results: Pinned First, then Score DESC, then Page ASC, then Time ASC
+            const sortedResults = sortOccurrences(results, dbWord?.pinnedVideo)
 
-            setOccurrences(results)
+            setOccurrences(sortedResults)
 
-            if (results.length > 0) {
-                setSelectedOccurrence(results[0]) // Auto-select first
+            if (sortedResults.length > 0) {
+                // If there is a pinned video, it will be at index 0 due to sort
+                setSelectedOccurrence(sortedResults[0])
             } else {
                 setSelectedOccurrence(null)
             }
@@ -143,6 +141,24 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
         } finally {
             setLoading(false)
         }
+    }
+
+    const sortOccurrences = (results: VideoOccurrence[], pinned: any) => {
+        return [...results].sort((a, b) => {
+            // Pinned video comes first
+            if (pinned) {
+                const isAPinned = a.bvid === pinned.bvid && a.page === pinned.page && Math.abs(a.startTime - pinned.startTime) < 0.1
+                const isBPinned = b.bvid === pinned.bvid && b.page === pinned.page && Math.abs(b.startTime - pinned.startTime) < 0.1
+                if (isAPinned && !isBPinned) return -1
+                if (isBPinned && !isAPinned) return 1
+            }
+
+            const scoreA = a.score || 0
+            const scoreB = b.score || 0
+            if (scoreA !== scoreB) return scoreB - scoreA
+            if (a.page !== b.page) return a.page - b.page
+            return a.startTime - b.startTime
+        })
     }
 
     const saveNewWord = async (spelling: string, meaning: string, phonetic?: string) => {
@@ -190,6 +206,52 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
 
     const handleOccurrenceClick = (occurrence: VideoOccurrence) => {
         setSelectedOccurrence(occurrence)
+    }
+
+    const handlePinVideo = async (occurrence: VideoOccurrence, e: React.MouseEvent) => {
+        e.stopPropagation() // Prevent selecting the video when clicking pin
+        if (!wordData || !wordData.id) return
+
+        const isPinned = wordData.pinnedVideo?.bvid === occurrence.bvid &&
+            wordData.pinnedVideo?.page === occurrence.page &&
+            Math.abs(wordData.pinnedVideo?.startTime - occurrence.startTime) < 0.1
+
+        let newPinnedVideo: any = undefined
+        if (!isPinned) {
+            newPinnedVideo = {
+                bvid: occurrence.bvid,
+                page: occurrence.page,
+                startTime: occurrence.startTime
+            }
+        }
+
+        try {
+            await wordService.updateWord(wordData.id, { pinnedVideo: newPinnedVideo })
+
+            // Update local state
+            const newWordData = { ...wordData, pinnedVideo: newPinnedVideo }
+            setWordData(newWordData)
+
+            // Re-sort occurrences
+            const newSorted = sortOccurrences(occurrences, newPinnedVideo)
+            setOccurrences(newSorted)
+
+            // If we pinned it, select it immediately? (User UX choice: probably yes)
+            if (newPinnedVideo) {
+                setSelectedOccurrence(occurrence)
+                showToast(t('vocabulary:modal.toast.pinned'))
+                // Auto scroll to top to show pinned video
+                if (listRef.current) {
+                    listRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+                }
+            } else {
+                showToast(t('vocabulary:modal.toast.unpinned'))
+            }
+
+        } catch (error) {
+            console.error('Failed to update pin status', error)
+            showToast(t('vocabulary:modal.error.generic'), 'error')
+        }
     }
 
     return (
@@ -399,7 +461,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                             <Typography variant="subtitle1" gutterBottom fontWeight="bold">
                                 {t('vocabulary:modal.otherOccurrences')} ({occurrences.length})
                             </Typography>
-                            <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
+                            <List dense sx={{ maxHeight: 200, overflow: 'auto' }} ref={listRef}>
                                 {occurrences.map((occ, index) => (
                                     <ListItem key={index} disablePadding>
                                         <ListItemButton
@@ -408,7 +470,14 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                                         >
                                             <PlayArrow sx={{ mr: 1, fontSize: 20 }} />
                                             <ListItemText
-                                                primary={occ.title}
+                                                primary={
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        {occ.title}
+                                                        {isOccurrencePinned(occ, wordData?.pinnedVideo) && (
+                                                            <PushPin fontSize="small" color="primary" sx={{ fontSize: 16 }} />
+                                                        )}
+                                                    </Box>
+                                                }
                                                 secondary={`P${occ.page} - ${occ.startTime}s - "${occ.context.substring(0, 40)}..."`}
                                             />
                                             {/* Show Recommended Icon for high scores */}
@@ -417,6 +486,17 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                                                     <Recommend color="primary" sx={{ ml: 1, fontSize: 20 }} />
                                                 </Tooltip>
                                             )}
+                                            <IconButton
+                                                size="small"
+                                                onClick={(e) => handlePinVideo(occ, e)}
+                                                sx={{ ml: 1 }}
+                                                title={isOccurrencePinned(occ, wordData?.pinnedVideo) ? t('vocabulary:modal.unpin') : t('vocabulary:modal.pin')}
+                                            >
+                                                {isOccurrencePinned(occ, wordData?.pinnedVideo) ?
+                                                    <PushPin fontSize="small" color="primary" /> :
+                                                    <PushPinOutlined fontSize="small" color="action" />
+                                                }
+                                            </IconButton>
                                         </ListItemButton>
                                     </ListItem>
                                 ))}
@@ -438,4 +518,12 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
             </Snackbar>
         </>
     )
+}
+
+// Helper to check if an occurrence is pinned
+function isOccurrencePinned(occ: VideoOccurrence, pinnedVideo: any) {
+    if (!pinnedVideo) return false
+    return occ.bvid === pinnedVideo.bvid &&
+        occ.page === pinnedVideo.page &&
+        Math.abs(occ.startTime - pinnedVideo.startTime) < 0.1
 }

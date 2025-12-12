@@ -24,7 +24,13 @@
         "noDictionaryData": "未找到词典数据",
         "recommended": "推荐",
         "speak": "朗读",
+        "pin": "置顶视频",
+        "unpin": "取消置顶",
+        "watchOnBilibili": "在 Bilibili 观看",
+        "watchOnYoutube": "在 YouTube 观看",
         "toast": {
+            "pinned": "视频已置顶",
+            "unpinned": "已取消置顶",
             "autoAdded": "已将「{{word}}」加入单词本",
             "statusUpdated": "「{{word}}」状态更新为学习中"
         },

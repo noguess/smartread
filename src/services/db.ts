@@ -12,6 +12,11 @@ export interface Word {
     interval: number // Days
     repetitionCount: number
     lastSeenAt: number // Timestamp
+    pinnedVideo?: {
+        bvid: string
+        page: number
+        startTime: number
+    }
 }
 
 export interface Question {

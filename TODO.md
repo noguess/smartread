@@ -1,3 +1,8 @@
+## [Feature] Video Pinning
+- [x] Task 1 (DB): Update `Word` schema to support `pinnedVideo`.
+- [x] Task 2 (UI): Add Pin/Unpin button and logic to `WordDetailModal`.
+- [x] Task 3 (Logic): Implement default selection and sorting of pinned videos.
+
 
 ## [Feature] Video Source Isolation
 - [x] Task 1 (DB & Settings): Add `videoSource` setting to DB and create settings UI toggle.

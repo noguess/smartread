@@ -24,7 +24,13 @@
         "noDictionaryData": "No dictionary data found",
         "recommended": "Recommended",
         "speak": "Speak",
+        "pin": "Pin Video",
+        "unpin": "Unpin Video",
+        "watchOnBilibili": "Watch on Bilibili",
+        "watchOnYoutube": "Watch on YouTube",
         "toast": {
+            "pinned": "Video Pinned",
+            "unpinned": "Video Unpinned",
             "autoAdded": "Added '{{word}}' to vocabulary",
             "statusUpdated": "Updated '{{word}}' to Learning status"
         },
