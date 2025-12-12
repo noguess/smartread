@@ -50,6 +50,7 @@
         "score": "得分",
         "time": "耗时",
         "unknownArticle": "未知文章",
-        "unknownError": "未知错误"
+        "unknownError": "未知错误",
+        "apiKeyMissing": "API Key 缺失，请在设置中配置。"
     }
 }

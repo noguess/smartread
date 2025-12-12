@@ -368,9 +368,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                                     }
                                 </Button>
                             </Box>
-                            <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic', borderLeft: '3px solid #1976d2', pl: 1 }}>
-                                "{selectedOccurrence.context}"
-                            </Typography>
+
                         </Box>
                     ) : (
                         <Paper
@@ -387,6 +385,59 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                                 {loading ? t('common:loading') : t('vocabulary:modal.noVideo')}
                             </Typography>
                         </Paper>
+                    )}
+
+
+
+                    {/* Occurrence List */}
+                    {occurrences.length > 1 && (
+                        <Box>
+                            <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                                {t('vocabulary:modal.otherOccurrences')} ({occurrences.length})
+                            </Typography>
+                            <List dense sx={{ maxHeight: 200, overflow: 'auto' }} ref={listRef}>
+                                {occurrences.map((occ, index) => (
+                                    <ListItem key={index} disablePadding>
+                                        <ListItemButton
+                                            selected={selectedOccurrence === occ}
+                                            onClick={() => handleOccurrenceClick(occ)}
+                                        >
+                                            <PlayArrow sx={{ mr: 1, fontSize: 20 }} />
+                                            <ListItemText
+                                                primary={
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                                                        <Typography noWrap sx={{ flex: 1 }} variant="body1" component="span" title={occ.title}>
+                                                            {occ.title}
+                                                        </Typography>
+                                                        {isOccurrencePinned(occ, wordData?.pinnedVideo) && (
+                                                            <PushPin fontSize="small" color="primary" sx={{ fontSize: 16, flexShrink: 0 }} />
+                                                        )}
+                                                    </Box>
+                                                }
+                                                secondary={`P${occ.page} - ${occ.startTime}s - "${occ.context.substring(0, 40)}..."`}
+                                            />
+                                            {/* Show Recommended Icon for high scores */}
+                                            {occ.score && occ.score >= 5 && (
+                                                <Tooltip title={t('vocabulary:modal.recommended')}>
+                                                    <Recommend color="primary" sx={{ ml: 1, fontSize: 20 }} />
+                                                </Tooltip>
+                                            )}
+                                            <IconButton
+                                                size="small"
+                                                onClick={(e) => handlePinVideo(occ, e)}
+                                                sx={{ ml: 1 }}
+                                                title={isOccurrencePinned(occ, wordData?.pinnedVideo) ? t('vocabulary:modal.unpin') : t('vocabulary:modal.pin')}
+                                            >
+                                                {isOccurrencePinned(occ, wordData?.pinnedVideo) ?
+                                                    <PushPin fontSize="small" color="primary" /> :
+                                                    <PushPinOutlined fontSize="small" color="action" />
+                                                }
+                                            </IconButton>
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Box>
                     )}
 
                     {/* Dictionary Section */}
@@ -452,55 +503,6 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
                             >
                                 {t('vocabulary:modal.checkDictionary')}
                             </Button>
-                        </Box>
-                    )}
-
-                    {/* Occurrence List */}
-                    {occurrences.length > 1 && (
-                        <Box>
-                            <Typography variant="subtitle1" gutterBottom fontWeight="bold">
-                                {t('vocabulary:modal.otherOccurrences')} ({occurrences.length})
-                            </Typography>
-                            <List dense sx={{ maxHeight: 200, overflow: 'auto' }} ref={listRef}>
-                                {occurrences.map((occ, index) => (
-                                    <ListItem key={index} disablePadding>
-                                        <ListItemButton
-                                            selected={selectedOccurrence === occ}
-                                            onClick={() => handleOccurrenceClick(occ)}
-                                        >
-                                            <PlayArrow sx={{ mr: 1, fontSize: 20 }} />
-                                            <ListItemText
-                                                primary={
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        {occ.title}
-                                                        {isOccurrencePinned(occ, wordData?.pinnedVideo) && (
-                                                            <PushPin fontSize="small" color="primary" sx={{ fontSize: 16 }} />
-                                                        )}
-                                                    </Box>
-                                                }
-                                                secondary={`P${occ.page} - ${occ.startTime}s - "${occ.context.substring(0, 40)}..."`}
-                                            />
-                                            {/* Show Recommended Icon for high scores */}
-                                            {occ.score && occ.score >= 5 && (
-                                                <Tooltip title={t('vocabulary:modal.recommended')}>
-                                                    <Recommend color="primary" sx={{ ml: 1, fontSize: 20 }} />
-                                                </Tooltip>
-                                            )}
-                                            <IconButton
-                                                size="small"
-                                                onClick={(e) => handlePinVideo(occ, e)}
-                                                sx={{ ml: 1 }}
-                                                title={isOccurrencePinned(occ, wordData?.pinnedVideo) ? t('vocabulary:modal.unpin') : t('vocabulary:modal.pin')}
-                                            >
-                                                {isOccurrencePinned(occ, wordData?.pinnedVideo) ?
-                                                    <PushPin fontSize="small" color="primary" /> :
-                                                    <PushPinOutlined fontSize="small" color="action" />
-                                                }
-                                            </IconButton>
-                                        </ListItemButton>
-                                    </ListItem>
-                                ))}
-                            </List>
                         </Box>
                     )}
                 </DialogContent>

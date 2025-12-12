@@ -50,6 +50,7 @@
         "score": "Score",
         "time": "Duration",
         "unknownArticle": "Unknown Article",
-        "unknownError": "Unknown Error"
+        "unknownError": "Unknown Error",
+        "apiKeyMissing": "API Key is missing. Please configure it in Settings."
     }
 }

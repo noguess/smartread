@@ -1,4 +1,5 @@
 import { Word, Setting, WordStudyItem } from './db'
+import i18n from '../i18n/config'
 
 export interface GeneratedArticleData {
    title: string
@@ -20,7 +21,7 @@ export const llmService = {
       const apiKey = settings.apiKey
       const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
 
-      if (!apiKey) throw new Error('API Key is missing. Please configure it in Settings.')
+      if (!apiKey) throw new Error(i18n.t('common:common.apiKeyMissing'))
 
       const wordList = words.map((w) => w.spelling).join(', ')
       const lengthPrompt = settings.articleLenPref === 'short' ? '400 words' : settings.articleLenPref === 'long' ? '800 words' : '600 words'
@@ -295,7 +296,7 @@ export const llmService = {
       const apiKey = settings.apiKey
       const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
 
-      if (!apiKey) throw new Error('API Key is missing')
+      if (!apiKey) throw new Error(i18n.t('common:common.apiKeyMissing'))
 
       const systemPrompt = `
 You are a helpful English-Chinese dictionary assistant.
@@ -318,7 +319,7 @@ Return a JSON object with:
       const apiKey = settings.apiKey
       const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
 
-      if (!apiKey) throw new Error('API Key is missing')
+      if (!apiKey) throw new Error(i18n.t('common:common.apiKeyMissing'))
 
       const systemPrompt = `
 # Role
