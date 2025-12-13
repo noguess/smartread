@@ -24,7 +24,7 @@ export default function ArticleView({ title, content, onWordClick }: ArticleView
             <Box sx={{ mt: 4, typography: 'body1', lineHeight: 1.8, fontSize: '1.1rem' }}>
                 <ReactMarkdown
                     components={{
-                        strong: ({ node, ...props }) => (
+                        strong: ({ node: _node, ...props }) => (
                             <span
                                 style={{
                                     color: '#0097A7',

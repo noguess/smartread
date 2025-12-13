@@ -1,10 +1,45 @@
 {
     "title": "Statistics",
-    "charts": {
-        "trend": "Reading Trend (Last 7 Days)",
-        "status": "Word Mastery Status",
-        "scores": "Recent Quiz Scores",
-        "studyTime": "Study Time Trend (Minutes)",
-        "minutes": "Minutes"
+    "tabs": {
+        "overview": "Overview",
+        "trends": "Trends"
+    },
+    "overview": {
+        "words_title": "Word Progress",
+        "activity_title": "Activity Summary",
+        "difficulty_title": "Difficulty Distribution",
+        "score_distribution_title": "Score Distribution",
+        "efficiency_title": "Efficiency Metrics",
+        "total_articles": "Articles Read",
+        "total_quizzes": "Quizzes Taken",
+        "efficiency_table": {
+            "level": "Level",
+            "reading_speed": "Reading Speed (WPM)",
+            "quiz_time": "Quiz Time (sec/q)"
+        }
+    },
+    "trends": {
+        "activity_title": "Daily Activity",
+        "reading_speed_title": "Reading Speed Trend",
+        "score_title": "Score Trend",
+        "time_title": "Total Study Time (min)",
+        "reading_time_title": "Reading Duration Trend (sec)",
+        "quiz_time_title": "Quiz Duration Trend (sec)",
+        "article_count": "Articles",
+        "quiz_count": "Quizzes",
+        "axis": {
+            "sec": "Sec"
+        },
+        "series": {
+            "l1_score": "L1 Score",
+            "l2_score": "L2 Score",
+            "l3_score": "L3 Score",
+            "l1_min": "L1 (min)",
+            "l2_min": "L2 (min)",
+            "l3_min": "L3 (min)",
+            "l1_sec": "L1 (sec)",
+            "l2_sec": "L2 (sec)",
+            "l3_sec": "L3 (sec)"
+        }
     }
 }

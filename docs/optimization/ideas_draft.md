@@ -15,4 +15,4 @@ https://www.youtube.com/watch?v=aSd7R5gQZMc&list=PL947sbT-Sj6jHg6HBzsErY-Rkhnyya
 
 6.1-10集 https://www.youtube.com/watch?v=CXSEe0DC1ls&list=PLut4c8OkYHdw1wow7kzqlN8iD3IRTgUVn
 
-7.11-19集 https://www.youtube.com/watch?v=4xQTp-tPXLw&list=PLlcZwLwBcSt05PTCVF_ZsM8rIqoGmRo7r
+7.11-19集 todo: https://www.youtube.com/watch?v=4xQTp-tPXLw&list=PLlcZwLwBcSt05PTCVF_ZsM8rIqoGmRo7r

@@ -9,7 +9,7 @@ import { Word, QuizRecord } from '../../services/db'
 
 // Mock i18n
 vi.mock('react-i18next', () => ({
-    useTranslation: () => ({ t: (key: string, opts?: any) => key })
+    useTranslation: () => ({ t: (key: string, _opts?: any) => key })
 }))
 
 describe('ReadingSidebar', () => {

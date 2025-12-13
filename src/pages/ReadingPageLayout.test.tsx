@@ -2,7 +2,6 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ReadingPage from './ReadingPage'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
-import { I18nextProvider } from 'react-i18next'
 import { wordService } from '../services/wordService'
 import { articleService } from '../services/articleService'
 import { quizRecordService } from '../services/quizRecordService'
@@ -90,7 +89,7 @@ describe('ReadingPage Layout', () => {
         render(
             <MemoryRouter initialEntries={['/read/1']}>
                 <Routes>
-                    <Route path="/read/:id" element={<ReadingPage />} />
+                    <Route path="/read/:articleId" element={<ReadingPage />} />
                 </Routes>
             </MemoryRouter>
         )

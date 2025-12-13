@@ -22,7 +22,8 @@ src/
 ├── services/               # 数据服务层 (API & DB)
 │   ├── db.ts               # Dexie 数据库实例配置
 │   ├── llm.ts              # AI 接口服务 (Deepseek)
-│   └── dictionary.ts       # 外部词典 API
+│   ├── dictionary.ts       # 外部词典 API
+│   └── statsService.ts     # 统计数据聚合服务
 ├── types/                  # 全局 TypeScript 类型定义
 ├── utils/                  # 纯函数工具库 (date, math, string)
 ├── App.tsx                 # 根组件 (Providers, Router Outlet)

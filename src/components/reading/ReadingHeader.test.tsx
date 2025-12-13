@@ -12,6 +12,7 @@ vi.mock('@mui/icons-material', () => ({
     AccessTime: () => <span data-testid="icon-clock">Clock</span>,
     PlayArrow: () => <span data-testid="icon-play">Play</span>,
     Pause: () => <span data-testid="icon-pause">Pause</span>,
+    RestartAlt: () => <span data-testid="icon-reset">Reset</span>,
 }))
 
 // Mock navigation
@@ -32,6 +33,7 @@ describe('ReadingHeader', () => {
         isTimerRunning: true,
         seconds: 125, // 02:05
         onTimerToggle: vi.fn(),
+        onTimerReset: vi.fn(),
     }
 
     it('renders title correctly', () => {

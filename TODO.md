@@ -12,3 +12,10 @@
     -   `handleQuizSubmit`: Submit -> `navigate(.../result/:id)`.
     -   `ReadingSidebar`: Clicking history item -> `navigate(.../result/:id)`.
 - [x] Task 4 (Cleanup): Remove ambiguous `/result` routes and legacy state code.
+
+## [Feature] Statistics Refactor (Completed)
+- [x] Create `StatsService` for centralized data aggregation
+- [x] Refactor `StatisticsPage` UI (Tabs: Overview & Trends)
+- [x] Implement Score Distribution & Efficiency Metrics
+- [x] Implement Trend Charts (Activity, Score, Study Time)
+- [x] Internationalization Support

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import {
     useLocation,
     useNavigate,
@@ -186,24 +186,6 @@ export default function ReadingPage() {
         settingsService.getSettings().then(setSettings)
     }, [])
 
-    // Handle Article Loading / Generation
-    useEffect(() => {
-        const state = location.state as any
-
-        // Case 1: Generation requested (from Home)
-        if (state?.mode === 'generate' && state?.words && !currentArticle && !isGenerating) {
-            handleGenerateArticle(state.words, state.settings, state.uuid)
-        }
-        // Case 2: Load existing article by ID
-        else if (articleId && !currentArticle && !isGenerating) {
-            loadArticle(Number(articleId) || articleId) // Handle number or UUID string if needed? DB usually uses number ID for get?
-            // Wait, articleId in URL is likely the UUID if we use /read/:uuid, OR ID.
-            // App uses /read/:articleId.
-            // Let's assume it's ID (number) for now, but ArticleService might support UUID.
-            // If it's NaN, try UUID.
-        }
-    }, [articleId, location.state])
-
     // Timer Logic: Auto-start when entering Quiz mode
     useEffect(() => {
         const isQuiz = location.pathname.includes('/quiz')
@@ -215,7 +197,7 @@ export default function ReadingPage() {
         // User said: "Reading time starts when user turns it on", "Quiz time enters immediately on".
     }, [location.pathname, isTimerRunning, startTimer])
 
-    const loadArticle = async (idOrUuid: string | number) => {
+    const loadArticle = useCallback(async (idOrUuid: string | number) => {
         try {
             console.log('📚 Loading article:', idOrUuid)
             let article: Article | undefined
@@ -243,9 +225,9 @@ export default function ReadingPage() {
             console.error('Failed to load article:', err)
             // navigate('/') // Optional handle error
         }
-    }
+    }, [])
 
-    const handleGenerateArticle = async (words: Word[], settings: any, uuid?: string) => {
+    const handleGenerateArticle = useCallback(async (words: Word[], settings: any, uuid?: string) => {
         setIsGenerating(true)
         setGenerationMode('article')
         setGenerationProgress(0)
@@ -283,7 +265,21 @@ export default function ReadingPage() {
         } finally {
             setIsGenerating(false)
         }
-    }
+    }, [navigate])
+
+    // Handle Article Loading / Generation
+    useEffect(() => {
+        const state = location.state as any
+
+        // Case 1: Generation requested (from Home)
+        if (state?.mode === 'generate' && state?.words && !currentArticle && !isGenerating) {
+            handleGenerateArticle(state.words, state.settings, state.uuid)
+        }
+        // Case 2: Load existing article by ID
+        else if (articleId && !currentArticle && !isGenerating) {
+            loadArticle(Number(articleId) || articleId)
+        }
+    }, [articleId, location.state, currentArticle, isGenerating, handleGenerateArticle, loadArticle])
 
     // --- Actions ---
 

@@ -163,11 +163,11 @@ const HistoryListCard: React.FC<HistoryCardProps> = ({ record, onReview }) => {
                         display: 'flex', alignItems: 'center', gap: 1,
                         bgcolor: 'grey.50', px: 1, py: 0.5, borderRadius: 1
                     }}>
-                        <TrophyIcon sx={{ fontSize: 14, color: getScoreColor(record.score) }} />
+                        <TrophyIcon sx={{ fontSize: 14, color: getScoreColor(record.score || 0) }} />
                         <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.secondary' }}>
                             {t('common:score')}:
-                            <Box component="span" sx={{ fontWeight: 700, color: getScoreColor(record.score), ml: 0.5 }}>
-                                {record.score}
+                            <Box component="span" sx={{ fontWeight: 700, color: getScoreColor(record.score || 0), ml: 0.5 }}>
+                                {record.score || 0}
                             </Box>
                         </Typography>
                     </Box>

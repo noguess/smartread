@@ -1,10 +1,45 @@
 {
     "title": "学习统计",
-    "charts": {
-        "trend": "近7天阅读量",
-        "status": "单词掌握情况",
-        "scores": "近期考试成绩",
-        "studyTime": "学习时长趋势 (分钟)",
-        "minutes": "分钟"
+    "tabs": {
+        "overview": "核心概览",
+        "trends": "趋势分析"
+    },
+    "overview": {
+        "words_title": "单词学习情况",
+        "activity_title": "学习活动汇总",
+        "difficulty_title": "难度分布 (阅读 / 测验)",
+        "score_distribution_title": "测验得分分布",
+        "efficiency_title": "效率指标",
+        "total_articles": "阅读文章数",
+        "total_quizzes": "完成测验数",
+        "efficiency_table": {
+            "level": "难度等级",
+            "reading_speed": "阅读速度 (词/分)",
+            "quiz_time": "做题速度 (秒/题)"
+        }
+    },
+    "trends": {
+        "activity_title": "每日学习活动",
+        "reading_speed_title": "阅读速度趋势 (WPM)",
+        "score_title": "测验成绩趋势",
+        "time_title": "总学习时长 (分钟)",
+        "reading_time_title": "单篇阅读耗时趋势 (秒)",
+        "quiz_time_title": "单次测验耗时趋势 (秒)",
+        "article_count": "文章阅读",
+        "quiz_count": "测验完成",
+        "axis": {
+            "sec": "秒"
+        },
+        "series": {
+            "l1_score": "L1 得分",
+            "l2_score": "L2 得分",
+            "l3_score": "L3 得分",
+            "l1_min": "L1 (分)",
+            "l2_min": "L2 (分)",
+            "l3_min": "L3 (分)",
+            "l1_sec": "L1 (秒)",
+            "l2_sec": "L2 (秒)",
+            "l3_sec": "L3 (秒)"
+        }
     }
 }

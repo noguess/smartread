@@ -210,7 +210,7 @@ export default function ArticleContent({
                 >
                     <ReactMarkdown
                         components={{
-                            strong: ({ node, ...props }) => (
+                            strong: ({ node: _node, ...props }) => (
                                 <span
                                     className={styles.targetWord}
                                     style={{

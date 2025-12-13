@@ -25,7 +25,7 @@ describe('ArticleContent Interaction', () => {
     const defaultProps = {
         title: 'Test Title',
         content: 'Some test content for reading.',
-        fontSize: 'medium' as const,
+        fontSize: 18,
         onSelection: vi.fn()
     }
 

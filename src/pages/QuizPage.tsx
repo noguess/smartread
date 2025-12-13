@@ -2,7 +2,6 @@
 import QuizView from '../components/reading/QuizView'
 import GenerationLoading from '../components/reading/GenerationLoading'
 import { GeneratedContent } from '../services/mockLLMService' // Or separate type
-import { QuizRecord } from '../services/db'
 
 interface QuizPageProps {
     isGenerating: boolean

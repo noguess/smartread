@@ -62,7 +62,7 @@ export default function LibraryPage() {
                     const quizRecords = await quizRecordService.getRecordsByArticleUuid(article.uuid)
                     const quizCount = quizRecords.length
                     const highestScore = quizRecords.length > 0
-                        ? Math.max(...quizRecords.map(r => r.score))
+                        ? Math.max(...quizRecords.map(r => r.score || 0))
                         : 0
 
                     return {
