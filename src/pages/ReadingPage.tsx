@@ -1,33 +1,33 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Container, Box, Typography, Button, Grid, Paper, Chip, Fade, Divider, Snackbar, Alert, CircularProgress, AlertColor } from '@mui/material'
+import { Container, Box, Typography, Button, Grid, Paper, Fade, Snackbar, Alert, AlertColor, CircularProgress } from '@mui/material'
 
-import { Word, History, Article, QuizRecord } from '../services/db'
-import { mockLLMService, GeneratedContent } from '../services/mockLLMService'
-import { llmService } from '../services/llmService'
+import { Word, QuizRecord, Article, History } from '../services/db'
+import { GeneratedContent, mockLLMService } from '../services/mockLLMService'
 import { settingsService } from '../services/settingsService'
-import { SRSAlgorithm } from '../utils/SRSAlgorithm'
 import { wordService } from '../services/wordService'
-import { historyService } from '../services/historyService'
 import { articleService } from '../services/articleService'
 import { quizRecordService } from '../services/quizRecordService'
+import { historyService } from '../services/historyService'
+import { llmService } from '../services/llmService'
+import { SRSAlgorithm } from '../utils/SRSAlgorithm'
 import { calculateNewDifficulty, DifficultyLevel } from '../utils/difficultyLogic'
+
 import ArticleContent from '../components/reading/ArticleContent'
 import QuizView from '../components/reading/QuizView'
 import WordDetailModal from '../components/WordDetailModal'
-import ReadingProgressBar from '../components/reading/ReadingProgressBar'
-import ReadingToolbar from '../components/reading/ReadingToolbar'
-import ReadingTimer from '../components/reading/ReadingTimer'
 import GenerationLoading from '../components/reading/GenerationLoading'
 import DefinitionPopover from '../components/reading/DefinitionPopover'
 import SentenceAnalysisPopover from '../components/reading/SentenceAnalysisPopover'
+import ReadingHeader from '../components/reading/ReadingHeader'
+import { ReadingSidebar } from '../components/reading/ReadingSidebars'
 import { useTranslation } from 'react-i18next'
 import { useStudyTimer } from '../hooks/useStudyTimer'
 import EmptyState from '../components/common/EmptyState'
 import { ErrorOutline } from '@mui/icons-material'
 
+
 type Step = 'initializing' | 'generating' | 'reading' | 'quiz' | 'feedback' | 'review'
-type FontSize = 'small' | 'medium' | 'large'
 
 // Track active generations to prevent duplicates in StrictMode
 const generatingUuids = new Set<string>()
@@ -38,8 +38,10 @@ export default function ReadingPage() {
     const location = useLocation()
     const navigate = useNavigate()
     const [step, setStep] = useState<Step>('initializing')
-    const [fontSize, setFontSize] = useState<FontSize>(() => {
-        return (localStorage.getItem('reading_font_size') as FontSize) || 'medium'
+    const [fontSize, setFontSize] = useState<number>(() => {
+        const saved = localStorage.getItem('reading_font_size')
+        const parsed = Number(saved)
+        return (!isNaN(parsed) && parsed >= 12 && parsed <= 32) ? parsed : 18
     })
     const [articleData, setArticleData] = useState<GeneratedContent | null>(null)
     const [targetWords, setTargetWords] = useState<Word[]>([])
@@ -48,13 +50,7 @@ export default function ReadingPage() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [generationMode, setGenerationMode] = useState<'article' | 'quiz'>('article')
 
-    const [quizAnswers, setQuizAnswers] = useState<{
-        reading: Record<string, string>
-        vocabulary: Record<string, string | string[]>
-    } | null>(null)
 
-    const [isReviewMode, setIsReviewMode] = useState(false)
-    const [viewMode, setViewMode] = useState<'results' | 'retake' | null>(null)
 
     const [error, setError] = useState<string | null>(null)
     const [realProgress, setRealProgress] = useState(0)
@@ -126,15 +122,10 @@ export default function ReadingPage() {
     }
 
     // Study Timer
-    const { timeSpent, start: startTimer, pause: pauseTimer } = useStudyTimer(false)
+    // Auto-start disabled by default
+    const { timeSpent, isActive, start: startTimer, pause: pauseTimer, reset: resetTimer } = useStudyTimer(false)
 
-    useEffect(() => {
-        if (step === 'reading' || step === 'quiz') {
-            startTimer()
-        } else {
-            pauseTimer()
-        }
-    }, [step, startTimer, pauseTimer])
+
 
     useEffect(() => {
         const state = location.state as any
@@ -203,7 +194,7 @@ export default function ReadingPage() {
         else if (state?.mode === 'review' && state?.historyRecord) {
             console.log('✅ Detected review mode')
             const record = state.historyRecord as History
-            setIsReviewMode(true)
+
             loadReviewContent(record)
         }
         // Priority 4: Generation Mode (legacy - direct word passing)
@@ -241,35 +232,40 @@ export default function ReadingPage() {
                 throw new Error(`Article ${articleId} not found`)
             }
 
-            console.log('Article loaded:', article)
+            console.log('Fetched article:', article)
             setCurrentArticle(article)
-
-            // Set article data for display (no quiz questions yet)
             setArticleData({
                 title: article.title,
                 content: article.content,
-                readingQuestions: [],
+                readingQuestions: [], // Loaded later or separately? Article interface has optional questions?
+                // The new Article interface in DB (v2) does NOT store questions in `content`?
+                // Wait, DB v2 `articles` table has `uuid`, `title`, `content`.
+                // Where are questions stored?
+                // In `history` (legacy) or `quizRecords`?
+                // `QuizView` needs questions.
+                // If I just want to READ, I don't need questions immediately.
+                // But `QuizView` needs them.
+                // Let's assume for now checks and adjusts difficulty
                 vocabularyQuestions: []
             })
 
             // Load target words
-            const words = await Promise.all(
-                article.targetWords.map(spelling => wordService.getWordBySpelling(spelling))
-            )
-            setTargetWords(words.filter((w): w is Word => !!w))
-
-            // Load quiz history for this article
-            const history = await quizRecordService.getRecordsByArticleUuid(article.uuid)
-            setQuizHistory(history)
-            console.log('Quiz history loaded:', history.length, 'records')
+            if (article.targetWords && article.targetWords.length > 0) {
+                const words = await Promise.all(
+                    article.targetWords.map(spelling => wordService.getWordBySpelling(spelling))
+                )
+                setTargetWords(words.filter((w): w is Word => !!w))
+            }
 
             setStep('reading')
-        } catch (error) {
-            console.error('Failed to load article', error)
-            setError(error instanceof Error ? error.message : 'Failed to load article')
-            // If error, we might want to show error UI, which is currently bound to 'generating' step block
-            // So we might need to setStep('generating') to show the error or handle error separately
-            setStep('generating')
+
+            // Trigger difficulty check?
+            // checkAndAdjustDifficulty(...)
+
+        } catch (err: any) {
+            console.error('Failed to load article:', err)
+            setError(err.message || 'Failed to load article')
+            // navigate('/') // Optional: stay on page with error
         }
     }
 
@@ -291,7 +287,7 @@ export default function ReadingPage() {
         console.log('📖 Loading review for quiz:', record.id)
 
         // Restore answers
-        setQuizAnswers(record.userAnswers)
+
 
         // Calculate result for banner
         const readingTotal = record.questions.reading.length
@@ -355,7 +351,7 @@ export default function ReadingPage() {
             }
         })
 
-        setViewMode('results')
+
         setStep('review')
     }
 
@@ -372,10 +368,6 @@ export default function ReadingPage() {
             }
             setArticleData(data)
 
-            if (record.userAnswers) {
-                setQuizAnswers(record.userAnswers)
-            }
-
             // Fetch full word objects
             const words = await Promise.all(
                 record.targetWords.map(spelling => wordService.getWordBySpelling(spelling))
@@ -383,7 +375,7 @@ export default function ReadingPage() {
             setTargetWords(words.filter((w): w is Word => !!w))
 
             // Reset viewMode when loading new review content
-            setViewMode(null)
+
             setStep('reading')
         } catch (error) {
             console.error('Failed to load review', error)
@@ -603,7 +595,7 @@ export default function ReadingPage() {
         if (!articleData) return
 
         setIsSubmitting(true)
-        setQuizAnswers(answers)
+
 
         // Calculate Reading Score (40% weight)
         let readingCorrect = 0
@@ -812,14 +804,19 @@ export default function ReadingPage() {
         setIsWordModalOpen(true)
     }
 
-    const handleFontSizeChange = (newSize: FontSize) => {
+    const handleFontSizeChange = (newSize: number) => {
         setFontSize(newSize)
-        localStorage.setItem('reading_font_size', newSize)
+        localStorage.setItem('reading_font_size', newSize.toString())
+    }
+
+    const handleTimerToggle = () => {
+        if (!isActive) startTimer()
+        else pauseTimer()
     }
 
     if (step === 'initializing') {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <CircularProgress />
             </Box>
         )
@@ -835,8 +832,8 @@ export default function ReadingPage() {
                             title={t('reading:error.generationFailed', 'Generation Failed')}
                             description={error}
                             action={
-                                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                                    <Button variant="outlined" onClick={() => navigate('/')}>
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                    <Button variant="outlined" onClick={() => navigate(-1)}>
                                         {t('common:button.back', 'Back')}
                                     </Button>
                                     <Button variant="contained" onClick={handleRetry}>
@@ -854,298 +851,140 @@ export default function ReadingPage() {
     }
 
     return (
-        <Box ref={topRef}>
-            {step === 'reading' && <ReadingProgressBar />}
+        <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc', pb: 10 }}>
+            {/* 1. Sticky Header */}
+            <ReadingHeader
+                title={currentArticle?.title || t('reading:article.title', 'Article')}
+                fontSize={fontSize}
+                onFontSizeChange={handleFontSizeChange}
+                isTimerRunning={isActive}
+                seconds={timeSpent}
+                onTimerToggle={handleTimerToggle}
+                onTimerReset={resetTimer}
+            />
 
+            <Container maxWidth="xl" sx={{ mt: 3 }}>
+                <Fade in={true} timeout={800}>
+                    <Grid container spacing={4}>
 
-            <Container maxWidth="xl" sx={{ py: 4 }}>
-                {step === 'reading' && articleData && (
-                    <Fade in={true} timeout={800}>
-                        <Grid container spacing={3}>
-                            {/* Left Sidebar - Info Panel (Desktop only) */}
-                            <Grid item xs={12} lg={2} sx={{ display: { xs: 'none', lg: 'block' } }}>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    {/* Reading Timer */}
-                                    <ReadingTimer />
-
-                                    {/* Info Panel */}
-                                    <Paper
-                                        elevation={2}
-                                        sx={{
-                                            p: 2.5,
-                                            borderRadius: 3,
-                                            position: 'sticky',
-                                            top: 80
-                                        }}
-                                    >
-                                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                                            {t('reading:sidebar.difficulty')}
-                                        </Typography>
-                                        <Chip
-                                            label={t(`reading:sidebar.${currentArticle?.difficultyLevel === 'L1' ? 'beginner' :
-                                                currentArticle?.difficultyLevel === 'L3' ? 'advanced' :
-                                                    'intermediate'
-                                                }`)}
-                                            size="small"
-                                            color="primary"
-                                            sx={{ mb: 2 }}
-                                        />
-
-                                        <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
-                                            {t('reading:sidebar.targetWords')}
-                                        </Typography>
-                                        {currentArticle?.wordCtxMeanings && currentArticle.wordCtxMeanings.length > 0 ? (
-                                            <Box sx={{ mt: 1, maxHeight: 'calc(100vh - 300px)', overflowY: 'auto', pr: 0.5 }}>
-                                                {currentArticle.wordCtxMeanings.map((item, idx) => (
-                                                    <Box key={idx} sx={{ mb: 1, pb: 0.5, borderBottom: '1px dashed #eee' }}>
-                                                        <Typography variant="body2" sx={{ lineHeight: 1.4 }}>
-                                                            <Box component="span" fontWeight="bold" color="primary.main">{item.word}</Box>
-                                                            <Box component="span" color="text.secondary" sx={{ mx: 0.5, fontSize: '0.75em' }}>{item.part_of_speech}</Box>
-                                                            <Box component="span" color="text.primary">{item.meaning_in_context}</Box>
-                                                        </Typography>
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                        ) : (
-                                            <Typography variant="h6" color="primary.main" fontWeight="bold">
-                                                {targetWords.length}
-                                            </Typography>
-                                        )}
-
-                                        {/* Quiz History Section */}
-                                        {quizHistory.length > 0 && (
-                                            <>
-                                                <Divider sx={{ my: 2 }} />
-                                                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                                                    {t('reading:sidebar.quizHistory', 'Quiz History')}
-                                                </Typography>
-                                                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                                    {quizHistory.slice(0, 3).map((record) => (
-                                                        <Paper
-                                                            key={record.id}
-                                                            variant="outlined"
-                                                            onClick={() => loadQuizReviewFromRecord(record)}
-                                                            sx={{
-                                                                p: 1.5,
-                                                                borderRadius: 2,
-                                                                bgcolor: 'background.default',
-                                                                cursor: 'pointer',
-                                                                display: 'flex',
-                                                                justifyContent: 'space-between',
-                                                                alignItems: 'center',
-                                                                transition: 'all 0.2s',
-                                                                '&:hover': {
-                                                                    borderColor: 'primary.main',
-                                                                    bgcolor: 'action.hover'
-                                                                }
-                                                            }}
-                                                        >
-                                                            <Typography variant="caption" color="text.secondary">
-                                                                {new Date(record.date).toLocaleDateString(undefined, {
-                                                                    month: 'numeric',
-                                                                    day: 'numeric',
-                                                                    hour: '2-digit',
-                                                                    minute: '2-digit'
-                                                                })}
-                                                            </Typography>
-                                                            <Typography variant="body2" fontWeight="bold" color="primary">
-                                                                {record.score}
-                                                            </Typography>
-                                                        </Paper>
-                                                    ))}
-                                                    {quizHistory.length > 3 && (
-                                                        <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', mt: 0.5 }}>
-                                                            +{quizHistory.length - 3} {t('reading:sidebar.moreRecords', 'more')}
-                                                        </Typography>
-                                                    )}
-                                                </Box>
-                                            </>
-                                        )}
-                                    </Paper>
-                                </Box>
-                            </Grid>
-
-                            {/* Center - Article Content */}
-                            <Grid item xs={12} lg={9}>
-                                <ArticleContent
-                                    title={articleData.title}
-                                    content={articleData.content}
-                                    onWordClick={handleWordClick}
-                                    onSelection={handleSelection} // Pass selection handler
-                                    fontSize={fontSize}
-                                />
-
-                                {/* Word Definition Popover */}
-                                {popoverState?.type === 'word' && (
-                                    <DefinitionPopover
-                                        word={popoverState.text}
-                                        anchorPosition={popoverState.position}
-                                        onClose={handleClosePopover}
-                                        onDeepDive={handleDeepDive}
+                        {/* 2. Main Article Content (Left 9/12) */}
+                        <Grid item xs={12} md={9}>
+                            <Box sx={{ mb: 4 }}>
+                                {step === 'quiz' ? (
+                                    <QuizView
+                                        readingQuestions={articleData?.readingQuestions || []}
+                                        vocabularyQuestions={articleData?.vocabularyQuestions || []}
+                                        onSubmit={handleQuizSubmit}
+                                        onBack={() => setStep('reading')}
+                                        isSubmitting={isSubmitting}
                                     />
-                                )}
-
-                                {/* Sentence Analysis Popover */}
-                                {popoverState?.type === 'sentence' && settings && (
-                                    <SentenceAnalysisPopover
-                                        sentence={popoverState.text}
-                                        anchorPosition={popoverState.position}
-                                        onClose={handleClosePopover}
-                                        settings={settings}
-                                        articleId={currentArticle?.uuid || ''}
-                                    />
-                                )}
-
-                                <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
-                                    {isReviewMode ? (
-                                        // Review mode: show two buttons
-                                        <>
+                                ) : step === 'feedback' && quizResult ? (
+                                    <Paper sx={{ p: 4, borderRadius: 2, textAlign: 'center' }}>
+                                        <Typography variant="h4" gutterBottom>
+                                            {t('reading:quiz.resultTitle', 'Quiz Result')}
+                                        </Typography>
+                                        <Typography variant="h2" color="primary" sx={{ mb: 2 }}>
+                                            {quizResult.score}%
+                                        </Typography>
+                                        {quizResult.stats && (
+                                            <Grid container spacing={2} sx={{ mt: 2, mb: 4 }}>
+                                                <Grid item xs={6}>
+                                                    <Paper variant="outlined" sx={{ p: 2 }}>
+                                                        <Typography variant="subtitle2" color="text.secondary">Reading</Typography>
+                                                        <Typography variant="h6">
+                                                            {quizResult.stats.reading.correct}/{quizResult.stats.reading.total}
+                                                        </Typography>
+                                                    </Paper>
+                                                </Grid>
+                                                <Grid item xs={6}>
+                                                    <Paper variant="outlined" sx={{ p: 2 }}>
+                                                        <Typography variant="subtitle2" color="text.secondary">Vocabulary</Typography>
+                                                        <Typography variant="h6">
+                                                            {quizResult.stats.vocabulary.correct}/{quizResult.stats.vocabulary.total}
+                                                        </Typography>
+                                                    </Paper>
+                                                </Grid>
+                                            </Grid>
+                                        )}
+                                        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
                                             <Button
                                                 variant="contained"
-                                                size="large"
                                                 onClick={() => {
-                                                    setViewMode('results')
-                                                    setStep('quiz')
-                                                }}
-                                                sx={{
-                                                    px: 4,
-                                                    py: 1.5,
-                                                    borderRadius: 8,
-                                                    fontSize: '1.1rem',
-                                                    background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
-                                                    boxShadow: '0 4px 20px rgba(74, 144, 226, 0.3)',
-                                                    transition: 'all 0.2s ease',
-                                                    '&:hover': {
-                                                        transform: 'scale(1.02)',
-                                                        boxShadow: '0 6px 24px rgba(74, 144, 226, 0.4)'
-                                                    }
+                                                    setStep('reading')
+                                                    setQuizResult(undefined)
                                                 }}
                                             >
-                                                {t('reading:buttons.viewAnswers')}
+                                                {t('reading:quiz.backToArticle', 'Back to Article')}
                                             </Button>
-                                            <Button
-                                                variant="outlined"
-                                                size="large"
-                                                onClick={() => {
-                                                    setViewMode('retake')
-                                                    setQuizAnswers(null) // Clear previous answers for retake
-                                                    setStep('quiz')
-                                                }}
-                                                sx={{
-                                                    px: 4,
-                                                    py: 1.5,
-                                                    borderRadius: 8,
-                                                    fontSize: '1.1rem',
-                                                    borderColor: '#4A90E2',
-                                                    color: '#4A90E2',
-                                                    transition: 'all 0.2s ease',
-                                                    '&:hover': {
-                                                        borderColor: '#7B68EE',
-                                                        backgroundColor: 'rgba(74, 144, 226, 0.05)',
-                                                        transform: 'scale(1.02)'
-                                                    }
-                                                }}
-                                            >
-                                                {t('reading:buttons.retakeQuiz')}
-                                            </Button>
-                                        </>
-                                    ) : (
-                                        // Normal mode: single start button
-                                        <Button
-                                            variant="contained"
-                                            size="large"
-                                            onClick={handleStartQuiz}
-                                            disabled={!currentArticle}
-                                            sx={{
-                                                px: 6,
-                                                py: 1.5,
-                                                borderRadius: 8,
-                                                fontSize: '1.2rem',
-                                                background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
-                                                boxShadow: '0 4px 20px rgba(74, 144, 226, 0.3)',
-                                                transition: 'all 0.2s ease',
-                                                '&:hover': {
-                                                    transform: 'scale(1.02)',
-                                                    boxShadow: '0 6px 24px rgba(74, 144, 226, 0.4)'
-                                                }
-                                            }}
-                                        >
-                                            {t('reading:buttons.startQuiz')}
-                                        </Button>
-                                    )}
-                                </Box>
-                            </Grid>
-
-                            {/* Right Toolbar */}
-                            <Grid item xs={12} lg={1} sx={{ display: { xs: 'none', lg: 'block' } }}>
-                                <ReadingToolbar
-                                    onFontSizeChange={handleFontSizeChange}
-                                    currentFontSize={fontSize}
-                                />
-                            </Grid>
-
-                            {/* Mobile Font Size Control */}
-                            <Grid item xs={12} sx={{ display: { xs: 'block', lg: 'none' } }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                                    <ReadingToolbar
-                                        onFontSizeChange={handleFontSizeChange}
-                                        currentFontSize={fontSize}
+                                        </Box>
+                                    </Paper>
+                                ) : (
+                                    <ArticleContent
+                                        title={articleData?.title || ''}
+                                        content={articleData?.content || ''}
+                                        fontSize={fontSize}
+                                        onWordClick={handleWordClick}
+                                        onSelection={handleSelection}
+                                        wordCount={articleData?.content?.trim().split(/\s+/).length || 0}
+                                        difficultyLevel={currentArticle?.difficultyLevel || settings?.difficultyLevel || 'Level 2'}
                                     />
-                                </Box>
-                            </Grid>
+                                )}
+                            </Box>
                         </Grid>
-                    </Fade>
-                )}
 
-                {step === 'quiz' && articleData && (
-                    <QuizView
-                        readingQuestions={articleData.readingQuestions}
-                        vocabularyQuestions={articleData.vocabularyQuestions}
-                        onSubmit={handleQuizSubmit}
-                        onBack={() => setStep('reading')}
-                        initialAnswers={viewMode === 'results' ? quizAnswers || undefined : undefined}
-                        readOnly={viewMode === 'results'}
-                        isSubmitting={isSubmitting}
-                    />
-                )}
+                        {/* 3. Right Sidebar (Right 3/12) */}
+                        <Grid item xs={12} md={3}>
+                            <ReadingSidebar
+                                words={targetWords}
+                                activeWord={selectedWord}
+                                onHoverWord={(word) => setSelectedWord(word || '')}
+                                quizHistory={quizHistory}
+                                onStartQuiz={handleStartQuiz}
+                                onReviewQuiz={loadQuizReviewFromRecord}
+                                wordContexts={currentArticle?.wordCtxMeanings}
+                            />
+                        </Grid>
 
-                {step === 'review' && articleData && quizAnswers && (
-                    <QuizView
-                        readingQuestions={articleData.readingQuestions}
-                        vocabularyQuestions={articleData.vocabularyQuestions}
-                        onSubmit={() => { }} // Not used in readOnly mode
-                        onExit={() => setStep('reading')} // Exit Review -> Back to Article/Reading
-                        onBack={() => setStep('reading')} // Back -> Exit (There is no ScoreFeedback now)
-                        initialAnswers={quizAnswers}
-                        readOnly={true}
-                        result={quizResult}
-                    />
-                )}
-
-                {/* Feedback step removed */}
-
-                <WordDetailModal
-                    word={selectedWord}
-                    open={isWordModalOpen}
-                    onClose={() => setIsWordModalOpen(false)}
-                />
-
-                <Snackbar
-                    open={snackbarOpen}
-                    autoHideDuration={6000}
-                    onClose={() => setSnackbarOpen(false)}
-                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                >
-                    <Alert
-                        onClose={() => setSnackbarOpen(false)}
-                        severity={snackbarSeverity}
-                        sx={{ width: '100%', boxShadow: 3 }}
-                        variant="filled"
-                    >
-                        {snackbarMessage}
-                    </Alert>
-                </Snackbar>
+                    </Grid>
+                </Fade>
             </Container>
+
+            {/* Modals & Popovers */}
+            <WordDetailModal
+                open={isWordModalOpen}
+                onClose={() => setIsWordModalOpen(false)}
+                word={selectedWord}
+            />
+
+            {popoverState?.type === 'word' && (
+                <DefinitionPopover
+                    anchorPosition={popoverState.position}
+                    onClose={handleClosePopover}
+                    word={popoverState.text}
+                    onDeepDive={() => popoverState && handleDeepDive(popoverState.text)}
+                />
+            )}
+
+            {popoverState?.type === 'sentence' && settings && (
+                <SentenceAnalysisPopover
+                    anchorPosition={popoverState.position}
+                    onClose={handleClosePopover}
+                    sentence={popoverState.text}
+                    settings={settings}
+                    articleId={currentArticle?.uuid || ''}
+                />
+            )}
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     )
 }

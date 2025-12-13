@@ -1,3 +1,29 @@
+## [Feature] Immersive Reading UI
+- [x] Task 1 (Component): Create `ReadingHeader.tsx`.
+    -   Implement the sticky top bar from `read.html`.
+    -   Props: `title`, `fontSize` (state), `onFontSizeChange`, `timer` (display), `onTimerToggle`.
+    -   Styling: White background, shadow, flex layout.
+- [x] Task 2 (Component): Create `ReadingSidebars.tsx` (Combined Right Sidebar).
+    -   **Right Sidebar**: Combined "Action Card", "Core Vocabulary", "History".
+    -   Refactor to single component `ReadingSidebar`.
+- [x] Task 3 (Page): Refactor `ReadingPage.tsx` Layout.
+    -   Adopt the `9-3` Grid layout (Main Article vs Right Sidebar).
+    -   Container: `maxWidth="xl"` to accommodate the wider layout.
+    -   Header: Integrate `ReadingHeader` (Sticky).
+    -   Main Content: Left `Grid` (xs=12, md=9).
+    -   Sidebar: Right `Grid` (xs=12, md=3) housing `ReadingSidebar`.
+- [x] Task 4 (Center): Enhance `ArticleContent` Wrapper.
+    -   Add Decoration Header (Gradient `div` matching `read.html`).
+    -   Add Metadata Header (Level Badge, Word Count, Recommended Time).
+    -   Style: Card-like appearance (`Paper` with rounded corners).
+- [x] Task 5 (Integrate): Connect Data & Logic.
+    -   **State Lifting**: `activeWord` state needs to be lifted to `ReadingPage` to sync Sidebar hover <-> Article highlight.
+    -   **Props Wiring**: Pass `targetWords` and `quizHistory` to `ReadingSidebar`.
+    -   **Timer**: Connect `ReadingHeader` to `useStudyTimer`.
+- [x] Task 6 (Polish): Address user feedback (Sidebar stats, Button color, metadata i18n, Back to Top, NaN fix).
+    - [x] Fix: Back to Top scroll container (targeted `main`).
+    - [x] Fix: Font Size granular adjustment (switched from enum to number).
+
 ## [Feature] iPad Portrait UI (DashboardVertical)
 - [x] Task 1 (Component): Create `DashboardVerticalLayout.tsx`.
     -   Implement the "Vertical Dashboard" design from `hero.html` using MUI components.

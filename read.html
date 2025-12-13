@@ -1,0 +1,305 @@
+import React, { useState, useEffect } from 'react';
+import {
+Clock,
+BookOpen,
+ChevronLeft,
+Type,
+Minus,
+Plus,
+Play,
+Pause,
+History,
+Trophy,
+ArrowRight,
+MoreVertical,
+Highlighter,
+Maximize2
+} from 'lucide-react';
+
+const ArticleReader = () => {
+// 1. 阅读计时逻辑
+const [seconds, setSeconds] = useState(0);
+const [isTimerRunning, setIsTimerRunning] = useState(true);
+
+useEffect(() => {
+let interval = null;
+if (isTimerRunning) {
+interval = setInterval(() => {
+setSeconds(seconds => seconds + 1);
+}, 1000);
+}
+return () => clearInterval(interval);
+}, [isTimerRunning]);
+
+const formatTime = (totalSeconds) => {
+const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+const s = (totalSeconds % 60).toString().padStart(2, '0');
+return `${m}:${s}`;
+};
+
+// 2. 字体大小控制
+const [fontSize, setFontSize] = useState(18); // px
+
+// 3. 模拟核心词汇数据
+const vocabulary = [
+{ word: "lonely", type: "adj.", trans: "孤独的", context: "felt lonely in his new class" },
+{ word: "habit", type: "n.", trans: "习惯", context: "had a habit of staying alone" },
+{ word: "design", type: "v.", trans: "设计", context: "plan a project to design" },
+{ word: "temperature", type: "n.", trans: "温度", context: "when the temperature was high" },
+{ word: "influence", type: "n.", trans: "影响", context: "positive attitude had a good influence" },
+{ word: "satisfied", type: "adj.", trans: "满意的", context: "He felt satisfied with his work" },
+];
+
+// 4. 模拟测试记录数据
+const testHistory = [
+{ id: 1, date: "2025-12-10", score: 85, duration: "2m 10s" },
+{ id: 2, date: "2025-12-08", score: 60, duration: "1m 45s" },
+{ id: 3, date: "2025-12-01", score: 45, duration: "2m 30s" },
+];
+
+// 高亮交互状态
+const [activeWord, setActiveWord] = useState(null);
+
+// 渲染文章内容的辅助函数 (简单模拟)
+const renderContent = () => {
+const text = `Li Ming was a middle school student who often felt lonely in his new class. He had a habit of staying
+alone after school. One day, his teacher asked him to join the school's environmental club. Li Ming was not sure, but he
+decided to try.
+
+At the club, they planned a project to design a garden for the school. Li Ming learned to bring tools and plants. He
+started to wonder about nature. The smell of flowers made him happy. The club members worked hard, even when the
+temperature was high. They wanted to save water and help the environment.
+
+Li Ming's friends saw his change. They began to trust him more. His positive attitude had a good influence on others. He
+felt satisfied with his work. It was true that helping others could reduce loneliness. The sound of birds in the garden
+was peaceful.`;
+
+// 这里简单地替换换行符，实际项目中可能需要更复杂的富文本解析
+return text.split('\n\n').map((paragraph, idx) => (
+<p key={idx} className="mb-6 leading-relaxed text-slate-700 transition-all duration-300" style={{ fontSize:
+    `${fontSize}px`, lineHeight: '1.8' }}>
+    {paragraph.split(' ').map((word, wIdx) => {
+    // 简单的单词匹配逻辑 (仅用于演示 UI)
+    const cleanWord = word.replace(/[^a-zA-Z]/g, '');
+    const isVocab = vocabulary.find(v => v.word.toLowerCase() === cleanWord.toLowerCase());
+
+    if (isVocab) {
+    return (
+    <span key={wIdx} onMouseEnter={()=> setActiveWord(isVocab.word)}
+        onMouseLeave={() => setActiveWord(null)}
+        className={`cursor-pointer rounded px-0.5 transition-colors duration-200 ${
+        activeWord === isVocab.word
+        ? 'bg-indigo-200 text-indigo-900 font-medium'
+        : 'bg-indigo-50 text-indigo-700 border-b border-indigo-200'
+        }`}
+        >
+        {word}{' '}
+    </span>
+    );
+    }
+    return word + ' ';
+    })}
+</p>
+));
+};
+
+return (
+<div className="min-h-screen bg-[#F5F7FA] font-sans text-slate-800 flex flex-col">
+
+    {/* 顶部导航栏 */}
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm h-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
+            <div className="flex items-center gap-4">
+                <button className="p-2 hover:bg-gray-100 rounded-lg text-slate-500 transition-colors">
+                    <ChevronLeft size={22} />
+                </button>
+                <h1 className="text-lg font-bold text-slate-800 hidden sm:block truncate max-w-md">The Power of a Good
+                    Habit</h1>
+            </div>
+
+            <div className="flex items-center gap-4">
+                {/* 字体控制 */}
+                <div className="hidden md:flex items-center gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
+                    <button onClick={()=> setFontSize(Math.max(14, fontSize - 2))}
+                        className="p-1.5 hover:bg-white hover:shadow-sm rounded-md text-slate-500 disabled:opacity-50"
+                        >
+                        <Minus size={14} />
+                    </button>
+                    <div
+                        className="flex items-center gap-1.5 px-1 text-sm font-medium text-slate-600 min-w-[3rem] justify-center">
+                        <Type size={14} />
+                        <span>{fontSize}</span>
+                    </div>
+                    <button onClick={()=> setFontSize(Math.min(26, fontSize + 2))}
+                        className="p-1.5 hover:bg-white hover:shadow-sm rounded-md text-slate-500"
+                        >
+                        <Plus size={14} />
+                    </button>
+                </div>
+
+                <div className="w-px h-6 bg-gray-200 hidden md:block"></div>
+
+                {/* 计时器 */}
+                <div className="flex items-center gap-2">
+                    <div
+                        className="flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg font-mono font-medium text-sm">
+                        {isTimerRunning ?
+                        <Clock size={16} className="animate-pulse" /> :
+                        <Pause size={16} />}
+                        <span>{formatTime(seconds)}</span>
+                    </div>
+                    <button onClick={()=> setIsTimerRunning(!isTimerRunning)}
+                        className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        title={isTimerRunning ? "暂停计时" : "继续计时"}
+                        >
+                        {isTimerRunning ?
+                        <Pause size={20} fill="currentColor" /> :
+                        <Play size={20} fill="currentColor" />}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main
+        className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
+
+        {/* === 主阅读区 (占比扩大至 9/12) === */}
+        <section className="lg:col-span-9 order-1 min-h-[80vh]">
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 sm:p-12 lg:p-16 relative">
+
+                {/* 头部元数据 */}
+                <div className="mb-10 border-b border-gray-100 pb-8">
+                    <div className="flex flex-wrap items-center gap-3 mb-4">
+                        <span
+                            className="inline-flex items-center px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full tracking-wide uppercase">
+                            Level 2
+                        </span>
+                        <span className="text-slate-400 text-sm flex items-center gap-1">
+                            <BookOpen size={14} /> 320 词
+                        </span>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-slate-400 text-sm">建议时长 3-5 分钟</span>
+                    </div>
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight">
+                        The Power of a Good Habit
+                    </h1>
+                </div>
+
+                {/* 文章正文 */}
+                <article
+                    className="prose prose-slate prose-lg max-w-none prose-headings:text-slate-800 prose-p:text-slate-600">
+                    {renderContent()}
+                </article>
+
+                {/* 底部互动 */}
+                <div
+                    className="mt-16 pt-8 border-t border-dashed border-gray-200 flex justify-between items-center text-slate-400 text-sm">
+                    <span>Reading finished?</span>
+                    <button className="flex items-center gap-1 hover:text-indigo-600 transition-colors">
+                        回到顶部
+                        <ArrowRight size={14} className="-rotate-90" />
+                    </button>
+                </div>
+            </div>
+
+            {/* 移动端/小屏下显示的测试卡片 (大屏下隐藏) */}
+            <div className="lg:hidden mt-8">
+                <div className="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg">
+                    <h3 className="text-xl font-bold mb-2">准备好挑战了吗？</h3>
+                    <button className="w-full bg-white text-indigo-600 font-bold py-3 rounded-xl mt-4">开始测试</button>
+                </div>
+            </div>
+        </section>
+
+
+        {/* === 右侧侧边栏 (占比 3/12，且 Sticky 吸顶) === */}
+        <aside
+            className="hidden lg:block lg:col-span-3 order-2 sticky top-24 h-[calc(100vh-8rem)] overflow-hidden flex flex-col gap-5">
+
+            {/* 1. 行动卡片 (最重要) */}
+            <div
+                className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl p-5 text-white shadow-lg shadow-indigo-200 shrink-0">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-lg">开始测试</h3>
+                    <Trophy size={20} className="text-yellow-300" />
+                </div>
+                <p className="text-indigo-100 text-xs mb-4 opacity-90 leading-relaxed">
+                    已阅读 <span className="font-mono font-bold">2</span> 次，最佳成绩 <span
+                        className="font-mono font-bold">85</span> 分。<br />
+                    本次测试包含 5 道题。
+                </p>
+                <button
+                    className="w-full bg-white text-indigo-600 font-bold py-2.5 rounded-xl shadow-sm hover:bg-indigo-50 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
+                    <span>立即挑战</span>
+                    <ArrowRight size={16} />
+                </button>
+            </div>
+
+            {/* 2. 核心词汇 (中间部分，可滚动) */}
+            <div
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 overflow-hidden flex flex-col min-h-0">
+                <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center shrink-0">
+                    <h2 className="font-bold text-slate-700 flex items-center gap-2 text-sm">
+                        <Highlighter size={16} className="text-indigo-500" />
+                        核心词汇
+                    </h2>
+                    <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-medium">
+                        {vocabulary.length}
+                    </span>
+                </div>
+                <div className="overflow-y-auto p-2 space-y-1 custom-scrollbar">
+                    {vocabulary.map((item, index) => (
+                    <div key={index} onMouseEnter={()=> setActiveWord(item.word)}
+                        onMouseLeave={() => setActiveWord(null)}
+                        className={`p-3 rounded-xl cursor-pointer transition-all border group ${
+                        activeWord === item.word
+                        ? 'bg-indigo-50 border-indigo-200 shadow-sm'
+                        : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-100'
+                        }`}
+                        >
+                        <div className="flex justify-between items-baseline mb-0.5">
+                            <span className={`font-bold text-sm ${activeWord===item.word ? 'text-indigo-700'
+                                : 'text-slate-800' }`}>
+                                {item.word}
+                            </span>
+                            <span
+                                className="text-[10px] text-slate-400 italic font-serif bg-slate-100 px-1 rounded">{item.type}</span>
+                        </div>
+                        <div className="text-xs text-slate-500 group-hover:text-slate-700">{item.trans}</div>
+                    </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* 3. 历史记录 (底部，折叠或简化) */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 shrink-0">
+                <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">最近记录</span>
+                    <History size={14} className="text-slate-400" />
+                </div>
+                <div className="space-y-2">
+                    {testHistory.slice(0, 2).map((record) => (
+                    <div key={record.id} className="flex items-center justify-between text-xs">
+                        <span className="text-slate-400">{record.date}</span>
+                        <div className="flex items-center gap-1.5">
+                            <span className={`font-bold ${record.score>= 80 ? 'text-emerald-600' :
+                                'text-slate-600'}`}>{record.score}分</span>
+                        </div>
+                    </div>
+                    ))}
+                    <button
+                        className="w-full text-center text-xs text-indigo-500 hover:text-indigo-600 mt-2 pt-2 border-t border-gray-50">
+                        查看全部
+                    </button>
+                </div>
+            </div>
+
+        </aside>
+
+    </main>
+</div>
+);
+};
+
+export default ArticleReader;

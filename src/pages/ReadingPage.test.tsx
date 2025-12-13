@@ -137,7 +137,7 @@ describe('ReadingPage', () => {
         await waitFor(() => expect(screen.getByTestId('article-content')).toBeInTheDocument())
 
         // Start Quiz
-        const startBtn = screen.getByText('reading:buttons.startQuiz')
+        const startBtn = screen.getByText('reading:sidebar.challengeNow')
         startBtn.click()
 
         // Should see loading

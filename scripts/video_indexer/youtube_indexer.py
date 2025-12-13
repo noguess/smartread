@@ -4,6 +4,7 @@ import subprocess
 import re
 import time
 import argparse
+import glob
 from collections import defaultdict
 from fast_asr_engine import ASREngine
 
@@ -170,6 +171,7 @@ def main():
     parser.add_argument('--urls', nargs='+', help='List of YouTube URLs')
     parser.add_argument('--skip-download', action='store_true', help='Skip download phase')
     parser.add_argument('--min-score', type=int, default=5, help='Minimum score to keep a word (default: 5)')
+    parser.add_argument('--incremental', action='store_true', help='Merge with existing index instead of overwriting')
     args = parser.parse_args()
     
     urls = args.urls or URL_LIST
@@ -213,12 +215,51 @@ def main():
     global_index = defaultdict(list)
     video_map = {}
     
+    # Incremental Mode: Load existing data
+    loaded_lemmas = set()
+    if args.incremental:
+        print("\n[Incremental Mode] Loading existing index...")
+        
+        # Load video map
+        vmap_path = os.path.join(OUTPUT_DIR, "video_map_youtube.json")
+        if os.path.exists(vmap_path):
+            try:
+                with open(vmap_path, 'r', encoding='utf-8') as f:
+                    existing_map = json.load(f)
+                    video_map.update(existing_map)
+                print(f"  ✅ Loaded video map ({len(video_map)} videos)")
+            except Exception as e:
+                print(f"  ⚠️  Failed to load existing video map: {e}")
+        
+        # Load shards
+        shard_files = glob.glob(os.path.join(OUTPUT_DIR, "index_youtube_*.json"))
+        loaded_words = 0
+        for sf in shard_files:
+            try:
+                with open(sf, 'r', encoding='utf-8') as f:
+                    shard_data = json.load(f)
+                    for lemma, entries in shard_data.items():
+                        global_index[lemma].extend(entries)
+                        loaded_lemmas.add(lemma)
+                        loaded_words += 1
+            except Exception as e:
+                print(f"  ⚠️  Failed to load shard {sf}: {e}")
+                
+        print(f"  ✅ Loaded {loaded_words} words from existing shards")
+
+    
     for idx, item in enumerate(downloaded_files):
         video_id = item['id'] # YouTube ID is the ID
         file_path = item['path']
         title = item['title']
         
         print(f"\nProcessing [{idx+1}/{len(downloaded_files)}] {title} ({video_id})")
+
+        # INCREMENTAL CHECK:
+        # If video is already in index, skip to prevent duplication
+        if args.incremental and video_id in video_map:
+            print(f"  ⏭️  Skipping (already indexed)")
+            continue
         
         video_map[video_id] = {
             "bvid": video_id, # Use youtube ID as 'bvid' field for compatibility
@@ -270,7 +311,11 @@ def main():
     
     # Filter taught words
     print(f"  Filtering words with min_score={args.min_score}...")
-    taught_index = smart_filter_taught_words(global_index, min_score=args.min_score)
+    taught_index = smart_filter_taught_words(
+        global_index, 
+        min_score=args.min_score,
+        whitelist=loaded_lemmas if args.incremental else None
+    )
     
     # Save video_map
     with open(os.path.join(OUTPUT_DIR, "video_map_youtube.json"), "w", encoding='utf-8') as f:

@@ -5,6 +5,7 @@ import subprocess
 import re
 import time
 import argparse
+import glob
 from collections import defaultdict
 from fast_asr_engine import ASREngine  # Use fast engine with improved estimation
 
@@ -232,6 +233,7 @@ Examples:
                        help='Only retry videos that failed in the previous run')
     parser.add_argument('--skip-download', action='store_true',
                        help='Skip download phase and only process existing videos')
+    parser.add_argument('--incremental', action='store_true', help='Merge with existing index instead of overwriting')
     args = parser.parse_args()
     
     # Determine BVID list source
@@ -338,6 +340,38 @@ Examples:
     failed_videos = []  # Track failed videos
     successful_videos = 0
     
+    # Incremental Mode: Load existing data
+    loaded_lemmas = set()
+    if args.incremental:
+        print("\n[Incremental Mode] Loading existing index...")
+        
+        # Load video map
+        vmap_path = os.path.join(OUTPUT_DIR, "video_map_bilibili.json")
+        if os.path.exists(vmap_path):
+            try:
+                with open(vmap_path, 'r', encoding='utf-8') as f:
+                    existing_map = json.load(f)
+                    video_map.update(existing_map)
+                print(f"  ✅ Loaded video map ({len(video_map)} videos)")
+            except Exception as e:
+                print(f"  ⚠️  Failed to load existing video map: {e}")
+        
+        # Load shards
+        shard_files = glob.glob(os.path.join(OUTPUT_DIR, "index_bilibili_*.json"))
+        loaded_words = 0
+        for sf in shard_files:
+            try:
+                with open(sf, 'r', encoding='utf-8') as f:
+                    shard_data = json.load(f)
+                    for lemma, entries in shard_data.items():
+                        global_index[lemma].extend(entries)
+                        loaded_lemmas.add(lemma)
+                        loaded_words += 1
+            except Exception as e:
+                print(f"  ⚠️  Failed to load shard {sf}: {e}")
+                
+        print(f"  ✅ Loaded {loaded_words} words from existing shards")
+
     # Use progress bar for processing if available
     processing_iterator = tqdm(enumerate(video_files), total=len(video_files), 
                               desc="Processing", unit="video") if HAS_TQDM else enumerate(video_files)
@@ -356,6 +390,23 @@ Examples:
             # Use the first BVID from bvid_list as the source
             # (assuming all downloaded videos are from the same or related series)
             source_bvid = bvid_list[0] if len(bvid_list) > 0 else None
+            
+            # INCREMENTAL CHECK:
+            # If ID exists, check if it matches the same file. 
+            if args.incremental and video_id in video_map:
+                existing_file = video_map[video_id].get("filename")
+                if existing_file == video_filename:
+                    if not HAS_TQDM:
+                        print(f"\nVideo {video_id} ({video_filename}) already indexed. Skipping.")
+                    else:
+                        processing_iterator.write(f"Skipping {video_id} (already indexed)")
+                    continue
+                else:
+                    msg = f"ID collision: {video_id} maps to {existing_file} in index, but processing {video_filename} now."
+                    if not HAS_TQDM:
+                        print(f"  ⚠️  {msg} Overwriting...")
+                    else:
+                        processing_iterator.write(f"  ⚠️  {msg}")
             
             video_map[video_id] = {
                 "filename": video_filename,
@@ -506,7 +557,8 @@ Examples:
     taught_words_index = smart_filter_taught_words(
         global_index,
         time_window=120,
-        min_score=15
+        min_score=15,
+        whitelist=loaded_lemmas if args.incremental else None
     )
     
     taught_word_count = len(taught_words_index)

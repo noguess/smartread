@@ -85,7 +85,7 @@ def deduplicate_occurrences(occurrences, time_threshold=60):
     
     return result
 
-def smart_filter_taught_words(word_index, time_window=120, min_score=10):
+def smart_filter_taught_words(word_index, time_window=120, min_score=10, whitelist=None):
     """
     Smartly filter taught words based on multi-dimensional scoring.
     Also assigns a score 's' to each occurrence for frontend sorting.
@@ -100,11 +100,13 @@ def smart_filter_taught_words(word_index, time_window=120, min_score=10):
         word_index: Dict of {word: [occurrences]}
         time_window: Sliding window size (seconds)
         min_score: Minimum total score to keep the word
+        whitelist: Set of words to keep regardless of score (e.g. from existing index)
         
     Returns:
         Filtered dict with only "taught" words, each occurrence having an 's' field
     """
     filtered_index = {}
+    whitelist = whitelist or set()
     
     # Intro patterns that strongly suggest a word is being taught
     INTRO_PATTERNS = [
@@ -171,7 +173,7 @@ def smart_filter_taught_words(word_index, time_window=120, min_score=10):
         # Cap total context/isolation score contributions to avoid spam
         # (Simplified logic: we trust the sum of individual scores roughly reflects importance)
             
-        if total_word_score >= min_score:
+        if total_word_score >= min_score or word in whitelist:
             filtered_index[word] = occurrences
             
     return filtered_index

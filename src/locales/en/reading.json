@@ -34,7 +34,22 @@
         "advanced": "Advanced",
         "targetWords": "Target Words",
         "quizHistory": "Quiz History",
-        "moreRecords": "more"
+        "moreRecords": "more",
+        "startQuiz": "Start Quiz",
+        "quizStats": "Read {{count}} times, Best Score {{score}}",
+        "challengeNow": "Challenge Now",
+        "coreVocabulary": "Core Vocabulary",
+        "recentHistory": "Recent History",
+        "noHistory": "No records",
+        "viewAll": "View All"
+    },
+    "meta": {
+        "wordCount": "{{count}} words",
+        "duration": "Duration {{minutes}} min"
+    },
+    "footer": {
+        "finished": "Reading finished?",
+        "backToTop": "Back to Top"
     },
     "toolbar": {
         "fontSizeLabel": "Adjust Font Size"
@@ -58,6 +73,7 @@
         "next": "Next Part",
         "submit": "Submit Answers",
         "back": "Back to Article",
+        "backToArticle": "Back to Article",
         "correct": "Correct",
         "yourAnswer": "Your Answer",
         "exitReview": "Exit Review",

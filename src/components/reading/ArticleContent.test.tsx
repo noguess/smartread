@@ -28,19 +28,24 @@ describe('ArticleContent', () => {
     const defaultProps = {
         title: 'Test Title',
         content: 'Test content with **target** word.',
-        fontSize: 'medium' as const,
+        fontSize: 18,
         onWordClick: mockOnWordClick,
-        onSelection: mockOnSelection
+        onSelection: mockOnSelection,
+        difficultyLevel: 'Level 2',
+        wordCount: 120,
     }
 
     beforeEach(() => {
         vi.clearAllMocks()
     })
 
-    it('renders title and content', () => {
+    it('renders title, content and metadata', () => {
         render(<ArticleContent {...defaultProps} />)
         expect(screen.getByText('Test Title')).toBeInTheDocument()
         expect(screen.getByText('Test content with **target** word.')).toBeInTheDocument()
+        // Metadata
+        expect(screen.getByText('Level 2')).toBeInTheDocument()
+        expect(screen.getByText('reading:meta.wordCount')).toBeInTheDocument()
     })
 
     it('handles selection of text', () => {

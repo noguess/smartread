@@ -72,6 +72,16 @@ python bilibili_indexer.py --retry-failed
 python bilibili_indexer.py --skip-download
 ```
 
+### 场景 5: 增量更新 (不覆盖旧索引)
+将新视频合并到现有索引中：
+```bash
+python bilibili_indexer.py --incremental --bvids BV_NEW_VIDEO
+```
+特点：
+- 自动合并新老数据
+- 自动跳过已索引的视频
+- 保护现有单词库不丢失
+
 ## 📁 输出文件
 
 处理完成后，会在 `public/data/` 目录生成：

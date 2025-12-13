@@ -1,26 +1,43 @@
-import { Paper, Typography, Box } from '@mui/material'
+import { Paper, Typography, Box, Chip, Stack } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
 import { useEffect, useState } from 'react'
 import styles from '../../styles/reading.module.css'
+import { MenuBook, ArrowUpward } from '@mui/icons-material'
 
 interface ArticleContentProps {
     title: string
     content: string
     onWordClick?: (word: string) => void
-    onSelection?: (word: string, position: { top: number, left: number }) => void
-    fontSize: 'small' | 'medium' | 'large'
+    onSelection?: (text: string, position: { top: number, left: number }) => void
+    fontSize: number
+    wordCount?: number
+    difficultyLevel?: string
 }
 
-const fontSizeMap = {
-    small: '15px',
-    medium: '17px',
-    large: '19px'
-}
-
-export default function ArticleContent({ title, content, onWordClick, onSelection, fontSize }: ArticleContentProps) {
+export default function ArticleContent({
+    title,
+    content,
+    onWordClick,
+    onSelection,
+    fontSize,
+    wordCount = 0,
+    difficultyLevel = 'Level 2'
+}: ArticleContentProps) {
     const { t } = useTranslation(['reading'])
     const [showHint, setShowHint] = useState(false)
+
+    // Calculate reading time
+    // WPM based on difficulty (Slower for difficulty)
+    // L1: 60, L2: 50, L3+: 40
+    const wpm = (() => {
+        const level = (difficultyLevel || 'L2').toUpperCase()
+        if (level.includes('1')) return 60
+        if (level.includes('2')) return 50
+        return 40
+    })()
+
+    const readingTime = Math.max(1, Math.ceil(wordCount / wpm))
 
     useEffect(() => {
         // Check if this is the first time reading
@@ -35,6 +52,7 @@ export default function ArticleContent({ title, content, onWordClick, onSelectio
             return () => clearTimeout(timer)
         }
     }, [])
+
 
     const handleWordClick = (e: React.MouseEvent<HTMLSpanElement>) => {
         const word = e.currentTarget.textContent || ''
@@ -57,8 +75,6 @@ export default function ArticleContent({ title, content, onWordClick, onSelectio
             const rect = range.getBoundingClientRect()
 
             // Calculate absolute position
-            // We pass the position relative to the viewport (client coordinates)
-            // logic in Popover will use anchorReference="anchorPosition" with client coordinates
             onSelection(text, {
                 top: rect.bottom, // Show below the selection
                 left: rect.left + rect.width / 2 // Center horizontally
@@ -109,28 +125,62 @@ export default function ArticleContent({ title, content, onWordClick, onSelectio
             <Paper
                 elevation={0}
                 sx={{
-                    maxWidth: 860,
+                    maxWidth: 1000,
                     margin: '0 auto',
-                    p: { xs: 3, md: 6 },
-                    borderRadius: 4,
+                    p: { xs: 4, md: 8, lg: 10 },
+                    borderRadius: 6, // Rounded-3xl
                     minHeight: '60vh',
-                    bgcolor: 'background.paper'
+                    bgcolor: 'background.paper',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.02)'
                 }}
             >
-                {/* Title */}
-                <Typography
-                    variant="h4"
-                    gutterBottom
-                    fontWeight="bold"
-                    align="center"
-                    sx={{
-                        mb: 5,
-                        color: 'text.primary',
-                        fontSize: { xs: '1.75rem', md: '2.125rem' }
-                    }}
-                >
-                    {title}
-                </Typography>
+                {/* Metadata Header */}
+                <Box sx={{ mb: 5, borderBottom: '1px solid', borderColor: 'divider', pb: 4 }}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
+                        <Chip
+                            label={difficultyLevel}
+                            size="small"
+                            sx={{
+                                bgcolor: 'success.light',
+                                color: 'success.dark',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                fontSize: '0.75rem',
+                                height: 24
+                            }}
+                        />
+                        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                            <MenuBook sx={{ fontSize: 16 }} />
+                            <Typography variant="body2" component="span">
+                                {t('reading:meta.wordCount', { count: wordCount })}
+                            </Typography>
+                        </Stack>
+
+                        <Typography variant="body2" sx={{ color: 'text.disabled' }}>•</Typography>
+
+                        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                            {/* <AccessTime sx={{ fontSize: 16 }} /> */}
+                            <Typography variant="body2" component="span">
+                                {t('reading:meta.duration', { minutes: readingTime })}
+                            </Typography>
+                        </Stack>
+                    </Stack>
+
+                    <Typography
+                        variant="h1"
+                        sx={{
+                            color: 'text.primary',
+                            fontSize: { xs: '2rem', md: '3rem', lg: '3.5rem' },
+                            fontWeight: 800,
+                            lineHeight: 1.2
+                        }}
+                    >
+                        {title}
+                    </Typography>
+                </Box>
 
                 {/* Content */}
                 <Box
@@ -139,11 +189,11 @@ export default function ArticleContent({ title, content, onWordClick, onSelectio
                     onTouchEnd={handleSelection} // Trigger on touch end (for mobile/tablet)
                     onContextMenu={(e) => e.preventDefault()} // Block system context menu
                     sx={{
-                        mt: 4,
-                        fontSize: fontSizeMap[fontSize],
+                        fontSize: fontSize,
                         lineHeight: 1.8,
+                        color: 'text.secondary',
                         '& p': {
-                            marginBottom: '20px',
+                            marginBottom: '24px',
                             textAlign: 'justify',
                             textJustify: 'inter-word'
                         },
@@ -151,10 +201,10 @@ export default function ArticleContent({ title, content, onWordClick, onSelectio
                         '& p:first-of-type::first-letter': {
                             float: 'left',
                             fontSize: '3.5em',
-                            lineHeight: 0.9,
+                            lineHeight: 0.8,
                             margin: '0.1em 0.1em 0 0',
                             color: 'primary.main',
-                            fontWeight: 'bold'
+                            fontWeight: 800
                         }
                     }}
                 >
@@ -165,12 +215,11 @@ export default function ArticleContent({ title, content, onWordClick, onSelectio
                                     className={styles.targetWord}
                                     style={{
                                         fontWeight: 600,
-                                        color: '#1976d2',
-                                        background: 'linear-gradient(180deg, transparent 60%, #E3F2FD 60%)',
+                                        color: '#2563eb', // indigo-600/blue-600
+                                        background: 'linear-gradient(180deg, transparent 65%, #dbeafe 65%)', // heavy bottom underline
                                         cursor: onWordClick ? 'pointer' : 'default',
-                                        padding: '2px 4px',
-                                        borderRadius: '3px',
-                                        position: 'relative',
+                                        padding: '0 2px',
+                                        borderRadius: '2px',
                                         transition: 'all 0.2s ease',
                                     }}
                                     onClick={onWordClick ? handleWordClick : undefined}
@@ -181,6 +230,44 @@ export default function ArticleContent({ title, content, onWordClick, onSelectio
                     >
                         {content}
                     </ReactMarkdown>
+                </Box>
+
+                {/* Footer */}
+                <Box
+                    sx={{
+                        mt: 8,
+                        pt: 4,
+                        borderTop: '1px dashed',
+                        borderColor: 'divider',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        color: 'text.disabled',
+                    }}
+                >
+                    <Typography variant="body2" color="inherit">
+                        {t('reading:footer.finished', 'Reading finished?')}
+                    </Typography>
+                    <Stack
+                        direction="row"
+                        spacing={0.5}
+                        alignItems="center"
+                        sx={{
+                            cursor: 'pointer',
+                            '&:hover': { color: 'primary.main' },
+                            transition: 'color 0.2s'
+                        }}
+                        onClick={() => {
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                            document.documentElement.scrollTo({ top: 0, behavior: 'smooth' })
+                            document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' })
+                        }}
+                    >
+                        <Typography variant="body2" color="inherit" fontWeight="500">
+                            {t('reading:footer.backToTop', 'Back to Top')}
+                        </Typography>
+                        <ArrowUpward sx={{ fontSize: 16 }} />
+                    </Stack>
                 </Box>
             </Paper>
         </Box>

@@ -64,6 +64,16 @@ python youtube_indexer.py --skip-download --min-score 8
 ```
 *(注意: 这会复用 `temp_downloads_youtube/` 下的缓存文件，速度非常快)*
 
+### 场景 5: 增量更新 (不覆盖旧索引)
+如果你想把新下载的视频合并到现有的索引中，而不是覆盖掉之前的索引：
+```bash
+python youtube_indexer.py --incremental --urls "https://www.youtube.com/watch?v=NEW_VIDEO"
+```
+特点：
+- **安全**: 自动加载现有索引并合并新数据。
+- **去重**: 如果视频 ID 已存在，会自动跳过处理。
+- **保护**: 之前保留的单词（即使在新分析中分数降低）也会被列入白名单保留。
+
 ---
 
 ## 📂 输出文件结构
