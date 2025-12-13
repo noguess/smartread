@@ -27,9 +27,12 @@ interface QuestionReviewCardProps {
 }
 
 // Helper to determine if answer is correct ignoring case/whitespace
-const isCorrect = (user: any, correct: string) => {
+const isCorrect = (user: any, correct: string | string[]) => {
     if (!user) return false
-    if (Array.isArray(user)) return false // Simplify for now, complex types might need diff logic
+    // Handle arrays (e.g. Matching questions)
+    if (Array.isArray(correct) && Array.isArray(user)) {
+        return JSON.stringify(correct.sort()) === JSON.stringify(user.sort())
+    }
     return String(user).trim().toLowerCase() === String(correct).trim().toLowerCase()
 }
 
@@ -93,11 +96,11 @@ export default function QuestionReviewCard({ question, userAnswer, index }: Ques
                     {(!question.options || question.options.length === 0) && (
                         <Box sx={{ mt: 1, ml: 1 }}>
                             <Typography variant="body2" color={correct ? 'success.main' : 'error.main'} fontWeight="bold">
-                                Your Answer: {userAnswer || '(No Answer)'}
+                                Your Answer: {Array.isArray(userAnswer) ? userAnswer.join(', ') : (userAnswer || '(No Answer)')}
                             </Typography>
                             {!correct && (
                                 <Typography variant="body2" color="success.main" fontWeight="bold">
-                                    Correct Answer: {question.answer}
+                                    Correct Answer: {Array.isArray(question.answer) ? question.answer.join(', ') : question.answer}
                                 </Typography>
                             )}
                         </Box>

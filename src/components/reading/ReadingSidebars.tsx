@@ -29,8 +29,17 @@ export const ReadingSidebar = ({
 }: ReadingSidebarProps) => {
     const { t } = useTranslation(['reading', 'common'])
 
-    const bestScore = quizHistory.length > 0 ? Math.max(...quizHistory.map(r => r.score)) : 0
-    const attemptCount = quizHistory.length
+    const completedQuizzes = quizHistory.filter(r => r.score !== undefined) as (QuizRecord & { score: number })[]
+    const bestScore = completedQuizzes.length > 0
+        ? Math.max(...completedQuizzes.map(r => {
+            // Force type erasure to handle runtime anomalies
+            const rawScore = (r as any).score
+            const s = Number(rawScore)
+            // console.log(`Debug Score ID ${r.id}:`, rawScore, typeof rawScore, 'Parsed:', s)
+            return isNaN(s) ? 0 : s
+        }))
+        : 0
+    const attemptCount = completedQuizzes.length
 
     // Create helper map for context lookup
     const contextMap = new Map(wordContexts.map(item => [item.word.toLowerCase(), item]))
@@ -225,7 +234,7 @@ export const ReadingSidebar = ({
                 </Stack>
 
                 <Stack spacing={1}>
-                    {quizHistory.slice(0, 2).map((record) => (
+                    {completedQuizzes.slice(0, 2).map((record) => (
                         <Box
                             key={record.id}
                             onClick={() => onReviewQuiz(record)}
@@ -256,14 +265,14 @@ export const ReadingSidebar = ({
                             </Box>
                         </Box>
                     ))}
-                    {quizHistory.length === 0 && (
+                    {completedQuizzes.length === 0 && (
                         <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
                             {t('reading:sidebar.noHistory', 'No records')}
                         </Typography>
                     )}
                 </Stack>
 
-                {quizHistory.length > 2 && (
+                {completedQuizzes.length > 2 && (
                     <Button
                         fullWidth
                         size="small"

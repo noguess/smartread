@@ -30,6 +30,7 @@ interface ReadingHeaderProps {
     seconds: number
     onTimerToggle: () => void
     onTimerReset: () => void
+    showFontControls?: boolean
 }
 
 export default function ReadingHeader({
@@ -39,16 +40,17 @@ export default function ReadingHeader({
     isTimerRunning,
     seconds,
     onTimerToggle,
-    onTimerReset
+    onTimerReset,
+    showFontControls = true
 }: ReadingHeaderProps) {
     const { t } = useTranslation(['reading', 'common'])
     const navigate = useNavigate()
     const theme = useTheme()
 
     const formatTime = (totalSeconds: number) => {
-        const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0')
-        const s = (totalSeconds % 60).toString().padStart(2, '0')
-        return `${m}:${s} `
+        const m = Math.floor(Math.max(0, totalSeconds) / 60).toString().padStart(2, '0')
+        const s = (Math.max(0, totalSeconds) % 60).toString().padStart(2, '0')
+        return `${m}:${s}`
     }
 
     const MIN_FONT_SIZE = 14
@@ -97,47 +99,50 @@ export default function ReadingHeader({
                 <Stack direction="row" alignItems="center" spacing={{ xs: 1, md: 3 }}>
 
                     {/* Font Size Control (Hidden on very small screens if needed, strictly keeping mostly desktop refined first) */}
-                    <Box
-                        sx={{
-                            display: { xs: 'none', md: 'flex' },
-                            alignItems: 'center',
-                            gap: 1,
-                            bgcolor: 'action.hover',
-                            p: 0.5,
-                            borderRadius: 2,
-                            border: '1px solid',
-                            borderColor: 'divider'
-                        }}
-                    >
-                        <IconButton
-                            size="small"
-                            onClick={() => onFontSizeChange(Math.max(MIN_FONT_SIZE, fontSize - 2))}
-                            disabled={fontSize <= MIN_FONT_SIZE}
-                            aria-label={t('reading:toolbar.decreaseFont', 'Decrease font size')}
-                            sx={{ borderRadius: 1.5 }}
-                        >
-                            <Remove fontSize="small" />
-                        </IconButton>
+                    {showFontControls && (
+                        <>
+                            <Box
+                                sx={{
+                                    display: { xs: 'none', md: 'flex' },
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    bgcolor: 'action.hover',
+                                    p: 0.5,
+                                    borderRadius: 2,
+                                    border: '1px solid',
+                                    borderColor: 'divider'
+                                }}
+                            >
+                                <IconButton
+                                    size="small"
+                                    onClick={() => onFontSizeChange(Math.max(MIN_FONT_SIZE, fontSize - 2))}
+                                    disabled={fontSize <= MIN_FONT_SIZE}
+                                    aria-label={t('reading:toolbar.decreaseFont', 'Decrease font size')}
+                                    sx={{ borderRadius: 1.5 }}
+                                >
+                                    <Remove fontSize="small" />
+                                </IconButton>
 
-                        <Stack direction="row" alignItems="center" justifyContent="center" sx={{ minWidth: 40, px: 1 }}>
-                            <FormatSize sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
-                            <Typography variant="body2" fontWeight="500">
-                                {fontSize}
-                            </Typography>
-                        </Stack>
+                                <Stack direction="row" alignItems="center" justifyContent="center" sx={{ minWidth: 40, px: 1 }}>
+                                    <FormatSize sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
+                                    <Typography variant="body2" fontWeight="500">
+                                        {fontSize}
+                                    </Typography>
+                                </Stack>
 
-                        <IconButton
-                            size="small"
-                            onClick={() => onFontSizeChange(Math.min(MAX_FONT_SIZE, fontSize + 2))}
-                            disabled={fontSize >= MAX_FONT_SIZE}
-                            aria-label={t('reading:toolbar.increaseFont', 'Increase font size')}
-                            sx={{ borderRadius: 1.5 }}
-                        >
-                            <Add fontSize="small" />
-                        </IconButton>
-                    </Box>
-
-                    <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' }, height: 24, alignSelf: 'center' }} />
+                                <IconButton
+                                    size="small"
+                                    onClick={() => onFontSizeChange(Math.min(MAX_FONT_SIZE, fontSize + 2))}
+                                    disabled={fontSize >= MAX_FONT_SIZE}
+                                    aria-label={t('reading:toolbar.increaseFont', 'Increase font size')}
+                                    sx={{ borderRadius: 1.5 }}
+                                >
+                                    <Add fontSize="small" />
+                                </IconButton>
+                            </Box>
+                            <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' }, height: 24, alignSelf: 'center' }} />
+                        </>
+                    )}
 
                     {/* Timer Control */}
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

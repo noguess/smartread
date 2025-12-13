@@ -15,6 +15,16 @@ export const quizRecordService = {
     },
 
     /**
+     * Get a single quiz record by its unique ID.
+     * @param id The ID of the quiz record
+     * @returns The quiz record or undefined if not found
+     */
+    async getQuizRecordById(id: number): Promise<QuizRecord | undefined> {
+        return await db.quizRecords.get(id)
+    },
+
+
+    /**
      * Save a new quiz record.
      * @param record The quiz record data (excluding id)
      * @returns The id of the newly created record
@@ -43,5 +53,15 @@ export const quizRecordService = {
      */
     async deleteByArticleUuid(articleUuid: string): Promise<number> {
         return await db.quizRecords.where('articleId').equals(articleUuid).delete()
+    },
+
+    /**
+     * Update an existing quiz record.
+     * @param id The ID of the record to update
+     * @param changes Partial object containing changes
+     * @returns Promise<number> 1 if updated, 0 if not
+     */
+    async updateQuizRecord(id: number, changes: Partial<QuizRecord>): Promise<number> {
+        return await db.quizRecords.update(id, changes)
     }
 }

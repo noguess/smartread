@@ -31,11 +31,14 @@ function AnimatedRoutes() {
                         <ReadingPage />
                     </PageTransition>
                 } />
-                <Route path="/read/:id" element={
+                <Route path="/read/:articleId/*" element={
                     <PageTransition>
                         <ReadingPage />
                     </PageTransition>
-                } />
+                }>
+                    <Route path="quiz/:recordId" element={null} />
+                    <Route path="result/:recordId" element={null} />
+                </Route>
                 <Route path="/library" element={
                     <PageTransition>
                         <LibraryPage />

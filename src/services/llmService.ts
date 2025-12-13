@@ -279,6 +279,10 @@ export const llmService = {
             if (!q.id) {
                q.id = `${prefix}${i}`
             }
+            // 3. Fix LLM Typos
+            if (q.type === 'multiple_oice') {
+               q.type = 'multiple_choice'
+            }
          })
       }
 

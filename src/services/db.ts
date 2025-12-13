@@ -74,13 +74,15 @@ export interface QuizRecord {
     articleId: string // References Article.uuid
     date: number
     questions: { reading: Question[]; vocabulary: Question[] }
-    userAnswers: {
+    userAnswers?: {
         reading: Record<string, string>
         vocabulary: Record<string, string | string[]>
     }
-    score: number
-    difficultyFeedback: number
+    score?: number
+    difficultyFeedback?: number
     timeSpent?: number
+    readingDuration?: number // Seconds spent reading before quiz
+    quizDuration?: number    // Seconds spent taking the quiz
     wordResults?: { [spelling: string]: boolean } // For SRS algorithm
 }
 
