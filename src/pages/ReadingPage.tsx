@@ -167,6 +167,15 @@ export default function ReadingPage() {
         position: { top: number; left: number }
     } | null>(null)
 
+    // New State for scrolling interaction (Moved to top level)
+    const [scrollingWord, setScrollingWord] = useState<string | null>(null)
+
+    const handleWordScroll = (word: string) => {
+        setScrollingWord(word)
+        // Reset after a short delay so clicking the same word again works
+        setTimeout(() => setScrollingWord(null), 500)
+    }
+
     // Derived State
     // activeQuizRecord and latestResult are less critical now as we use URL, 
     // but useful for "Continue" button logic if needed.
@@ -485,13 +494,6 @@ export default function ReadingPage() {
     // Determine layout mode based on route
     const isQuizOrResult = location.pathname.includes('/quiz') || location.pathname.includes('/result')
     const sidebarVisible = !isQuizOrResult
-    const [scrollingWord, setScrollingWord] = useState<string | null>(null)
-
-    const handleWordScroll = (word: string) => {
-        setScrollingWord(word)
-        // Reset after a short delay so clicking the same word again works
-        setTimeout(() => setScrollingWord(null), 500)
-    }
 
     return (
         <ReadingLayout
