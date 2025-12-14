@@ -19,3 +19,9 @@
 - [x] Implement Score Distribution & Efficiency Metrics
 - [x] Implement Trend Charts (Activity, Score, Study Time)
 - [x] Internationalization Support
+
+## [Enhancement] Immersive Reading Experience
+- [x] UI Polish: Enhance typography, spacing, and maximize content area.
+- [x] Interactive: Implement "Click-to-Scroll" and "Breath Highlight" for key words.
+- [x] Deep Dive: Fix "Deep Dive" modal trigger and interaction with scroll.
+- [x] Performance: Stabilize highlight animation during re-renders (useMemo/useCallback).
