@@ -42,6 +42,7 @@ export default function ArticleView({
                 fontSize={fontSize}
                 onSelection={onSelection}
                 scrollToWord={scrollToWord}
+                onWordClick={onDeepDive}
             />
 
             {/* Popovers */}
