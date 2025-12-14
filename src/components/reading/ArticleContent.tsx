@@ -216,7 +216,7 @@ export default function ArticleContent({
                     sx={{
                         fontSize: fontSize,
                         lineHeight: 1.8,
-                        color: 'text.secondary',
+                        color: 'text.primary', // Darkened from text.secondary
                         '& p': {
                             marginBottom: '24px',
                             textAlign: 'justify',
@@ -244,10 +244,10 @@ export default function ArticleContent({
                                         id={`word-${text}`}
                                         className={styles.targetWord}
                                         style={{
-                                            fontWeight: 600,
-                                            color: 'inherit', // Remove heavy blue color
-                                            borderBottom: '2px solid #93c5fd', // Simple underline (blue-300)
-                                            background: 'transparent', // Remove gradient bg
+                                            fontWeight: 400, // Removed bold (was 600)
+                                            color: 'inherit',
+                                            borderBottom: '1px dashed #cbd5e1', // Lighter dashed underline (slate-300)
+                                            background: 'transparent',
                                             cursor: onWordClick ? 'pointer' : 'default',
                                             transition: 'all 0.3s ease',
                                         }}
