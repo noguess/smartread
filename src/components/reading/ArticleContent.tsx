@@ -249,7 +249,7 @@ export default function ArticleContent({
                                             // borderBottom removed in favor of text-decoration for better positioning control
                                             textDecoration: 'underline',
                                             textDecorationStyle: 'dashed',
-                                            textDecorationColor: '#cbd5e1',
+                                            textDecorationColor: '#94a3b8', // Darkened slightly (slate-400) for visibility
                                             textDecorationThickness: '2px',
                                             textUnderlineOffset: '2px', // Closer to text (default is often auto/larger)
                                             background: 'transparent',
