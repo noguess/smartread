@@ -79,7 +79,7 @@ export default function ArticleContent({
                 // (Though clearing timeout on ID change is fine, clearing on 'null' is bad if we want animation to persist)
                 setTimeout(() => {
                     element.classList.remove(styles.flashHighlight)
-                }, 4000)
+                }, 2000)
 
                 // ONLY clear timeout if we are actually unmounting or scrolling to a NEW word
                 // But since scrollToWord becomes null shortly after, default cleanup would kill the timer.

@@ -80,3 +80,37 @@
 .flashHighlight {
     animation: flashHighlight 4s ease-in-out forwards !important;
 }
+
+/* Overwrite again for Pulse effect */
+@keyframes flashHighlight {
+    0% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+    20% {
+        background-color: #fce7f3; /* Peak 1 */
+        transform: scale(1.05);
+        border-radius: 4px;
+        box-shadow: 0 0 0 2px #fce7f3;
+    }
+    50% {
+        background-color: rgba(252, 231, 243, 0.4); /* Dip */
+        transform: scale(1.02);
+    }
+    80% {
+        background-color: #fce7f3; /* Peak 2 */
+        transform: scale(1.05);
+        border-radius: 4px;
+        box-shadow: 0 0 0 2px #fce7f3;
+    }
+    100% {
+        background-color: transparent;
+        transform: scale(1);
+        border-radius: 0;
+        box-shadow: none;
+    }
+}
+
+.flashHighlight {
+    animation: flashHighlight 2s ease-in-out forwards !important;
+}
