@@ -11,7 +11,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
     MuiCard: {
         styleOverrides: {
             root: {
-                borderRadius: 16,  // 从 8px 增加到 16px
+                borderRadius: 12,  // 从 16px 减小到 12px
                 boxShadow: '0 4px 20px rgba(0,0,0,0.06)',  // 柔和扩散阴影
                 transition: 'all 0.2s ease',
                 '&:hover': {
@@ -26,7 +26,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
     MuiPaper: {
         styleOverrides: {
             root: {
-                borderRadius: 16,
+                borderRadius: 12,
             },
             elevation1: {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
@@ -47,7 +47,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
         },
         styleOverrides: {
             root: {
-                borderRadius: 12,  // 从 4px 增加到 12px
+                borderRadius: 8,  // 从 12px 减小到 8px
                 padding: '10px 24px',
                 fontSize: '0.9375rem',
                 fontWeight: 500,
@@ -76,7 +76,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
     MuiChip: {
         styleOverrides: {
             root: {
-                borderRadius: 8,
+                borderRadius: 6,
                 fontWeight: 500,
                 fontSize: '0.875rem',
             },
@@ -90,7 +90,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
     MuiDialog: {
         styleOverrides: {
             paper: {
-                borderRadius: 20,  // 更大的圆角
+                borderRadius: 16,  // 更大的圆角
                 boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
             },
         },
@@ -104,7 +104,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
         styleOverrides: {
             root: {
                 '& .MuiOutlinedInput-root': {
-                    borderRadius: 12,
+                    borderRadius: 8,
                     '&:hover fieldset': {
                         borderColor: primaryGradient.start,
                     },
@@ -132,7 +132,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
     MuiDrawer: {
         styleOverrides: {
             paper: {
-                borderRadius: '0 20px 20px 0',  // 右侧圆角
+                borderRadius: '0 16px 16px 0',  // 右侧圆角
             },
         },
     },
@@ -150,7 +150,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
     MuiTooltip: {
         styleOverrides: {
             tooltip: {
-                borderRadius: 8,
+                borderRadius: 4,
                 fontSize: '0.875rem',
                 padding: '8px 12px',
             },
@@ -161,7 +161,7 @@ export const components: Components<Omit<Theme, 'components'>> = {
     MuiIconButton: {
         styleOverrides: {
             root: {
-                borderRadius: 10,
+                borderRadius: 8,
                 transition: 'all 0.2s ease',
                 '&:hover': {
                     transform: 'scale(1.1)',

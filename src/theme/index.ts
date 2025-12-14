@@ -17,7 +17,7 @@ export const lightTheme = createTheme({
     typography,
     components,
     shape: {
-        borderRadius: 12,  // 全局默认圆角
+        borderRadius: 8,  // 全局默认圆角 (Reduced from 12)
     },
     spacing: 8,  // 默认间距单位
 } as ThemeOptions)
@@ -28,7 +28,7 @@ export const eyeCareTheme = createTheme({
     typography,
     components,
     shape: {
-        borderRadius: 12,
+        borderRadius: 8,
     },
     spacing: 8,
 } as ThemeOptions)
