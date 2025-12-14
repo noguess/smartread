@@ -302,23 +302,23 @@ export default function ReadingPage() {
     }
 
     // Popover Handlers
-    const handleSelection = (text: string, position: { top: number; left: number }) => {
+    const handleSelection = useCallback((text: string, position: { top: number; left: number }) => {
         if (!text) {
             setPopoverState(null)
             return
         }
         const type = (text.trim().includes(' ') || text.length > 20) ? 'sentence' : 'word'
         setPopoverState({ text, type, position })
-    }
+    }, [])
 
-    const handleClosePopover = () => {
+    const handleClosePopover = useCallback(() => {
         setPopoverState(null)
-    }
+    }, [])
 
-    const handleDeepDive = (word: string) => {
+    const handleDeepDive = useCallback((word: string) => {
         setPopoverState(null)
         setWordDetailModalState(word)
-    }
+    }, [])
 
     const handleStartQuiz = async () => {
         if (!currentArticle) return
