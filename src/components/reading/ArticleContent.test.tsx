@@ -118,25 +118,4 @@ describe('ArticleContent', () => {
             left: 70 // 50 + 40/2
         })
     })
-    it('applies max-width constraints for readability', () => {
-        render(<ArticleContent {...defaultProps} />)
-
-        // 1. Check Card is Full Width
-        const articleCard = screen.getByTestId('article-card')
-        // We can't easily check "width: 100%" with toHaveStyle if it's in sx, 
-        // but we can check it DOES NOT have max-width: 65ch
-        expect(articleCard).not.toHaveStyle({
-            maxWidth: '65ch'
-        })
-
-        // 2. Check Text Content is Constrained
-        const textContainer = screen.getByTestId('article-text-container')
-        expect(textContainer).toHaveStyle({
-            maxWidth: '65ch',
-        })
-
-        // 3. Check Metadata is Constrained (optional but good)
-        // const metadataHeader = screen.getByTestId('metadata-header')
-        // expect(metadataHeader).toHaveStyle({ maxWidth: '750px' })
-    })
 })

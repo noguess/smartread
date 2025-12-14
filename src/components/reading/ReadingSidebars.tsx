@@ -54,7 +54,7 @@ export const ReadingSidebar = ({
                     bgcolor: 'background.paper',
                     border: '1px solid',
                     borderColor: 'divider',
-                    borderRadius: 4,
+                    borderRadius: 3, // Reduced from 4
                     p: 3,
                     position: 'relative',
                     overflow: 'hidden',
@@ -101,7 +101,7 @@ export const ReadingSidebar = ({
                     onClick={onStartQuiz}
                     endIcon={<ArrowRight />}
                     sx={{
-                        borderRadius: 3,
+                        borderRadius: 2, // Reduced from 3
                         fontWeight: 'bold',
                         textTransform: 'none',
                         bgcolor: 'primary.main',
@@ -122,7 +122,7 @@ export const ReadingSidebar = ({
                 elevation={0}
                 sx={{
                     bgcolor: 'background.paper',
-                    borderRadius: 4,
+                    borderRadius: 3, // Reduced from 4
                     border: '1px solid',
                     borderColor: 'divider',
                     overflow: 'hidden',
@@ -180,7 +180,7 @@ export const ReadingSidebar = ({
                                 sx={{
                                     p: 1.5,
                                     mb: 0.5,
-                                    borderRadius: 3,
+                                    borderRadius: 2, // Reduced from 3
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
                                     border: '1px solid',
@@ -233,7 +233,7 @@ export const ReadingSidebar = ({
                 elevation={0}
                 sx={{
                     bgcolor: 'background.paper',
-                    borderRadius: 4,
+                    borderRadius: 3, // Reduced from 4
                     border: '1px solid',
                     borderColor: 'divider',
                     p: 2,

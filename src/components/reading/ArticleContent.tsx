@@ -124,30 +124,27 @@ export default function ArticleContent({
 
             <Paper
                 elevation={0}
-                data-testid="article-card"
                 sx={{
-                    width: '100%', // Fill the Grid column (9/12)
-                    p: { xs: 3, md: 6, lg: 8 }, // p-8 sm:p-12 lg:p-16 in read.html
-                    borderRadius: 8, // rounded-[2rem]
-                    minHeight: '85vh',
+                    maxWidth: 1000,
+                    margin: '0 auto',
+                    p: { xs: 4, md: 8, lg: 10 },
+                    borderRadius: 3, // Reduced from 6
+                    minHeight: '60vh',
                     bgcolor: 'background.paper',
                     border: '1px solid',
                     borderColor: 'divider',
-                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', // shadow-sm
-                    position: 'relative'
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.02)'
                 }}
             >
                 {/* Metadata Header */}
-                <Box sx={{ mb: 6, maxWidth: '750px', mx: 'auto' }} data-testid="metadata-header">
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2.5, flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ mb: 5, borderBottom: '1px solid', borderColor: 'divider', pb: 4 }}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
                         <Chip
                             label={difficultyLevel}
                             size="small"
                             sx={{
-                                bgcolor: '#ecfdf5', // emerald-50
-                                color: '#047857',   // emerald-700
-                                border: '1px solid #d1fae5', // emerald-100
-                                borderRadius: 1.5, // rounded-md
+                                bgcolor: 'success.light',
+                                color: 'success.dark',
                                 fontWeight: 700,
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.05em',
@@ -155,23 +152,22 @@ export default function ArticleContent({
                                 height: 24
                             }}
                         />
-                        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'text.secondary', fontSize: '0.75rem', fontWeight: 500 }}>
-                            <MenuBook sx={{ fontSize: 14 }} />
-                            <Typography variant="caption" fontWeight="500" color="text.secondary">
+                        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                            <MenuBook sx={{ fontSize: 16 }} />
+                            <Typography variant="body2" component="span">
                                 {t('reading:meta.wordCount', { count: wordCount })}
                             </Typography>
                         </Stack>
 
-                        <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '10px' }}>|</Typography>
+                        <Typography variant="body2" sx={{ color: 'text.disabled' }}>•</Typography>
 
-                        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'text.secondary', fontSize: '0.75rem', fontWeight: 500 }}>
-                            <Typography variant="caption" fontWeight="500" color="text.secondary">
+                        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                            {/* <AccessTime sx={{ fontSize: 16 }} /> */}
+                            <Typography variant="body2" component="span">
                                 {t('reading:meta.duration', { minutes: readingTime })}
                             </Typography>
                         </Stack>
                     </Stack>
-
-
 
                     <Typography
                         variant="h1"
@@ -188,22 +184,28 @@ export default function ArticleContent({
 
                 {/* Content */}
                 <Box
-                    data-testid="article-text-container"
                     className={styles.articleContent}
                     onMouseUp={handleSelection} // Trigger on mouse up
                     onTouchEnd={handleSelection} // Trigger on touch end (for mobile/tablet)
                     onContextMenu={(e) => e.preventDefault()} // Block system context menu
                     sx={{
-                        maxWidth: '65ch', // Constraint TEXT, not CONTAINER
-                        mx: 'auto', // CENTER the text block
                         fontSize: fontSize,
-                        lineHeight: 1.9, // Relaxed line height like read.html
+                        lineHeight: 1.8,
                         color: 'text.secondary',
                         '& p': {
-                            marginBottom: '32px', // mb-8
-                            // textAlign: 'justify', // read.html usually creates left-aligned prose, let's stick to standard or justify if preferred.
-                            // textJustify: 'inter-word'
+                            marginBottom: '24px',
+                            textAlign: 'justify',
+                            textJustify: 'inter-word'
                         },
+                        // Drop cap effect for first letter
+                        '& p:first-of-type::first-letter': {
+                            float: 'left',
+                            fontSize: '3.5em',
+                            lineHeight: 0.8,
+                            margin: '0.1em 0.1em 0 0',
+                            color: 'primary.main',
+                            fontWeight: 800
+                        }
                     }}
                 >
                     <ReactMarkdown
@@ -233,30 +235,19 @@ export default function ArticleContent({
                 {/* Footer */}
                 <Box
                     sx={{
-                        mt: 10,
+                        mt: 8,
                         pt: 4,
-                        borderTop: '1px solid',
-                        borderColor: 'divider', // slate-100
+                        borderTop: '1px dashed',
+                        borderColor: 'divider',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        color: 'text.secondary',
-                        maxWidth: '65ch', // Match article width
-                        mx: 'auto', // Center footer
+                        color: 'text.disabled',
                     }}
                 >
-                    <Stack direction="row" spacing={1} alignItems="center">
-                        {/* CheckCircle2 equivalent */}
-                        <Box sx={{ color: 'success.main', display: 'flex' }}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-                                <path d="m9 12 2 2 4-4" />
-                            </svg>
-                        </Box>
-                        <Typography variant="body2" color="text.secondary">
-                            {t('reading:footer.finished', 'Reading finished?')}
-                        </Typography>
-                    </Stack>
+                    <Typography variant="body2" color="inherit">
+                        {t('reading:footer.finished', 'Reading finished?')}
+                    </Typography>
                     <Stack
                         direction="row"
                         spacing={0.5}
@@ -278,7 +269,7 @@ export default function ArticleContent({
                         <ArrowUpward sx={{ fontSize: 16 }} />
                     </Stack>
                 </Box>
-            </Paper >
-        </Box >
+            </Paper>
+        </Box>
     )
 }

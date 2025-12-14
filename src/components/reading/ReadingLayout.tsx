@@ -46,7 +46,7 @@ export default function ReadingLayout({
 
     return (
         <Fade in timeout={500}>
-            <Box sx={{ minHeight: '100vh', bgcolor: '#F8FAFC', pb: 8 }}>
+            <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: 8 }}>
                 {/* 1. Header (Sticky) */}
                 {/* 1. Header (Sticky) - Only show in Reading Mode (sidebarVisible) */}
                 {sidebarVisible && (
@@ -63,7 +63,7 @@ export default function ReadingLayout({
                 )}
 
                 {/* 2. Main Grid Layout */}
-                <Container maxWidth={false} sx={{ maxWidth: '1400px', mt: 3, px: { xs: 2, sm: 3 } }}>
+                <Container maxWidth="xl" sx={{ mt: 3 }}>
                     <Grid container spacing={4} justifyContent={!sidebarVisible ? 'center' : 'flex-start'}>
                         {/* LEFT: Main Content (Article or Quiz) */}
                         <Grid item xs={12} lg={sidebarVisible ? 9 : 12} md={sidebarVisible ? 9 : 12}>
