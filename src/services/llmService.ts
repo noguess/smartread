@@ -19,7 +19,7 @@ export const llmService = {
       onProgress?: (progress: number) => void
    ): Promise<GeneratedArticleData> {
       const apiKey = settings.apiKey
-      const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
+      const baseUrl = settings.apiBaseUrl || '/api/deepseek/v1'
 
       if (!apiKey) throw new Error(i18n.t('common:common.apiKeyMissing'))
 
@@ -139,7 +139,7 @@ export const llmService = {
       onProgress?: (progress: number) => void
    ): Promise<{ readingQuestions: any[]; vocabularyQuestions: any[] }> {
       const apiKey = settings.apiKey;
-      const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1';
+      const baseUrl = settings.apiBaseUrl || '/api/deepseek/v1';
       const difficultyLevel = settings.difficultyLevel || 'L2';
 
       // 1. 重新设计的题型配置 (科学对标中考)
@@ -298,7 +298,7 @@ export const llmService = {
       settings: Setting
    ): Promise<{ definition: string; phonetic: string }> {
       const apiKey = settings.apiKey
-      const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
+      const baseUrl = settings.apiBaseUrl || '/api/deepseek/v1'
 
       if (!apiKey) throw new Error(i18n.t('common:common.apiKeyMissing'))
 
@@ -321,7 +321,7 @@ Return a JSON object with:
       settings: Setting
    ): Promise<string> {
       const apiKey = settings.apiKey
-      const baseUrl = settings.apiBaseUrl || 'https://api.deepseek.com/v1'
+      const baseUrl = settings.apiBaseUrl || '/api/deepseek/v1'
 
       if (!apiKey) throw new Error(i18n.t('common:common.apiKeyMissing'))
 
