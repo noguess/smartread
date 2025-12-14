@@ -42,24 +42,28 @@ export default function ArticleView({
                 fontSize={fontSize}
                 onSelection={onSelection}
                 scrollToWord={scrollToWord}
-                onWordClick={onDeepDive}
+                onWordClick={onSelection}
             />
 
             {/* Popovers */}
-            <DefinitionPopover
-                anchorPosition={popoverState?.position ?? null}
-                word={popoverState?.text || ''}
-                onClose={onClosePopover}
-                onDeepDive={onDeepDive}
-            />
+            {popoverState?.type === 'word' && (
+                <DefinitionPopover
+                    anchorPosition={popoverState?.position ?? null}
+                    word={popoverState?.text || ''}
+                    onClose={onClosePopover}
+                    onDeepDive={onDeepDive}
+                />
+            )}
 
-            <SentenceAnalysisPopover
-                anchorPosition={popoverState?.position ?? null}
-                sentence={popoverState?.text || ''}
-                onClose={onClosePopover}
-                settings={settings}
-                articleId={article.uuid}
-            />
+            {popoverState?.type === 'sentence' && (
+                <SentenceAnalysisPopover
+                    anchorPosition={popoverState?.position ?? null}
+                    sentence={popoverState?.text || ''}
+                    onClose={onClosePopover}
+                    settings={settings}
+                    articleId={article.uuid}
+                />
+            )}
         </>
     )
 }

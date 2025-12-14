@@ -8,12 +8,12 @@ import { MenuBook, ArrowUpward } from '@mui/icons-material'
 interface ArticleContentProps {
     title: string
     content: string
-    onWordClick?: (word: string) => void
+    onWordClick?: (word: string, position: { top: number, left: number }) => void
     onSelection?: (text: string, position: { top: number, left: number }) => void
     fontSize: number
     wordCount?: number
     difficultyLevel?: string
-    scrollToWord?: string | null // New prop to trigger scroll
+    scrollToWord?: string | null
 }
 
 export default function ArticleContent({
@@ -32,7 +32,11 @@ export default function ArticleContent({
     const handleWordClick = useCallback((e: React.MouseEvent<HTMLSpanElement>) => {
         const word = e.currentTarget.textContent || ''
         if (onWordClick) {
-            onWordClick(word)
+            const rect = e.currentTarget.getBoundingClientRect()
+            onWordClick(word, {
+                top: rect.bottom,
+                left: rect.left + rect.width / 2
+            })
         }
     }, [onWordClick])
 
