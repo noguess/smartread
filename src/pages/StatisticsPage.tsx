@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
     Box, Typography, Grid, Paper, Tabs, Tab, Table, TableBody, TableCell,
-    TableContainer, TableHead, TableRow, useTheme, Chip
+    TableContainer, TableHead, TableRow, Chip
 } from '@mui/material'
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -77,7 +77,11 @@ export default function StatisticsPage() {
                             <ResponsiveContainer width="100%" height="85%">
                                 <PieChart>
                                     <Pie
-                                        data={Object.entries(overview.wordStats).map(([k, v]) => ({ name: k, value: v }))}
+                                        data={Object.entries(overview.wordStats).map(([k, v]) => ({
+                                            name: t(`statistics:status.${k}` as any),
+                                            value: v,
+                                            key: k
+                                        }))}
                                         innerRadius={60}
                                         outerRadius={80}
                                         paddingAngle={5}
@@ -229,7 +233,7 @@ export default function StatisticsPage() {
                                     <XAxis dataKey="date" hide />
                                     <YAxis domain={[0, 100]} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Legend />
+                                    <Legend wrapperStyle={{ paddingTop: '10px' }} />
                                     <Line type="monotone" dataKey="score_L1" stroke="#82ca9d" name={t('statistics:trends.series.l1_score')} connectNulls />
                                     <Line type="monotone" dataKey="score_L2" stroke="#8884d8" name={t('statistics:trends.series.l2_score')} connectNulls />
                                     <Line type="monotone" dataKey="score_L3" stroke="#ffc658" name={t('statistics:trends.series.l3_score')} connectNulls />
@@ -248,7 +252,7 @@ export default function StatisticsPage() {
                                     <XAxis dataKey="date" hide />
                                     <YAxis />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Legend />
+                                    <Legend wrapperStyle={{ paddingTop: '10px' }} />
                                     <Area type="monotone" dataKey="time_L1" stackId="1" stroke="#82ca9d" fill="#82ca9d" name={t('statistics:trends.series.l1_min')} />
                                     <Area type="monotone" dataKey="time_L2" stackId="1" stroke="#8884d8" fill="#8884d8" name={t('statistics:trends.series.l2_min')} />
                                     <Area type="monotone" dataKey="time_L3" stackId="1" stroke="#ffc658" fill="#ffc658" name={t('statistics:trends.series.l3_min')} />
@@ -267,7 +271,7 @@ export default function StatisticsPage() {
                                     <XAxis dataKey="date" hide />
                                     <YAxis label={{ value: t('statistics:trends.axis.sec'), angle: -90, position: 'insideLeft' }} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Legend />
+                                    <Legend wrapperStyle={{ paddingTop: '10px' }} />
                                     <Line type="monotone" dataKey="avgReadTime_L1" stroke="#82ca9d" name={t('statistics:trends.series.l1_sec')} connectNulls />
                                     <Line type="monotone" dataKey="avgReadTime_L2" stroke="#8884d8" name={t('statistics:trends.series.l2_sec')} connectNulls />
                                     <Line type="monotone" dataKey="avgReadTime_L3" stroke="#ffc658" name={t('statistics:trends.series.l3_sec')} connectNulls />
@@ -286,7 +290,7 @@ export default function StatisticsPage() {
                                     <XAxis dataKey="date" hide />
                                     <YAxis label={{ value: t('statistics:trends.axis.sec'), angle: -90, position: 'insideLeft' }} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Legend />
+                                    <Legend wrapperStyle={{ paddingTop: '10px' }} />
                                     <Line type="monotone" dataKey="avgQuizTime_L1" stroke="#82ca9d" name={t('statistics:trends.series.l1_sec')} connectNulls />
                                     <Line type="monotone" dataKey="avgQuizTime_L2" stroke="#8884d8" name={t('statistics:trends.series.l2_sec')} connectNulls />
                                     <Line type="monotone" dataKey="avgQuizTime_L3" stroke="#ffc658" name={t('statistics:trends.series.l3_sec')} connectNulls />

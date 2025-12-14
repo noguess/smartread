@@ -62,7 +62,10 @@
     },
     "error": {
         "generationFailed": "生成文章失败: {{error}}",
-        "loadReviewFailed": "加载回顾记录失败: {{error}}"
+        "loadReviewFailed": "加载回顾记录失败: {{error}}",
+        "title": "生成失败",
+        "back": "返回首页",
+        "retry": "重试"
     },
     "quiz": {
         "title": "阅读理解测验",

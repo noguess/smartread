@@ -6,6 +6,7 @@ import {
     Routes,
     Route
 } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { v4 as uuidv4 } from 'uuid'
 
 // Services & Utils
@@ -27,6 +28,8 @@ import ResultPage from './ResultPage'
 import GenerationLoading from '../components/reading/GenerationLoading'
 import { useStudyTimer } from '../hooks/useStudyTimer'
 import WordDetailModal from '../components/WordDetailModal'
+import EmptyState from '../components/common/EmptyState'
+import { Button } from '@mui/material'
 
 // --- Route Wrappers ---
 
@@ -140,6 +143,7 @@ export default function ReadingPage() {
     const { articleId } = useParams<{ articleId: string }>()
     const location = useLocation()
     const navigate = useNavigate()
+    const { t } = useTranslation()
 
     // --- State ---
     const [currentArticle, setCurrentArticle] = useState<Article | null>(null)
@@ -156,6 +160,7 @@ export default function ReadingPage() {
     const [isGenerating, setIsGenerating] = useState(false)
     const [generationProgress, setGenerationProgress] = useState(0)
     const [generationMode, setGenerationMode] = useState<'article' | 'quiz'>('article')
+    const [error, setError] = useState<string | null>(null)
 
     // Quiz State
     const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false)
@@ -242,6 +247,7 @@ export default function ReadingPage() {
 
     const handleGenerateArticle = useCallback(async (words: Word[], settings: any, uuid?: string) => {
         setIsGenerating(true)
+        setError(null)
         setGenerationMode('article')
         setGenerationProgress(0)
 
@@ -271,9 +277,9 @@ export default function ReadingPage() {
 
             // Navigate to the real URL so refresh works
             navigate(`/read/${id}`, { replace: true })
-        } catch (err) {
+        } catch (err: any) {
             console.error('Generation failed:', err)
-            navigate('/') // Go back on failure
+            setError(err.message || 'Generation failed')
         } finally {
             setIsGenerating(false)
         }
@@ -287,7 +293,7 @@ export default function ReadingPage() {
         const state = location.state as any
 
         // Case 1: Generation requested (from Home)
-        if (state?.mode === 'generate' && state?.words && !currentArticle && !isGenerating) {
+        if (state?.mode === 'generate' && state?.words && !currentArticle && !isGenerating && !error) {
             // Prevent double-invocation in Strict Mode
             if (state.uuid && generationAttemptRef.current === state.uuid) {
                 return
@@ -493,6 +499,54 @@ export default function ReadingPage() {
     if (isGenerating) {
         // Can be improved to show specific loading state context
         return <GenerationLoading mode={generationMode} realProgress={generationProgress} words={targetWords} />
+    }
+
+    if (error) {
+        const state = location.state as any
+        return (
+            <div style={{
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <EmptyState
+                    icon="⚠️"
+                    title={t ? t('reading:error.title') : 'Generation Failed'}
+                    description={error}
+                    action={
+                        <div style={{ display: 'flex', gap: 10 }}>
+                            <Button
+                                variant="outlined"
+                                onClick={() => navigate('/')}
+                            >
+                                {t ? t('reading:error.back') : 'Go Back'}
+                            </Button>
+                            {state?.mode === 'generate' && (
+                                <Button
+                                    variant="contained"
+                                    onClick={() => {
+                                        // Reset error and re-trigger generation
+                                        // We need to reset the ref too presumably?
+                                        // Actually simplest is to call the handler directly
+                                        if (state?.words && state?.settings) {
+                                            // Force a new UUID for the retry to avoid DB constraint if that was the issue?
+                                            // Or reuse if we think it failed before saving.
+                                            // Let's generate new UUID to be safe and avoid "ConstraintError" if partial save happened.
+                                            handleGenerateArticle(state.words, state.settings)
+                                        } else {
+                                            window.location.reload()
+                                        }
+                                    }}
+                                >
+                                    {t ? t('reading:error.retry') : 'Try Again'}
+                                </Button>
+                            )}
+                        </div>
+                    }
+                />
+            </div>
+        )
     }
 
     if (!currentArticle) {

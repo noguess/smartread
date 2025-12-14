@@ -18,6 +18,12 @@
             "quiz_time": "Quiz Time (sec/q)"
         }
     },
+    "status": {
+        "New": "New",
+        "Learning": "Learning",
+        "Review": "Review",
+        "Mastered": "Mastered"
+    },
     "trends": {
         "activity_title": "Daily Activity",
         "reading_speed_title": "Reading Speed Trend",

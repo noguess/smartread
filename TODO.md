@@ -1,3 +1,8 @@
+## [Feature] Better Article Generation Error Handling
+- [x] Task 1 (State & Logic): Add `error` state to `ReadingPage`. Update `useEffect` to block auto-generation if error exists. Update `handleGenerateArticle` to set error instead of navigating.
+- [x] Task 2 (UI Integration): Render `EmptyState` with Retry/Back buttons when error occurs.
+- [x] Task 3 (Testing): Update tests to verify Error UI appears and Retry works.
+
 ## [Feature] Nested Routes Refactor
 - [x] Task 1 (Router): Define ID-based Routes in App.tsx.
     -   Add `/read/:articleId/quiz/:recordId` -> `QuizRouteWrapper`.

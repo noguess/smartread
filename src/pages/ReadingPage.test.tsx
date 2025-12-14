@@ -297,4 +297,95 @@ describe('ReadingPage Integration', () => {
         // Should navigate to /read/999
         await waitFor(() => expect(screen.getByTestId('article-view-redirected')).toBeInTheDocument())
     })
+    it('shows error message when generation fails', async () => {
+        const generationUuid = 'fail-uuid-123'
+        const generationWords = [{ spelling: 'fail', status: 'New' }]
+
+        // Mock generate failure
+        vi.mocked(llmService.generateArticleOnly).mockRejectedValue(new Error('API Error'))
+        vi.mocked(mockLLMService.generateArticleOnly).mockRejectedValue(new Error('API Error'))
+
+        render(
+            <MemoryRouter initialEntries={[{
+                pathname: '/reading',
+                state: {
+                    mode: 'generate',
+                    words: generationWords,
+                    settings: { difficultyLevel: 'L2', apiKey: 'test-key' },
+                    uuid: generationUuid
+                }
+            }]}>
+                <Routes>
+                    <Route path="/reading" element={<ReadingPage />} />
+                    <Route path="/read/:articleId" element={<div data-testid="article-view-redirected">Redirected</div>} />
+                </Routes>
+            </MemoryRouter>
+        )
+
+        // Should show loading first
+        await waitFor(() => expect(screen.getByTestId('generation-loading')).toBeInTheDocument())
+
+        // Then should show error message (even simple text for now)
+        await waitFor(() => {
+            expect(screen.getByText('reading:error.title')).toBeInTheDocument()
+        })
+
+        // Should NOT navigate to article view
+        expect(screen.queryByTestId('article-view-redirected')).not.toBeInTheDocument()
+    })
+
+    it('allows retry when generation fails', async () => {
+        const generationUuid = 'retry-uuid-123'
+        const generationWords = [{ spelling: 'retry', status: 'New' }]
+        const generationSettings = { difficultyLevel: 'L2', apiKey: 'test-key' }
+
+        // 1. First attempt fails
+        vi.mocked(llmService.generateArticleOnly).mockRejectedValueOnce(new Error('First Fail'))
+        vi.mocked(mockLLMService.generateArticleOnly).mockRejectedValueOnce(new Error('First Fail'))
+
+        // 2. Second attempt succeeds
+        vi.mocked(llmService.generateArticleOnly).mockResolvedValue({
+            title: 'Retry Success',
+            content: 'Content',
+            targetWords: ['retry'],
+            word_study: []
+        } as any)
+        vi.mocked(mockLLMService.generateArticleOnly).mockResolvedValue({
+            title: 'Retry Success',
+            content: 'Content',
+            targetWords: ['retry'],
+            word_study: []
+        } as any)
+        vi.mocked(articleService.add).mockResolvedValue(888)
+
+        render(
+            <MemoryRouter initialEntries={[{
+                pathname: '/reading',
+                state: {
+                    mode: 'generate',
+                    words: generationWords,
+                    settings: generationSettings,
+                    uuid: generationUuid
+                }
+            }]}>
+                <Routes>
+                    <Route path="/reading" element={<ReadingPage />} />
+                    <Route path="/read/:articleId" element={<div data-testid="article-view-redirected">Redirected</div>} />
+                </Routes>
+            </MemoryRouter>
+        )
+
+        // Expect Failure UI
+        await waitFor(() => expect(screen.getByText('First Fail')).toBeInTheDocument())
+
+        // Find Retry Button (Mocked i18n returns key)
+        const retryBtn = screen.getByText('reading:error.retry')
+        fireEvent.click(retryBtn)
+
+        // Should return to Loading
+        await waitFor(() => expect(screen.getByTestId('generation-loading')).toBeInTheDocument())
+
+        // Should eventually succeed and navigate
+        await waitFor(() => expect(screen.getByTestId('article-view-redirected')).toBeInTheDocument())
+    })
 })

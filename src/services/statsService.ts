@@ -43,6 +43,13 @@ export interface DailyTrend {
     time_L2: number
     time_L3: number
     time_Avg: number
+    // Avg Durations (Seconds)
+    avgReadTime_L1: number
+    avgReadTime_L2: number
+    avgReadTime_L3: number
+    avgQuizTime_L1: number
+    avgQuizTime_L2: number
+    avgQuizTime_L3: number
 }
 
 // Helper types for aggregation
@@ -50,6 +57,8 @@ interface DifficultyBucket {
     count: number
     scores: number[]
     times: number[]
+    readTimes: number[]
+    quizTimes: number[]
 }
 
 interface DailyBucket {

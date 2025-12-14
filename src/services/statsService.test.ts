@@ -10,7 +10,7 @@ vi.mock('./db', () => {
             history: { toArray: vi.fn() },
             quizRecords: { toArray: vi.fn() },
             articles: { toArray: vi.fn() },
-            transact: vi.fn((mode, tables, callback) => callback())
+            transact: vi.fn((_mode, _tables, callback) => callback())
         }
     }
 })

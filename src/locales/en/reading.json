@@ -62,7 +62,10 @@
     },
     "error": {
         "generationFailed": "Generation failed: {{error}}",
-        "loadReviewFailed": "Failed to load review: {{error}}"
+        "loadReviewFailed": "Failed to load review: {{error}}",
+        "title": "Generation Failed",
+        "back": "Go Back",
+        "retry": "Try Again"
     },
     "quiz": {
         "title": "Reading Comprehension Quiz",

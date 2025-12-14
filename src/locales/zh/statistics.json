@@ -18,6 +18,12 @@
             "quiz_time": "做题速度 (秒/题)"
         }
     },
+    "status": {
+        "New": "新词",
+        "Learning": "学习中",
+        "Review": "复习中",
+        "Mastered": "已掌握"
+    },
     "trends": {
         "activity_title": "每日学习活动",
         "reading_speed_title": "阅读速度趋势 (WPM)",
