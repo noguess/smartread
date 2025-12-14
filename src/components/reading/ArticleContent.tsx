@@ -215,8 +215,8 @@ export default function ArticleContent({
                     onContextMenu={(e) => e.preventDefault()} // Block system context menu
                     sx={{
                         fontSize: fontSize,
-                        lineHeight: 1.8,
-                        color: 'text.primary', // Darkened from text.secondary
+                        lineHeight: 2.2, // Increased from 1.8 (+20%)
+                        color: 'text.primary',
                         '& p': {
                             marginBottom: '24px',
                             textAlign: 'justify',
@@ -244,9 +244,14 @@ export default function ArticleContent({
                                         id={`word-${text}`}
                                         className={styles.targetWord}
                                         style={{
-                                            fontWeight: 400, // Removed bold (was 600)
+                                            fontWeight: 400,
                                             color: 'inherit',
-                                            borderBottom: '2px dashed #cbd5e1', // Increased to 2px for visibility
+                                            // borderBottom removed in favor of text-decoration for better positioning control
+                                            textDecoration: 'underline',
+                                            textDecorationStyle: 'dashed',
+                                            textDecorationColor: '#cbd5e1',
+                                            textDecorationThickness: '2px',
+                                            textUnderlineOffset: '2px', // Closer to text (default is often auto/larger)
                                             background: 'transparent',
                                             cursor: onWordClick ? 'pointer' : 'default',
                                             transition: 'all 0.3s ease',
