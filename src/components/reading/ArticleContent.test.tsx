@@ -119,17 +119,24 @@ describe('ArticleContent', () => {
         })
     })
     it('applies max-width constraints for readability', () => {
-        const { container } = render(<ArticleContent {...defaultProps} />)
+        render(<ArticleContent {...defaultProps} />)
 
-        // Find the main Paper component which acts as the article container
-        // Based on implementation, it's the Paper inside the root Box
-        const articlePaper = container.querySelector('.MuiPaper-root')
-
-        // Assertions for "Golden Reading Ratio"
-        // max-width should be 65ch (approx 65 characters)
-        expect(articlePaper).toHaveStyle({
-            maxWidth: '65ch',
-            margin: '0 auto'
+        // 1. Check Card is Full Width
+        const articleCard = screen.getByTestId('article-card')
+        // We can't easily check "width: 100%" with toHaveStyle if it's in sx, 
+        // but we can check it DOES NOT have max-width: 65ch
+        expect(articleCard).not.toHaveStyle({
+            maxWidth: '65ch'
         })
+
+        // 2. Check Text Content is Constrained
+        const textContainer = screen.getByTestId('article-text-container')
+        expect(textContainer).toHaveStyle({
+            maxWidth: '65ch',
+        })
+
+        // 3. Check Metadata is Constrained (optional but good)
+        // const metadataHeader = screen.getByTestId('metadata-header')
+        // expect(metadataHeader).toHaveStyle({ maxWidth: '750px' })
     })
 })

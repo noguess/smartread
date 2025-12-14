@@ -124,11 +124,11 @@ export default function ArticleContent({
 
             <Paper
                 elevation={0}
+                data-testid="article-card"
                 sx={{
-                    maxWidth: '65ch', // Golden Reading Ratio
-                    margin: '0 auto',
-                    p: { xs: 3, md: 6, lg: 8 }, // p-8 sm:p-12 lg:p-16 in read.html (~32px to 64px)
-                    borderRadius: 8, // rounded-[2rem] (32px) -> theme.shape.borderRadius * 8
+                    width: '100%', // Fill the Grid column (9/12)
+                    p: { xs: 3, md: 6, lg: 8 }, // p-8 sm:p-12 lg:p-16 in read.html
+                    borderRadius: 8, // rounded-[2rem]
                     minHeight: '85vh',
                     bgcolor: 'background.paper',
                     border: '1px solid',
@@ -138,7 +138,7 @@ export default function ArticleContent({
                 }}
             >
                 {/* Metadata Header */}
-                <Box sx={{ mb: 6, maxWidth: '750px' }}>
+                <Box sx={{ mb: 6, maxWidth: '750px' }} data-testid="metadata-header">
                     <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2.5, flexWrap: 'wrap', gap: 1 }}>
                         <Chip
                             label={difficultyLevel}
@@ -188,23 +188,21 @@ export default function ArticleContent({
 
                 {/* Content */}
                 <Box
+                    data-testid="article-text-container"
                     className={styles.articleContent}
                     onMouseUp={handleSelection} // Trigger on mouse up
                     onTouchEnd={handleSelection} // Trigger on touch end (for mobile/tablet)
                     onContextMenu={(e) => e.preventDefault()} // Block system context menu
                     sx={{
+                        maxWidth: '65ch', // Constraint TEXT, not CONTAINER
                         fontSize: fontSize,
-                        lineHeight: 1.8,
+                        lineHeight: 1.9, // Relaxed line height like read.html
                         color: 'text.secondary',
                         '& p': {
-                            marginBottom: '24px',
-                            textAlign: 'justify',
-                            textJustify: 'inter-word'
+                            marginBottom: '32px', // mb-8
+                            // textAlign: 'justify', // read.html usually creates left-aligned prose, let's stick to standard or justify if preferred.
+                            // textJustify: 'inter-word'
                         },
-                        // Drop cap effect for first letter - Matches read.html simple prose style
-                        // read.html doesn't explicitly use drop-cap in "prose", but let's keep it if user likes it, 
-                        // or remove it to match "clean" look. read.html has standard prose. 
-                        // Let's REMOVE drop-cap to match read.html's clean look.
                     }}
                 >
                     <ReactMarkdown
