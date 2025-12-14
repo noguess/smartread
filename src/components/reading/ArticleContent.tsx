@@ -1,7 +1,7 @@
 import { Paper, Typography, Box, Chip, Stack } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import styles from '../../styles/reading.module.css'
 import { MenuBook, ArrowUpward } from '@mui/icons-material'
 
@@ -29,6 +29,42 @@ export default function ArticleContent({
     const { t } = useTranslation(['reading'])
     const [showHint, setShowHint] = useState(false)
 
+    const handleWordClick = useCallback((e: React.MouseEvent<HTMLSpanElement>) => {
+        const word = e.currentTarget.textContent || ''
+        if (onWordClick) {
+            onWordClick(word)
+        }
+    }, [onWordClick])
+
+    // Memoize components to prevent re-mounting of DOM nodes on every render
+    const markdownComponents = useMemo(() => ({
+        strong: ({ node: _node, ...props }: any) => {
+            // Helper to get text for ID (safely)
+            const text = props.children?.[0] ? String(props.children).toLowerCase() : '';
+            return (
+                <span
+                    id={`word-${text}`}
+                    className={styles.targetWord}
+                    style={{
+                        fontWeight: 400,
+                        color: 'inherit',
+                        // borderBottom removed in favor of text-decoration for better positioning control
+                        textDecoration: 'underline',
+                        textDecorationStyle: 'dashed',
+                        textDecorationColor: '#94a3b8', // Darkened slightly (slate-400) for visibility
+                        textDecorationThickness: '2px',
+                        textUnderlineOffset: '2px', // Closer to text (default is often auto/larger)
+                        background: 'transparent',
+                        cursor: onWordClick ? 'pointer' : 'default',
+                        transition: 'all 0.3s ease',
+                    }}
+                    onClick={onWordClick ? handleWordClick : undefined}
+                    {...props}
+                />
+            )
+        },
+    }), [onWordClick, handleWordClick]) // Only recreate if callback changes
+
     // Handle scroll to word request
     useEffect(() => {
         if (scrollToWord) {
@@ -36,18 +72,29 @@ export default function ArticleContent({
             const element = document.getElementById(wordId)
 
             if (element) {
-                // 1. Scroll into view
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-
-                // 2. Add temporary flash highlight
                 element.classList.add(styles.flashHighlight)
 
-                // 3. Remove class after animation (4000ms as requested)
-                const timer = setTimeout(() => {
+                // Use a local variable to track if we should clean up
+                // (Though clearing timeout on ID change is fine, clearing on 'null' is bad if we want animation to persist)
+                setTimeout(() => {
                     element.classList.remove(styles.flashHighlight)
                 }, 4000)
 
-                return () => clearTimeout(timer)
+                // ONLY clear timeout if we are actually unmounting or scrolling to a NEW word
+                // But since scrollToWord becomes null shortly after, default cleanup would kill the timer.
+                // We need to persist the timer even if scrollToWord becomes null.
+                // So... we generally DON'T return the cleanup for the timer unless component unmounts.
+                // But useEffect cleanup runs on every dependency change.
+
+                // Workaround: Do not clear the timer on dep change. 
+                // Let the timer run its course. If element is gone, classList.remove will throw? No, safe on null? No, element closure keeps it.
+                // If element is removed from DOM, it doesn't matter.
+                return () => {
+                    // Intentionally NOT clearing timeout here to allow animation to finish 
+                    // even if scrollToWord prop changes to null.
+                    // We only care about cleanup if specific logic demands it, but here "fire and forget" is better for UI flash.
+                }
             }
         }
     }, [scrollToWord])
@@ -79,12 +126,7 @@ export default function ArticleContent({
     }, [])
 
 
-    const handleWordClick = (e: React.MouseEvent<HTMLSpanElement>) => {
-        const word = e.currentTarget.textContent || ''
-        if (onWordClick) {
-            onWordClick(word)
-        }
-    }
+
 
     const handleSelection = () => {
         if (!onSelection) return
@@ -234,34 +276,7 @@ export default function ArticleContent({
                     }}
                 >
                     <ReactMarkdown
-                        components={{
-                            strong: ({ node: _node, ...props }) => {
-                                // Helper to get text for ID (safely)
-                                // @ts-ignore
-                                const text = props.children?.[0] ? String(props.children).toLowerCase() : '';
-                                return (
-                                    <span
-                                        id={`word-${text}`}
-                                        className={styles.targetWord}
-                                        style={{
-                                            fontWeight: 400,
-                                            color: 'inherit',
-                                            // borderBottom removed in favor of text-decoration for better positioning control
-                                            textDecoration: 'underline',
-                                            textDecorationStyle: 'dashed',
-                                            textDecorationColor: '#94a3b8', // Darkened slightly (slate-400) for visibility
-                                            textDecorationThickness: '2px',
-                                            textUnderlineOffset: '2px', // Closer to text (default is often auto/larger)
-                                            background: 'transparent',
-                                            cursor: onWordClick ? 'pointer' : 'default',
-                                            transition: 'all 0.3s ease',
-                                        }}
-                                        onClick={onWordClick ? handleWordClick : undefined}
-                                        {...props}
-                                    />
-                                )
-                            },
-                        }}
+                        components={markdownComponents}
                     >
                         {content}
                     </ReactMarkdown>
