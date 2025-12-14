@@ -43,3 +43,35 @@
     font-size: 2.5em !important;
   }
 }
+
+@keyframes flashHighlight {
+    0% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+    10% {
+        background-color: #fce7f3; /* light pinkish */
+        transform: scale(1.05);
+        border-radius: 4px;
+        box-shadow: 0 0 0 2px #fce7f3;
+    }
+    90% {
+        background-color: #fce7f3;
+        transform: scale(1.05);
+        border-radius: 4px;
+        box-shadow: 0 0 0 2px #fce7f3;
+    }
+    100% {
+        background-color: transparent;
+        transform: scale(1);
+        border-radius: 0;
+        box-shadow: none;
+    }
+}
+
+.flashHighlight {
+    animation: flashHighlight 2s ease-in-out forwards;
+    z-index: 10;
+    position: relative;
+    color: #be185d !important; /* strong pink text */
+}

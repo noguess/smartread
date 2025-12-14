@@ -14,6 +14,7 @@ interface ArticleViewProps {
     onDeepDive: (word: string) => void
     isLoading?: boolean
     settings: import('../services/db').Setting
+    scrollToWord?: string | null
 }
 
 export default function ArticleView({
@@ -24,7 +25,8 @@ export default function ArticleView({
     onClosePopover,
     onDeepDive,
     isLoading,
-    settings
+    settings,
+    scrollToWord
 }: ArticleViewProps) {
     if (isLoading) return <GenerationLoading mode="article" realProgress={0} words={[]} />
 
@@ -39,6 +41,7 @@ export default function ArticleView({
                 difficultyLevel={article.difficultyLevel}
                 fontSize={fontSize}
                 onSelection={onSelection}
+                scrollToWord={scrollToWord}
             />
 
             {/* Popovers */}

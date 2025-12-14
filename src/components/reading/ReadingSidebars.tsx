@@ -16,6 +16,7 @@ interface ReadingSidebarProps {
     onStartQuiz: () => void
     onReviewQuiz: (record: QuizRecord) => void
     wordContexts?: WordStudyItem[]
+    onWordClick?: (word: string) => void
 }
 
 export const ReadingSidebar = ({
@@ -25,7 +26,8 @@ export const ReadingSidebar = ({
     quizHistory,
     onStartQuiz,
     onReviewQuiz,
-    wordContexts = []
+    wordContexts = [],
+    onWordClick
 }: ReadingSidebarProps) => {
     const { t } = useTranslation(['reading', 'common'])
 
@@ -175,6 +177,7 @@ export const ReadingSidebar = ({
                         return (
                             <Box
                                 key={word.id}
+                                onClick={() => onWordClick?.(word.spelling)} // Trigger scroll to word
                                 onMouseEnter={() => onHoverWord(word.spelling)}
                                 onMouseLeave={() => onHoverWord(null)}
                                 sx={{

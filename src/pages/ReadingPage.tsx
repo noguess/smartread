@@ -485,6 +485,13 @@ export default function ReadingPage() {
     // Determine layout mode based on route
     const isQuizOrResult = location.pathname.includes('/quiz') || location.pathname.includes('/result')
     const sidebarVisible = !isQuizOrResult
+    const [scrollingWord, setScrollingWord] = useState<string | null>(null)
+
+    const handleWordScroll = (word: string) => {
+        setScrollingWord(word)
+        // Reset after a short delay so clicking the same word again works
+        setTimeout(() => setScrollingWord(null), 500)
+    }
 
     return (
         <ReadingLayout
@@ -505,6 +512,7 @@ export default function ReadingPage() {
             onTimerReset={resetTimer}
             wordContexts={currentArticle.wordCtxMeanings}
             sidebarVisible={sidebarVisible}
+            onWordScroll={handleWordScroll}
         >
             <Routes>
                 <Route index element={
@@ -516,6 +524,7 @@ export default function ReadingPage() {
                         popoverState={popoverState}
                         onClosePopover={handleClosePopover}
                         onDeepDive={handleDeepDive}
+                        scrollToWord={scrollingWord}
                     />
                 } />
                 <Route path="quiz/:recordId" element={

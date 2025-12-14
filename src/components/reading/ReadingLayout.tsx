@@ -21,6 +21,7 @@ interface ReadingLayoutProps {
     wordContexts?: WordStudyItem[]
     children: ReactNode
     sidebarVisible?: boolean
+    onWordScroll?: (word: string) => void
 }
 
 export default function ReadingLayout({
@@ -39,7 +40,8 @@ export default function ReadingLayout({
     onTimerReset,
     wordContexts,
     children,
-    sidebarVisible = true
+    sidebarVisible = true,
+    onWordScroll
 }: ReadingLayoutProps) {
     // TODO: Implement timer display here or pass it down?
     // For now, adhering to interface.
@@ -81,6 +83,7 @@ export default function ReadingLayout({
                                     onStartQuiz={onStartQuiz}
                                     onReviewQuiz={onReviewQuiz}
                                     wordContexts={wordContexts}
+                                    onWordClick={onWordScroll}
                                 />
                             </Grid>
                         )}

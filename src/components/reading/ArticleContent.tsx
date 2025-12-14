@@ -13,6 +13,7 @@ interface ArticleContentProps {
     fontSize: number
     wordCount?: number
     difficultyLevel?: string
+    scrollToWord?: string | null // New prop to trigger scroll
 }
 
 export default function ArticleContent({
@@ -22,10 +23,34 @@ export default function ArticleContent({
     onSelection,
     fontSize,
     wordCount = 0,
-    difficultyLevel = 'Level 2'
+    difficultyLevel = 'Level 2',
+    scrollToWord
 }: ArticleContentProps) {
     const { t } = useTranslation(['reading'])
     const [showHint, setShowHint] = useState(false)
+
+    // Handle scroll to word request
+    useEffect(() => {
+        if (scrollToWord) {
+            const wordId = `word-${scrollToWord.toLowerCase()}`
+            const element = document.getElementById(wordId)
+
+            if (element) {
+                // 1. Scroll into view
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+                // 2. Add temporary flash highlight
+                element.classList.add(styles.flashHighlight)
+
+                // 3. Remove class after animation (2000ms as requested)
+                const timer = setTimeout(() => {
+                    element.classList.remove(styles.flashHighlight)
+                }, 2000)
+
+                return () => clearTimeout(timer)
+            }
+        }
+    }, [scrollToWord])
 
     // Calculate reading time
     // WPM based on difficulty (Slower for difficulty)
@@ -127,8 +152,8 @@ export default function ArticleContent({
                 sx={{
                     maxWidth: 1000,
                     margin: '0 auto',
-                    p: { xs: 4, md: 8, lg: 10 },
-                    borderRadius: 3, // Reduced from 6
+                    p: { xs: 3, md: 5, lg: 7 }, // Reduced padding by ~30%
+                    borderRadius: 3,
                     minHeight: '60vh',
                     bgcolor: 'background.paper',
                     border: '1px solid',
@@ -137,8 +162,8 @@ export default function ArticleContent({
                 }}
             >
                 {/* Metadata Header */}
-                <Box sx={{ mb: 5, borderBottom: '1px solid', borderColor: 'divider', pb: 4 }}>
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3, flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ mb: 3, borderBottom: '1px solid', borderColor: 'divider', pb: 2 }}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
                         <Chip
                             label={difficultyLevel}
                             size="small"
@@ -173,7 +198,7 @@ export default function ArticleContent({
                         variant="h1"
                         sx={{
                             color: 'text.primary',
-                            fontSize: { xs: '2rem', md: '3rem', lg: '3.5rem' },
+                            fontSize: { xs: '1.5rem', md: '2rem', lg: '2.25rem' }, // Reduced from 3.5rem
                             fontWeight: 800,
                             lineHeight: 1.2
                         }}
@@ -210,22 +235,27 @@ export default function ArticleContent({
                 >
                     <ReactMarkdown
                         components={{
-                            strong: ({ node: _node, ...props }) => (
-                                <span
-                                    className={styles.targetWord}
-                                    style={{
-                                        fontWeight: 600,
-                                        color: '#2563eb', // indigo-600/blue-600
-                                        background: 'linear-gradient(180deg, transparent 65%, #dbeafe 65%)', // heavy bottom underline
-                                        cursor: onWordClick ? 'pointer' : 'default',
-                                        padding: '0 2px',
-                                        borderRadius: '2px',
-                                        transition: 'all 0.2s ease',
-                                    }}
-                                    onClick={onWordClick ? handleWordClick : undefined}
-                                    {...props}
-                                />
-                            ),
+                            strong: ({ node: _node, ...props }) => {
+                                // Helper to get text for ID (safely)
+                                // @ts-ignore
+                                const text = props.children?.[0] ? String(props.children).toLowerCase() : '';
+                                return (
+                                    <span
+                                        id={`word-${text}`}
+                                        className={styles.targetWord}
+                                        style={{
+                                            fontWeight: 600,
+                                            color: 'inherit', // Remove heavy blue color
+                                            borderBottom: '2px solid #93c5fd', // Simple underline (blue-300)
+                                            background: 'transparent', // Remove gradient bg
+                                            cursor: onWordClick ? 'pointer' : 'default',
+                                            transition: 'all 0.3s ease',
+                                        }}
+                                        onClick={onWordClick ? handleWordClick : undefined}
+                                        {...props}
+                                    />
+                                )
+                            },
                         }}
                     >
                         {content}
