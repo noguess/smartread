@@ -138,7 +138,7 @@ export default function ArticleContent({
                 }}
             >
                 {/* Metadata Header */}
-                <Box sx={{ mb: 6, maxWidth: '750px' }} data-testid="metadata-header">
+                <Box sx={{ mb: 6, maxWidth: '750px', mx: 'auto' }} data-testid="metadata-header">
                     <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2.5, flexWrap: 'wrap', gap: 1 }}>
                         <Chip
                             label={difficultyLevel}
@@ -195,6 +195,7 @@ export default function ArticleContent({
                     onContextMenu={(e) => e.preventDefault()} // Block system context menu
                     sx={{
                         maxWidth: '65ch', // Constraint TEXT, not CONTAINER
+                        mx: 'auto', // CENTER the text block
                         fontSize: fontSize,
                         lineHeight: 1.9, // Relaxed line height like read.html
                         color: 'text.secondary',
@@ -241,6 +242,7 @@ export default function ArticleContent({
                         alignItems: 'center',
                         color: 'text.secondary',
                         maxWidth: '65ch', // Match article width
+                        mx: 'auto', // Center footer
                     }}
                 >
                     <Stack direction="row" spacing={1} alignItems="center">
