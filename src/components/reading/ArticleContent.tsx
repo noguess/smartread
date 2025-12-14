@@ -246,7 +246,7 @@ export default function ArticleContent({
                                         style={{
                                             fontWeight: 400, // Removed bold (was 600)
                                             color: 'inherit',
-                                            borderBottom: '1px dashed #cbd5e1', // Lighter dashed underline (slate-300)
+                                            borderBottom: '2px dashed #cbd5e1', // Increased to 2px for visibility
                                             background: 'transparent',
                                             cursor: onWordClick ? 'pointer' : 'default',
                                             transition: 'all 0.3s ease',
