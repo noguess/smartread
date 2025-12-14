@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import {
     useLocation,
     useNavigate,
@@ -270,7 +270,6 @@ export default function ReadingPage() {
             setTargetWords(words)
 
             // Navigate to the real URL so refresh works
-            // Navigate to the real URL so refresh works
             navigate(`/read/${id}`, { replace: true })
         } catch (err) {
             console.error('Generation failed:', err)
@@ -280,12 +279,22 @@ export default function ReadingPage() {
         }
     }, [navigate])
 
+    // Generation Guard
+    const generationAttemptRef = useRef<string | null>(null)
+
     // Handle Article Loading / Generation
     useEffect(() => {
         const state = location.state as any
 
         // Case 1: Generation requested (from Home)
         if (state?.mode === 'generate' && state?.words && !currentArticle && !isGenerating) {
+            // Prevent double-invocation in Strict Mode
+            if (state.uuid && generationAttemptRef.current === state.uuid) {
+                return
+            }
+            if (state.uuid) {
+                generationAttemptRef.current = state.uuid
+            }
             handleGenerateArticle(state.words, state.settings, state.uuid)
         }
         // Case 2: Load existing article by ID

@@ -237,4 +237,64 @@ describe('ReadingPage Integration', () => {
         // Should Navigate to Result Page /read/1/result/200
         await waitFor(() => expect(screen.getByTestId('result-page')).toBeInTheDocument())
     })
+    it('generates article when navigated from Home with state', async () => {
+        const generationUuid = 'gen-uuid-123'
+        const generationWords = [{ spelling: 'hello', status: 'New' }]
+        const generationSettings = { difficultyLevel: 'L2', apiKey: 'test-key' }
+
+        // Mock generate response
+        vi.mocked(llmService.generateArticleOnly).mockResolvedValue({
+            title: 'Gen Title',
+            content: 'Gen Content',
+            targetWords: ['hello'],
+            word_study: []
+        } as any)
+        vi.mocked(mockLLMService.generateArticleOnly).mockResolvedValue({
+            title: 'Gen Title',
+            content: 'Gen Content',
+            targetWords: ['hello'],
+            word_study: []
+        } as any)
+
+        vi.mocked(articleService.add).mockResolvedValue(999)
+
+        // Render with state
+        render(
+            <MemoryRouter initialEntries={[{
+                pathname: '/reading',
+                state: {
+                    mode: 'generate',
+                    words: generationWords,
+                    settings: generationSettings,
+                    uuid: generationUuid
+                }
+            }]}>
+                <Routes>
+                    // Note: The real App uses /reading for generation and /read/:id for viewing
+                    // But ReadingPage handles both based on params/state
+                    <Route path="/reading" element={<ReadingPage />} />
+                    <Route path="/read/:articleId" element={<div data-testid="article-view-redirected">Redirected</div>} />
+                </Routes>
+            </MemoryRouter>
+        )
+
+        // Should show loading
+        await waitFor(() => expect(screen.getByTestId('generation-loading')).toBeInTheDocument())
+
+        // Should call generate
+        await waitFor(() => {
+            expect(llmService.generateArticleOnly).toHaveBeenCalled() // or mockLLMService depending on setup
+        })
+
+        // Should save article with PROVIDED UUID
+        await waitFor(() => {
+            expect(articleService.add).toHaveBeenCalledWith(expect.objectContaining({
+                uuid: generationUuid,
+                title: 'Gen Title'
+            }))
+        })
+
+        // Should navigate to /read/999
+        await waitFor(() => expect(screen.getByTestId('article-view-redirected')).toBeInTheDocument())
+    })
 })
