@@ -26,6 +26,7 @@ import QuizPage from './QuizPage'
 import ResultPage from './ResultPage'
 import GenerationLoading from '../components/reading/GenerationLoading'
 import { useStudyTimer } from '../hooks/useStudyTimer'
+import WordDetailModal from '../components/WordDetailModal'
 
 // --- Route Wrappers ---
 
@@ -180,6 +181,9 @@ export default function ReadingPage() {
     // activeQuizRecord and latestResult are less critical now as we use URL, 
     // but useful for "Continue" button logic if needed.
 
+    // Modal State
+    const [wordDetailModalState, setWordDetailModalState] = useState<string | null>(null)
+
 
     const completedQuizzes = useMemo(() => {
         return quizHistory.filter(r => r.score !== undefined).sort((a, b) => b.date - a.date)
@@ -313,11 +317,7 @@ export default function ReadingPage() {
 
     const handleDeepDive = (word: string) => {
         setPopoverState(null)
-        // TODO: Open WordDetailModal? 
-        // We need WordDetailModal state or usage here?
-        // ReadingPage usually has WordDetailModal.
-        // Let's add that state too if missing, or just log for now.
-        console.log('Deep dive:', word)
+        setWordDetailModalState(word)
     }
 
     const handleStartQuiz = async () => {
@@ -545,6 +545,15 @@ export default function ReadingPage() {
                     />
                 } />
             </Routes>
+
+            {/* Word Detail Modal for Deep Dive */}
+            {wordDetailModalState && (
+                <WordDetailModal
+                    open={!!wordDetailModalState}
+                    word={wordDetailModalState}
+                    onClose={() => setWordDetailModalState(null)}
+                />
+            )}
         </ReadingLayout>
     )
 }
