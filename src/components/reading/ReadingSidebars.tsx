@@ -47,60 +47,93 @@ export const ReadingSidebar = ({
     return (
         <Box sx={{ position: 'sticky', top: 96, display: 'flex', flexDirection: 'column', gap: 3, maxHeight: 'calc(100vh - 120px)' }}>
 
-            {/* 1. Action Card (Start Quiz) */}
+            {/* 1. Action Card (Start Quiz) - Visual Reduced Noise Version */}
             <Paper
-                elevation={4}
+                elevation={0}
                 sx={{
-                    background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', // Indigo to Violet
+                    bgcolor: 'background.paper',
+                    border: '2px solid', // Increased border width
+                    borderColor: 'primary.lighter', // Use theme color or custom
                     borderRadius: 4,
                     p: 3,
-                    color: 'white',
+                    flexShrink: 0,
                     position: 'relative',
                     overflow: 'hidden',
-                    flexShrink: 0
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                        borderColor: 'primary.light',
+                    },
+                    // Group hover effect simulation via class or just simple hover
+                    '&:hover .decorative-circle': {
+                        transform: 'scale(1.1)'
+                    }
                 }}
             >
-                <Box sx={{
-                    position: 'absolute',
-                    top: -20,
-                    right: -20,
-                    width: 100,
-                    height: 100,
-                    borderRadius: '50%',
-                    bgcolor: 'white',
-                    opacity: 0.1
-                }} />
-
-                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-                    <Typography variant="h6" fontWeight="700">
-                        {t('reading:sidebar.startQuiz', 'Start Quiz')}
-                    </Typography>
-                    <Trophy sx={{ fontSize: 24, color: '#fde047' }} />
-                </Stack>
-
-                <Typography variant="caption" sx={{ opacity: 0.9, lineHeight: 1.6, mb: 3, display: 'block' }}>
-                    {t('reading:sidebar.quizStats', { count: attemptCount, score: bestScore })}
-                </Typography>
-
-                <Button
-                    fullWidth
-                    variant="contained"
-                    onClick={onStartQuiz}
-                    endIcon={<ArrowRight sx={{ fontSize: 18 }} />}
+                {/* Decorative Circle from read.html */}
+                <Box
+                    className="decorative-circle"
                     sx={{
-                        bgcolor: 'white',
-                        color: '#4f46e5',
-                        borderRadius: 3,
-                        fontWeight: 'bold',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                        '&:hover': {
-                            bgcolor: 'grey.50',
-                            transform: 'translateY(-1px)'
-                        }
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: 80,
+                        height: 80,
+                        borderRadius: '50%',
+                        bgcolor: 'primary.lighter',
+                        opacity: 0.5,
+                        mr: -5,
+                        mt: -5,
+                        transition: 'transform 0.3s ease'
                     }}
-                >
-                    {t('reading:sidebar.challengeNow', 'Challenge Now')}
-                </Button>
+                />
+
+                <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                        <Typography variant="h6" fontWeight="700" color="text.primary">
+                            {t('reading:sidebar.startQuiz', 'Start Quiz')}
+                        </Typography>
+                        <Box sx={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            bgcolor: 'primary.lighter',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <Trophy sx={{ fontSize: 16, color: 'primary.main' }} />
+                        </Box>
+                    </Stack>
+
+                    <Typography variant="caption" sx={{ color: 'text.secondary', lineHeight: 1.6, mb: 3, display: 'block' }}>
+                        {t('reading:sidebar.quizStats', { count: attemptCount, score: bestScore })}
+                    </Typography>
+
+                    <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        onClick={onStartQuiz}
+                        endIcon={<ArrowRight sx={{ fontSize: 16 }} />}
+                        sx={{
+                            borderRadius: 3,
+                            fontWeight: 'bold',
+                            boxShadow: '0 4px 6px -1px rgba(79, 70, 229, 0.1), 0 2px 4px -1px rgba(79, 70, 229, 0.06)', // shadow-sm/md tailored
+                            py: 1.2,
+                            textTransform: 'none',
+                            fontSize: '0.875rem',
+                            '&:hover': {
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 10px 15px -3px rgba(79, 70, 229, 0.1), 0 4px 6px -2px rgba(79, 70, 229, 0.05)'
+                            },
+                            '&:active': {
+                                transform: 'scale(0.98)'
+                            }
+                        }}
+                    >
+                        {t('reading:sidebar.challengeNow', 'Challenge Now')}
+                    </Button>
+                </Box>
             </Paper>
 
             {/* 2. Core Vocabulary List (Scrollable) */}
@@ -110,7 +143,7 @@ export const ReadingSidebar = ({
                     bgcolor: 'background.paper',
                     borderRadius: 4,
                     border: '1px solid',
-                    borderColor: 'divider',
+                    borderColor: 'divider', // border-slate-100
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
@@ -121,27 +154,27 @@ export const ReadingSidebar = ({
                 <Box sx={{
                     p: 2,
                     borderBottom: '1px solid',
-                    borderColor: 'divider',
-                    bgcolor: 'action.hover',
+                    borderColor: 'divider', // border-slate-50
+                    bgcolor: 'background.paper', // reverted to white as per read.html
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     flexShrink: 0
                 }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                        <Highlighter fontSize="small" sx={{ color: '#6366f1' }} />
+                        <Highlighter sx={{ fontSize: 14, color: 'primary.main' }} />
                         <Typography variant="subtitle2" fontWeight="700" color="text.primary">
                             {t('reading:sidebar.coreVocabulary', 'Core Vocabulary')}
                         </Typography>
                     </Stack>
                     <Box sx={{
-                        bgcolor: 'primary.lighter',
-                        color: 'primary.main',
+                        bgcolor: 'action.hover', // slate-100
+                        color: 'text.secondary', // slate-500
                         px: 1,
-                        py: 0.2,
-                        borderRadius: 10,
-                        fontSize: '0.75rem',
-                        fontWeight: 700
+                        py: 0.2, // py-0.5
+                        borderRadius: 1, // rounded-md
+                        fontSize: '0.65rem', // text-[10px]
+                        fontWeight: 500
                     }}>
                         {words.length}
                     </Box>
@@ -149,6 +182,7 @@ export const ReadingSidebar = ({
 
                 <Box
                     sx={{
+                        flex: 1, // Ensure it fills remaining space in flex container
                         p: 1,
                         overflowY: 'auto',
                         '&::-webkit-scrollbar': { width: 4 },
@@ -163,49 +197,65 @@ export const ReadingSidebar = ({
                                 key={word.id}
                                 onMouseEnter={() => onHoverWord(word.spelling)}
                                 onMouseLeave={() => onHoverWord(null)}
+                                className="group" // For child hover effects
                                 sx={{
                                     p: 1.5,
                                     mb: 0.5,
-                                    borderRadius: 3,
+                                    borderRadius: 3, // rounded-xl
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
                                     border: '1px solid',
                                     borderColor: activeWord === word.spelling ? 'primary.light' : 'transparent',
-                                    bgcolor: activeWord === word.spelling ? 'primary.lighter' : 'transparent',
+                                    bgcolor: activeWord === word.spelling ? 'primary.lighter' : 'background.paper',
+                                    transform: activeWord === word.spelling ? 'translateX(4px)' : 'none', // translate-x-1
+                                    boxShadow: activeWord === word.spelling ? '0 1px 2px 0 rgba(0, 0, 0, 0.05)' : 'none',
                                     '&:hover': {
                                         bgcolor: activeWord === word.spelling ? 'primary.lighter' : 'action.hover',
+                                        borderColor: activeWord === word.spelling ? 'primary.light' : 'divider',
                                     }
                                 }}
                             >
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.5 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
-                                        <Typography variant="body2" fontWeight="700" color={activeWord === word.spelling ? 'primary.main' : 'text.primary'}>
+                                        <Typography
+                                            variant="body2"
+                                            fontWeight="700"
+                                            color={activeWord === word.spelling ? 'primary.main' : 'text.primary'}
+                                        >
                                             {word.spelling}
                                         </Typography>
-                                        {word.phonetic && (
-                                            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-                                                {word.phonetic}
-                                            </Typography>
+                                        {/* Type/Pos tag hidden by default, shown on hover */}
+                                        {ctx?.part_of_speech && (
+                                            <Box
+                                                component="span"
+                                                sx={{
+                                                    fontSize: '0.65rem',
+                                                    fontStyle: 'italic',
+                                                    fontFamily: 'serif',
+                                                    color: 'text.secondary',
+                                                    opacity: 0,
+                                                    transition: 'opacity 0.2s',
+                                                    '.group:hover &': {
+                                                        opacity: 1
+                                                    }
+                                                }}
+                                            >
+                                                {ctx.part_of_speech}
+                                            </Box>
                                         )}
                                     </Box>
-                                    {ctx?.part_of_speech && (
-                                        <Box
-                                            component="span"
-                                            sx={{
-                                                fontSize: '0.65rem',
-                                                bgcolor: 'action.focus', // or grey.200
-                                                color: 'text.secondary',
-                                                px: 0.8,
-                                                py: 0.2,
-                                                borderRadius: 10,
-                                                // ml: 1 
-                                            }}
-                                        >
-                                            {ctx.part_of_speech}
-                                        </Box>
-                                    )}
                                 </Box>
-                                <Typography variant="caption" color="text.secondary" noWrap display="block">
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    noWrap
+                                    display="block"
+                                    sx={{
+                                        '.group:hover &': {
+                                            color: 'text.primary'
+                                        }
+                                    }}
+                                >
                                     {displayMeaning}
                                 </Typography>
                             </Box>
@@ -226,11 +276,23 @@ export const ReadingSidebar = ({
                     flexShrink: 0
                 }}
             >
-                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-                    <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1.5}>
+                    <Typography
+                        variant="caption"
+                        fontWeight="bold"
+                        color="text.secondary" // slate-400
+                        sx={{
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            fontSize: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5
+                        }}
+                    >
+                        <History sx={{ fontSize: 12 }} />
                         {t('reading:sidebar.recentHistory', 'Recent History')}
                     </Typography>
-                    <History fontSize="small" sx={{ color: '#94a3b8' }} />
                 </Stack>
 
                 <Stack spacing={1}>
@@ -242,25 +304,30 @@ export const ReadingSidebar = ({
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
-                                p: 1,
-                                borderRadius: 2,
+                                p: 1, // p-1.5
+                                borderRadius: 2, // rounded-lg
                                 cursor: 'pointer',
-                                '&:hover': { bgcolor: 'action.hover' }
+                                transition: 'colors 0.2s',
+                                '&:hover': { bgcolor: 'action.hover' } // hover:bg-slate-50
                             }}
                         >
-                            <Typography variant="caption" color="text.secondary">
-                                {new Date(record.date).toLocaleDateString()}
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', fontSize: '0.75rem' }}>
+                                <span>{new Date(record.date).toLocaleDateString()}</span>
+                            </Box>
+
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                 <Typography
                                     variant="body2"
                                     fontWeight="bold"
                                     sx={{
                                         color: record.score >= 80 ? 'success.main' :
-                                            record.score >= 60 ? 'warning.main' : 'error.main'
+                                            record.score >= 60 ? 'text.secondary' : 'error.main' // slate-600 logic from read.html
                                     }}
                                 >
                                     {record.score}
+                                </Typography>
+                                <Typography variant="caption" color="text.disabled" sx={{ fontSize: '10px' }}>
+                                    分
                                 </Typography>
                             </Box>
                         </Box>

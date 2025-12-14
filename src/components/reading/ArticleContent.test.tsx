@@ -118,4 +118,18 @@ describe('ArticleContent', () => {
             left: 70 // 50 + 40/2
         })
     })
+    it('applies max-width constraints for readability', () => {
+        const { container } = render(<ArticleContent {...defaultProps} />)
+
+        // Find the main Paper component which acts as the article container
+        // Based on implementation, it's the Paper inside the root Box
+        const articlePaper = container.querySelector('.MuiPaper-root')
+
+        // Assertions for "Golden Reading Ratio"
+        // max-width should be 65ch (approx 65 characters)
+        expect(articlePaper).toHaveStyle({
+            maxWidth: '65ch',
+            margin: '0 auto'
+        })
+    })
 })
