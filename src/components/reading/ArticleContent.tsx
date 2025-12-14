@@ -42,10 +42,10 @@ export default function ArticleContent({
                 // 2. Add temporary flash highlight
                 element.classList.add(styles.flashHighlight)
 
-                // 3. Remove class after animation (2000ms as requested)
+                // 3. Remove class after animation (4000ms as requested)
                 const timer = setTimeout(() => {
                     element.classList.remove(styles.flashHighlight)
-                }, 2000)
+                }, 4000)
 
                 return () => clearTimeout(timer)
             }

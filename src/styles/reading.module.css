@@ -75,3 +75,8 @@
     position: relative;
     color: #be185d !important; /* strong pink text */
 }
+
+/* Override previous definition to extend duration */
+.flashHighlight {
+    animation: flashHighlight 4s ease-in-out forwards !important;
+}
