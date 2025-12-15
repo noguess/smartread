@@ -37,7 +37,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
     const [selectedOccurrence, setSelectedOccurrence] = useState<VideoOccurrence | null>(null)
     const [wordData, setWordData] = useState<any>(null)
     const [loading, setLoading] = useState(false)
-    const [videoSource, setVideoSource] = useState<'bilibili' | 'youtube'>('bilibili')
+    const [videoSource, setVideoSource] = useState<'bilibili' | 'youtube'>('youtube')
 
     // Dictionary & TTS states
     const [dictionaryData, setDictionaryData] = useState<DictionaryEntry[] | null>(null)
@@ -66,7 +66,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
 
             // Get Settings
             const settings = await settingsService.getSettings()
-            const source = settings.videoSource || 'bilibili'
+            const source = settings.videoSource || 'youtube'
             setVideoSource(source)
 
             // 2. If not found in DB, fetch from Dictionary API and auto-save

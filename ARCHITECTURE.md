@@ -17,6 +17,7 @@ src/
 │   ├── words/              # 单词本相关 (WordList, WordCard)
 │   ├── quiz/               # 测试相关 (QuizForm, ResultChart)
 │    ├── history/            # 学习记录 (QuizHistory, HistoryListCard, QuizResult)
+│   ├── onboarding/         # [NEW] 首次引导 (OnboardingDialog)
 ├── hooks/                  # 全局自定义 Hooks (useTheme, useDebounce)
 ├── pages/                  # 路由页面 (Home, Library, Settings, NotFoundPage)
 ├── services/               # 数据服务层 (API & DB)

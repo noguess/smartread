@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next'
 import { useTheme, useMediaQuery } from '@mui/material'
 import WordDetailModal from '../components/WordDetailModal'
 import { PageLoading, PageError } from '../components/common'
+import OnboardingDialog from '../components/onboarding/OnboardingDialog'
 
 export default function HomePage() {
     const { t } = useTranslation(['home', 'common'])
@@ -36,6 +37,7 @@ export default function HomePage() {
     const [isManualDialogOpen, setIsManualDialogOpen] = useState(false)
     const [detailWord, setDetailWord] = useState('')
     const [isDetailOpen, setIsDetailOpen] = useState(false)
+    const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
 
     // Loading & Error State
     const [loading, setLoading] = useState(true)
@@ -207,7 +209,23 @@ export default function HomePage() {
             // Clear state to prevent showing again on refresh
             window.history.replaceState({}, document.title)
         }
+        if (state?.message) {
+            setSnackbarMsg(state.message)
+            setSnackbarOpen(true)
+            // Clear state to prevent showing again on refresh
+            window.history.replaceState({}, document.title)
+        }
     }, [loadData, location.state])
+
+    useEffect(() => {
+        const checkSettings = async () => {
+            const settings = await settingsService.getSettings()
+            if (settings && settings.hasCompletedOnboarding === false) {
+                setIsOnboardingOpen(true)
+            }
+        }
+        checkSettings()
+    }, [])
 
 
 
@@ -342,6 +360,14 @@ export default function HomePage() {
                     word={detailWord}
                     open={isDetailOpen}
                     onClose={() => setIsDetailOpen(false)}
+                />
+
+                <OnboardingDialog
+                    open={isOnboardingOpen}
+                    onClose={() => {
+                        setIsOnboardingOpen(false)
+                        loadData() // Refresh data (e.g. word counts)
+                    }}
                 />
 
                 <Snackbar

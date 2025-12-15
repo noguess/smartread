@@ -1,3 +1,10 @@
+## [Feature] Onboarding Flow
+- [x] Task 1 (DB): Update `db.ts` to include `hasCompletedOnboarding` in `Setting` interface, and update `settingsService.ts` initialization logic.
+- [x] Task 2 (UI): Create `OnboardingDialog.tsx` with Stepper skeleton and "Welcome" step.
+- [x] Task 3 (Logic): Implement API Key input step in `OnboardingDialog` (reuse `settingsService`).
+- [x] Task 4 (Logic): Implement Vocabulary Import step in `OnboardingDialog` (reuse fetch logic).
+- [x] Task 5 (Integration): Mount `OnboardingDialog` in `HomePage.tsx` and trigger conditionally.
+
 ## [Feature] 异常链路统一 (Exception Handling)
 - [x] Task 1 (Infra): 创建统一组件 `PageLoading`, `PageError`, `NotFoundPage`，并在 `App.tsx` 中集成 `react-error-boundary`。
 - [x] Task 2 (Home): 重构 `HomePage.tsx`，接入 Loading 和 Error 状态处理。

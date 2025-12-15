@@ -94,6 +94,7 @@ export interface Setting {
     dailyNewLimit: number
     difficultyLevel: 'L1' | 'L2' | 'L3'
     videoSource?: 'bilibili' | 'youtube'
+    hasCompletedOnboarding?: boolean
 }
 
 export interface SentenceAnalysis {

@@ -31,7 +31,7 @@ export default function SettingsPage() {
     const [articleLen, setArticleLen] = useState<'short' | 'medium' | 'long'>('medium')
     const [dailyLimit, setDailyLimit] = useState(10)
     const [difficultyLevel, setDifficultyLevel] = useState<'L1' | 'L2' | 'L3'>('L2')
-    const [videoSource, setVideoSource] = useState<'bilibili' | 'youtube'>('bilibili')
+    const [videoSource, setVideoSource] = useState<'bilibili' | 'youtube'>('youtube')
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMsg, setSnackbarMsg] = useState('')
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
@@ -51,7 +51,7 @@ export default function SettingsPage() {
             setArticleLen(current.articleLenPref)
             setDailyLimit(current.dailyNewLimit)
             setDifficultyLevel(current.difficultyLevel || 'L2')
-            setVideoSource(current.videoSource || 'bilibili')
+            setVideoSource(current.videoSource || 'youtube')
         }
     }
 

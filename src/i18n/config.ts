@@ -16,6 +16,7 @@ import zhSettings from '../locales/zh/settings.json'
 import zhStatistics from '../locales/zh/statistics.json'
 import zhReading from '../locales/zh/reading.json'
 import zhLibrary from '../locales/zh/library.json'
+import zhOnboarding from '../locales/zh/onboarding.json'
 
 import enCommon from '../locales/en/common.json'
 import enHome from '../locales/en/home.json'
@@ -25,6 +26,7 @@ import enSettings from '../locales/en/settings.json'
 import enStatistics from '../locales/en/statistics.json'
 import enReading from '../locales/en/reading.json'
 import enLibrary from '../locales/en/library.json'
+import enOnboarding from '../locales/en/onboarding.json'
 
 // 配置资源
 const resources = {
@@ -37,6 +39,7 @@ const resources = {
         statistics: zhStatistics,
         reading: zhReading,
         library: zhLibrary,
+        onboarding: zhOnboarding,
     },
     en: {
         common: enCommon,
@@ -47,6 +50,7 @@ const resources = {
         statistics: enStatistics,
         reading: enReading,
         library: enLibrary,
+        onboarding: enOnboarding,
     },
 }
 
@@ -57,7 +61,7 @@ i18n
         resources,
         fallbackLng: 'zh', // 默认语言
         defaultNS: 'common', // 默认命名空间
-        ns: ['common', 'home', 'vocabulary', 'history', 'settings', 'statistics', 'reading', 'library'], // 所有命名空间
+        ns: ['common', 'home', 'vocabulary', 'history', 'settings', 'statistics', 'reading', 'library', 'onboarding'], // 所有命名空间
 
         detection: {
             // 语言检测顺序

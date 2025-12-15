@@ -10,7 +10,8 @@ export const settingsService = {
                 articleLenPref: 'medium',
                 dailyNewLimit: 10,
                 difficultyLevel: 'L2', // Initialize default difficultyLevel
-                videoSource: 'bilibili', // Default to Bilibili
+                videoSource: 'youtube', // Default to Youtube
+                hasCompletedOnboarding: false,
             }
             const id = await db.settings.add(defaultSettings)
             return { ...defaultSettings, id }
@@ -22,8 +23,12 @@ export const settingsService = {
             await db.settings.update(currentSettings.id!, { difficultyLevel: 'L2' })
         }
         if (!currentSettings.videoSource) {
-            currentSettings.videoSource = 'bilibili'
-            await db.settings.update(currentSettings.id!, { videoSource: 'bilibili' })
+            currentSettings.videoSource = 'youtube'
+            await db.settings.update(currentSettings.id!, { videoSource: 'youtube' })
+        }
+        if (currentSettings.hasCompletedOnboarding === undefined) {
+            currentSettings.hasCompletedOnboarding = false
+            await db.settings.update(currentSettings.id!, { hasCompletedOnboarding: false })
         }
         return currentSettings
     },

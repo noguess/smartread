@@ -1,0 +1,35 @@
+{
+    "title": "欢迎使用 Smart Reader",
+    "steps": {
+        "welcome": "欢迎",
+        "apiKey": "设置 AI",
+        "import": "导入词库",
+        "finish": "开始"
+    },
+    "welcome": {
+        "title": "开启您的阅读之旅",
+        "desc": "Smart Reader 是一个基于记忆曲线的智能英语学习平台。只需要简单的几步设置，即可开始使用。"
+    },
+    "apiKey": {
+        "title": "连接 AI 大脑",
+        "desc": "请输入您的 Deepseek API Key 以启用智能文章生成功能。",
+        "label": "Deepseek API Key",
+        "placeholder": "sk-...",
+        "helper": "您的 Key 仅存储在本地浏览器中，绝不会上传到服务器。",
+        "error": "请输入有效的 API Key"
+    },
+    "import": {
+        "title": "建立词汇基础",
+        "desc": "导入中考高频核心词汇作为您的初始词库。您也可以稍后在设置中导入。",
+        "button": "一键导入核心词库 (666词)",
+        "success": "成功导入 {{count}} 个单词！",
+        "skipped": "已跳过 {{count}} 个重复单词",
+        "fail": "导入失败，请重试",
+        "skip": "跳过导入"
+    },
+    "actions": {
+        "next": "下一步",
+        "back": "上一步",
+        "finish": "开始体验"
+    }
+}

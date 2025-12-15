@@ -1,0 +1,35 @@
+{
+    "title": "Welcome to Smart Reader",
+    "steps": {
+        "welcome": "Welcome",
+        "apiKey": "AI Setup",
+        "import": "Import",
+        "finish": "Start"
+    },
+    "welcome": {
+        "title": "Start Your Reading Journey",
+        "desc": "Smart Reader is an intelligent English learning platform based on the forgetting curve. Just a few steps to get started."
+    },
+    "apiKey": {
+        "title": "Connect AI Brain",
+        "desc": "Please enter your Deepseek API Key to enable intelligent article generation.",
+        "label": "Deepseek API Key",
+        "placeholder": "sk-...",
+        "helper": "Your Key is stored locally in your browser and is never uploaded to any server.",
+        "error": "Please enter a valid API Key"
+    },
+    "import": {
+        "title": "Build Vocabulary Base",
+        "desc": "Import core vocabulary as your initial base. You can also import later in settings.",
+        "button": "One-click Import Core Words (666 words)",
+        "success": "Successfully imported {{count}} words!",
+        "skipped": "Skipped {{count}} duplicates",
+        "fail": "Import failed, please try again",
+        "skip": "Skip Import"
+    },
+    "actions": {
+        "next": "Next",
+        "back": "Back",
+        "finish": "Get Started"
+    }
+}
