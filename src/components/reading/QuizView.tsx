@@ -29,7 +29,6 @@ interface QuizViewProps {
     readingQuestions: Question[]
     vocabularyQuestions: Question[]
     onSubmit: (answers: { reading: Record<string, string>; vocabulary: Record<string, string | string[]> }) => void
-    onBack: () => void
     initialAnswers?: {
         reading: Record<string, string>
         vocabulary: Record<string, string | string[]>
@@ -58,7 +57,6 @@ export default function QuizView({
     readingQuestions,
     vocabularyQuestions,
     onSubmit,
-    onBack,
     initialAnswers,
     readOnly = false,
     onExit,
@@ -111,13 +109,7 @@ export default function QuizView({
         window.scrollTo(0, 0)
     }
 
-    const handleBack = () => {
-        if (activeStep === 0) {
-            onBack()
-        } else {
-            setActiveStep(0)
-        }
-    }
+
 
     const handleSubmit = () => {
         onSubmit({
@@ -380,10 +372,13 @@ export default function QuizView({
             )}
 
             {/* Navigation Buttons */}
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
-                <Button variant="outlined" size="large" onClick={handleBack}>
-                    {t('reading:quiz.back')}
-                </Button>
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: activeStep === 0 ? 'flex-end' : 'space-between' }}>
+                {activeStep > 0 && (
+                    <Button variant="outlined" size="large" onClick={() => setActiveStep(0)}>
+                        {t('reading:quiz.backToPrevious')}
+                    </Button>
+                )}
+
                 {activeStep === 0 ? (
                     <Button
                         variant="contained"

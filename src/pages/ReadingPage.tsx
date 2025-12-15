@@ -578,6 +578,8 @@ export default function ReadingPage() {
             wordContexts={currentArticle.wordCtxMeanings}
             sidebarVisible={sidebarVisible}
             onWordScroll={handleWordScroll}
+            headerVisible={true}
+            showFontControls={sidebarVisible}
         >
             <Routes>
                 <Route index element={

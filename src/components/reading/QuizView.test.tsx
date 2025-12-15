@@ -25,7 +25,7 @@ vi.mock('react-i18next', () => ({
 
 describe('QuizView', () => {
     const mockObSubmit = vi.fn()
-    const mockOnBack = vi.fn()
+
 
     const mockReadingQuestions = [
         { id: 'r0', stem: 'Reading Q1', options: ['A', 'B'], answer: 'A', type: 'contextual' },
@@ -42,7 +42,7 @@ describe('QuizView', () => {
                 readingQuestions={mockReadingQuestions}
                 vocabularyQuestions={mockVocabQuestions}
                 onSubmit={mockObSubmit}
-                onBack={mockOnBack}
+
             />
         )
 
@@ -65,7 +65,7 @@ describe('QuizView', () => {
                 readingQuestions={mockReadingQuestions}
                 vocabularyQuestions={mockVocabQuestions}
                 onSubmit={mockObSubmit}
-                onBack={mockOnBack}
+
             />
         )
 
@@ -102,7 +102,7 @@ describe('QuizView', () => {
                 readingQuestions={mockReadingWithExpl}
                 vocabularyQuestions={mockVocabWithExpl}
                 onSubmit={mockObSubmit}
-                onBack={mockOnBack}
+
                 onExit={onExit}
                 readOnly={true}
                 initialAnswers={{ reading: {}, vocabulary: {} }}
@@ -129,7 +129,7 @@ describe('QuizView', () => {
                 readingQuestions={mockReadingQuestions}
                 vocabularyQuestions={mockVocabQuestions}
                 onSubmit={mockObSubmit}
-                onBack={mockOnBack}
+
                 readOnly={true}
                 result={{ score: 80, total: 100, message: 'Great job!' }}
                 initialAnswers={{ reading: {}, vocabulary: {} }}
@@ -145,7 +145,7 @@ describe('QuizView', () => {
                 readingQuestions={mockReadingQuestions}
                 vocabularyQuestions={mockVocabQuestions}
                 onSubmit={mockObSubmit}
-                onBack={mockOnBack}
+
                 readOnly={true}
                 result={{
                     score: 85,
@@ -173,5 +173,45 @@ describe('QuizView', () => {
         // Check for section labels (using translation keys as per mock)
         expect(screen.getAllByText('reading:quiz.readingTitle').length).toBeGreaterThan(0)
         expect(screen.getAllByText('reading:quiz.vocabTitle').length).toBeGreaterThan(0)
+    })
+    it('handles navigation buttons visibility and text correctly', () => {
+        render(
+            <QuizView
+                readingQuestions={mockReadingQuestions}
+                vocabularyQuestions={mockVocabQuestions}
+                onSubmit={mockObSubmit}
+
+            />
+        )
+
+        // Step 0: Back button should be hidden (Task 3)
+        // Note: Task 3 says "hide", so queryByText should return null
+        // But currently it is visible, so this expectation will FAIL, which is good.
+        expect(screen.queryByText('reading:quiz.back')).not.toBeInTheDocument()
+
+        // Go to Step 1
+        // Need to fill answers first or disable validation?
+        // Mock data allows selection easily.
+        const radioA = screen.getByLabelText('A')
+        const radioC = screen.getByLabelText('C')
+        fireEvent.click(radioA)
+        fireEvent.click(radioC)
+
+        const nextBtn = screen.getByText('reading:quiz.next')
+        expect(nextBtn).toBeEnabled()
+        fireEvent.click(nextBtn)
+
+        // Step 1: Back button should be visible AND hava specific text (Task 4)
+        // Task 4 says "Change text to 'Return to Previous Part'"
+        // We'll check for the KEY or the text if we mock translation
+        // The current code uses 'reading:quiz.back'. Task 4 implies checking for new text/key.
+        // Let's assume we will use a new key 'reading:quiz.backToPart1' or similar, OR just hardcode for validtion?
+        // Wait, I should implement the test to match what I WANT.
+        // Task 4: "将底部左侧按钮文案改为“返回上一部分”" (Return to previous part)
+        // Since I'm using i18n mock, I'll expect a new key or the same key?
+        // If I change the key, I should search for that key. If I change the translation value, I search for value.
+        // Mock returns key. So I should expect to find 'reading:quiz.backToPrevious' or similar.
+        // Let's assume I will use 'reading:quiz.backToPrevious' for Step 1.
+        expect(screen.getByText('reading:quiz.backToPrevious')).toBeInTheDocument()
     })
 })

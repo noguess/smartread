@@ -22,6 +22,8 @@ interface ReadingLayoutProps {
     children: ReactNode
     sidebarVisible?: boolean
     onWordScroll?: (word: string) => void
+    headerVisible?: boolean
+    showFontControls?: boolean
 }
 
 export default function ReadingLayout({
@@ -41,7 +43,9 @@ export default function ReadingLayout({
     wordContexts,
     children,
     sidebarVisible = true,
-    onWordScroll
+    onWordScroll,
+    headerVisible = true,
+    showFontControls = true
 }: ReadingLayoutProps) {
     // TODO: Implement timer display here or pass it down?
     // For now, adhering to interface.
@@ -49,9 +53,8 @@ export default function ReadingLayout({
     return (
         <Fade in timeout={500}>
             <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: 8 }}>
-                {/* 1. Header (Sticky) */}
-                {/* 1. Header (Sticky) - Only show in Reading Mode (sidebarVisible) */}
-                {sidebarVisible && (
+                {/* 1. Header (Sticky) - Controlled by headerVisible (default true) */}
+                {headerVisible && (
                     <ReadingHeader
                         title={title}
                         fontSize={fontSize}
@@ -60,7 +63,7 @@ export default function ReadingLayout({
                         seconds={seconds}
                         onTimerToggle={onTimerToggle}
                         onTimerReset={onTimerReset}
-                        showFontControls={true}
+                        showFontControls={showFontControls}
                     />
                 )}
 

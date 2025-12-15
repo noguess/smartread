@@ -76,6 +76,7 @@
         "next": "下一部分",
         "submit": "提交答案",
         "back": "返回文章",
+        "backToPrevious": "返回上一部分",
         "correct": "正确",
         "yourAnswer": "你的答案",
         "exitReview": "退出复习",

@@ -44,9 +44,23 @@ describe('ReadingLayout', () => {
         expect(screen.getByTestId('child-content')).toBeInTheDocument()
     })
 
-    it('toggles sidebar visibility on mobile', () => {
-        // This functionality might be implicit in Grid, or we might need explicit tests if we implement drawer.
-        // For now, responsive Grid checks are hard with jsdom/happy-dom default sizing.
-        // We'll skip responsiveness test here and rely on component logic.
+    it('shows header when sidebar is hidden but headerVisible is true (default)', () => {
+        render(
+            <MemoryRouter>
+                <ReadingLayout {...defaultProps} sidebarVisible={false} />
+            </MemoryRouter>
+        )
+
+        expect(screen.getByTestId('reading-header')).toBeInTheDocument()
+    })
+
+    it('hides header when headerVisible is explicit false', () => {
+        render(
+            <MemoryRouter>
+                <ReadingLayout {...defaultProps} headerVisible={false} />
+            </MemoryRouter>
+        )
+
+        expect(screen.queryByTestId('reading-header')).not.toBeInTheDocument()
     })
 })

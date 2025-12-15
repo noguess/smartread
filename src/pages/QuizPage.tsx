@@ -39,7 +39,6 @@ export default function QuizPage({
             onExit={onExit}
             readOnly={readOnly}
             result={quizResult}
-            onBack={onExit} // Mapping exit to back for now
         />
     )
 }
