@@ -24,6 +24,7 @@ interface ReadingLayoutProps {
     onWordScroll?: (word: string) => void
     headerVisible?: boolean
     showFontControls?: boolean
+    showTimer?: boolean
 }
 
 export default function ReadingLayout({
@@ -45,7 +46,8 @@ export default function ReadingLayout({
     sidebarVisible = true,
     onWordScroll,
     headerVisible = true,
-    showFontControls = true
+    showFontControls = true,
+    showTimer = true
 }: ReadingLayoutProps) {
     // TODO: Implement timer display here or pass it down?
     // For now, adhering to interface.
@@ -64,6 +66,7 @@ export default function ReadingLayout({
                         onTimerToggle={onTimerToggle}
                         onTimerReset={onTimerReset}
                         showFontControls={showFontControls}
+                        showTimer={showTimer}
                     />
                 )}
 

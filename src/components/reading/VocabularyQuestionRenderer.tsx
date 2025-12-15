@@ -19,6 +19,7 @@ import {
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { ExpandMore, Lightbulb } from '@mui/icons-material'
 import { Question } from '../../services/db'
+import { isMultipleChoice, isMatching, isGeneric } from '../../services/questionInfo'
 import { ttsService } from '../../services/ttsService'
 
 interface VocabularyQuestionRendererProps {
@@ -44,12 +45,14 @@ export default function VocabularyQuestionRenderer({
 
     // Handle audio playback
     const handlePlayAudio = () => {
-        // For audio questions, the word to play is either targetWord or the answer itself
-        const wordToPlay = question.targetWord || (typeof question.answer === 'string' ? question.answer : '')
+        // For audio questions, the word to play is either targetWord (if exists) or the answer itself
+        const targetWord = 'targetWord' in question ? (question as any).targetWord : undefined
+        const wordToPlay = targetWord || (typeof question.answer === 'string' ? question.answer : '')
 
         if (wordToPlay && ttsService.isSupported()) {
             setIsPlaying(true)
-            ttsService.playWord(wordToPlay, question.phonetic)
+            const phonetic = 'phonetic' in question ? (question as any).phonetic : undefined
+            ttsService.playWord(wordToPlay, phonetic)
             // Reset playing state after 1 second
             setTimeout(() => setIsPlaying(false), 1000)
         } else if (!ttsService.isSupported()) {
@@ -63,7 +66,7 @@ export default function VocabularyQuestionRenderer({
     const renderQuestionInput = () => {
         // Normalize type for rendering
         let renderType = question.type
-        const subType = (question as any).subType
+        const subType = 'subType' in question ? (question as any).subType : undefined
 
         if (question.type === 'multiple_choice') {
             // Map subTypes to legacy render keys or default to 'contextual'
@@ -89,7 +92,7 @@ export default function VocabularyQuestionRenderer({
                             value={(answer as string) || ''}
                             onChange={(e) => onChange(e.target.value)}
                         >
-                            {(question.options || []).map((opt) => {
+                            {(isMultipleChoice(question) || isGeneric(question)) && (question.options || []).map((opt) => {
                                 const isSelected = (answer as string) === opt
                                 const isTheCorrectAnswer = (correctAnswer as string) === opt
 
@@ -125,7 +128,7 @@ export default function VocabularyQuestionRenderer({
             case 'cloze':
                 // Cloze can be either multiple choice OR fill-in-blank
                 // Check if options exist
-                if (question.options && question.options.length > 0) {
+                if ((isMultipleChoice(question) || isGeneric(question)) && question.options && question.options.length > 0) {
                     // Multiple choice cloze
                     return (
                         <FormControl fullWidth disabled={readOnly}>
@@ -133,7 +136,7 @@ export default function VocabularyQuestionRenderer({
                                 value={(answer as string) || ''}
                                 onChange={(e) => onChange(e.target.value)}
                             >
-                                {question.options.map((opt) => {
+                                {isMultipleChoice(question) && question.options.map((opt) => {
                                     const isSelected = (answer as string) === opt
                                     const isTheCorrectAnswer = (correctAnswer as string) === opt
 
@@ -208,7 +211,7 @@ export default function VocabularyQuestionRenderer({
                             onChange={(e) => onChange(e.target.value)}
                             disabled={readOnly}
                             error={readOnly && !isCorrect}
-                            helperText={question.hint ? `Hint: ${question.hint}` : undefined}
+                            helperText={'hint' in question ? `Hint: ${(question as any).hint}` : undefined}
                             sx={{
                                 mt: 2,
                                 '& .MuiOutlinedInput-root': {
@@ -230,7 +233,7 @@ export default function VocabularyQuestionRenderer({
             case 'audioDictation': // Support LLM variant
                 {
                     // 音频题型 - 音频播放器 + 选择或输入
-                    const hasOptions = question.options && question.options.length > 0
+                    const hasOptions = (isMultipleChoice(question) || isGeneric(question)) && question.options && question.options.length > 0
                     return (
                         <Box>
                             {/* 音频播放按钮 */}
@@ -250,7 +253,7 @@ export default function VocabularyQuestionRenderer({
                                 <Typography variant="body2" color="text.secondary">
                                     {isPlaying ? 'Playing...' : 'Click to play audio'}
                                 </Typography>
-                                {question.phonetic && (
+                                {isGeneric(question) && question.phonetic && (
                                     <Chip
                                         label={question.phonetic}
                                         size="small"
@@ -267,7 +270,7 @@ export default function VocabularyQuestionRenderer({
                                         value={(answer as string) || ''}
                                         onChange={(e) => onChange(e.target.value)}
                                     >
-                                        {question.options!.map((opt) => {
+                                        {(isMultipleChoice(question) || isGeneric(question)) && question.options!.map((opt) => {
                                             const isSelected = (answer as string) === opt
                                             const isTheCorrectAnswer = (correctAnswer as string) === opt
 
@@ -318,7 +321,7 @@ export default function VocabularyQuestionRenderer({
             case 'matching':
                 {
                     // 匹配题型 - 使用下拉选择
-                    const pairs = question.pairs || []
+                    const pairs = ('pairs' in question) ? (question as any).pairs : []
                     const currentAnswers = (answer as string[]) || Array(pairs.length).fill('')
 
                     return (
@@ -326,7 +329,7 @@ export default function VocabularyQuestionRenderer({
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                                 Match each word with its definition:
                             </Typography>
-                            {pairs.map((pair, idx) => {
+                            {isMatching(question) && question.pairs.map((pair, idx) => {
                                 const userAnswer = currentAnswers[idx]
                                 const correctPairAnswer = Array.isArray(correctAnswer) ? correctAnswer[idx] : ''
                                 const isPairCorrect = userAnswer === correctPairAnswer
@@ -372,7 +375,7 @@ export default function VocabularyQuestionRenderer({
                                                 <MenuItem value="" disabled>
                                                     <em>Select definition...</em>
                                                 </MenuItem>
-                                                {pairs.map((p, defIdx) => (
+                                                {question.pairs.map((p, defIdx) => (
                                                     <MenuItem key={defIdx} value={`${pair.word}-def${defIdx}`}>
                                                         {p.definition}
                                                     </MenuItem>
@@ -380,7 +383,7 @@ export default function VocabularyQuestionRenderer({
                                             </Select>
                                             {readOnly && !isPairCorrect && (
                                                 <Typography variant="caption" color="error" sx={{ display: 'block', mt: 0.5 }}>
-                                                    Correct: {pairs.find(p => `${pair.word}-def${pairs.indexOf(p)}` === correctPairAnswer)?.definition || 'Unknown'}
+                                                    Correct: {question.pairs.find(p => `${pair.word}-def${question.pairs.indexOf(p)}` === correctPairAnswer)?.definition || 'Unknown'}
                                                 </Typography>
                                             )}
                                         </Box>
@@ -417,13 +420,16 @@ export default function VocabularyQuestionRenderer({
             </Box>
 
             {/* 目标单词显示 */}
-            {question.targetWord && (
+
+
+            {/* 目标单词显示 */}
+            {'targetWord' in question && (question as any).targetWord && (
                 <Typography
                     variant="caption"
                     color="primary"
                     sx={{ display: 'block', mb: 1 }}
                 >
-                    Target: <strong>{question.targetWord}</strong>
+                    Target: <strong>{(question as any).targetWord}</strong>
                 </Typography>
             )}
 
@@ -448,7 +454,7 @@ export default function VocabularyQuestionRenderer({
                     </AccordionSummary>
                     <AccordionDetails>
                         <Typography variant="body2" color="text.secondary">
-                            {question.explanation || 'No explanation available.'}
+                            {'explanation' in question ? (question as any).explanation : 'No explanation available.'}
                         </Typography>
                     </AccordionDetails>
                 </Accordion>

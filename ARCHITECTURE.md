@@ -22,7 +22,10 @@ src/
 ├── pages/                  # 路由页面 (Home, Library, Settings, NotFoundPage)
 ├── services/               # 数据服务层 (API & DB)
 │   ├── db.ts               # Dexie 数据库实例配置
-│   ├── llm.ts              # AI 接口服务 (Deepseek)
+│   ├── llmService.ts       # AI 接口服务 (Deepseek)
+│   ├── studyService.ts     # [NEW] 学习流程核心逻辑 (Decoupled from UI)
+│   ├── prompts.ts          # [NEW] 静态 AI Prompts 库
+│   ├── questionInfo.ts     # [NEW] 问题类型守卫 (Type Guards)
 │   ├── dictionary.ts       # 外部词典 API
 │   └── statsService.ts     # 统计数据聚合服务
 ├── types/                  # 全局 TypeScript 类型定义
@@ -69,7 +72,7 @@ erDiagram
         int id PK "Auto Increment"
         string articleId FK "Ref: ARTICLES.uuid"
         int score "0-100"
-        json questions "题目快照 (Array)"
+        json questions "Discriminated Unions (reading/vocabulary)"
         json userAnswers "用户作答快照 (Map)"
         int studyDuration "Seconds"
         int difficultyFeedback "1-5 Scale"

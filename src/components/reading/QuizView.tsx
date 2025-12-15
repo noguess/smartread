@@ -23,6 +23,7 @@ import {
 import { ExpandMore, Lightbulb, MenuBook, Abc, EmojiEvents } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import { Question } from '../../services/db'
+
 import VocabularyQuestionRenderer from './VocabularyQuestionRenderer'
 
 interface QuizViewProps {
@@ -290,7 +291,7 @@ export default function QuizView({
                                         value={userAnswer || ''}
                                         onChange={(e) => handleReadingChange(q.id, e.target.value)}
                                     >
-                                        {q.options?.map((opt) => {
+                                        {'options' in q && q.options?.map((opt) => {
                                             const isSelected = userAnswer === opt
                                             const isTheCorrectAnswer = q.answer === opt
 
@@ -332,7 +333,7 @@ export default function QuizView({
                                         </AccordionSummary>
                                         <AccordionDetails>
                                             <Typography variant="body2" color="text.secondary">
-                                                {q.explanation || t('reading:quiz.noExplanation', 'No explanation available.')}
+                                                {('explanation' in q ? q.explanation : undefined) || t('reading:quiz.noExplanation', 'No explanation available.')}
                                             </Typography>
                                         </AccordionDetails>
                                     </Accordion>

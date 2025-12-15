@@ -19,20 +19,45 @@ export interface Word {
     }
 }
 
-export interface Question {
+export interface BaseQuestion {
     id: string
-    type: 'cloze' | 'definition' | 'spelling' | 'contextual' | 'audio' | 'wordForm' | 'synonym' | 'matching' | 'spellingInput' | 'synonymAntonym' | 'audioDictation' | 'audioSelection' | 'multiple_choice' | 'input'
+    stem: string
+    answer: string | string[]
+    // Common optional fields
+    difficulty?: 'L1' | 'L2' | 'L3' // Explicit difficulty on question level if needed
+}
+
+export interface MultipleChoiceQuestion extends BaseQuestion {
+    type: 'multiple_choice' | 'audioSelection' | 'synonym' | 'contextual' // Grouping similar "Pick one from options" types
+    options: string[]
+    explanation?: string
+}
+
+export interface ClozeQuestion extends BaseQuestion {
+    type: 'cloze' | 'spelling' | 'wordForm' // Fill in the blank types
+    hint?: string
+    explanation?: string
+}
+
+export interface MatchingQuestion extends BaseQuestion {
+    type: 'matching' | 'synonymAntonym'
+    pairs: { word: string; definition: string }[]
+}
+
+// Fallback/Generic for others or types we haven't strictly narrowed yet
+export interface GenericQuestion extends BaseQuestion {
+    type: 'definition' | 'audio' | 'spellingInput' | 'audioDictation' | 'input'
     subType?: string
     targetWord?: string
     hint?: string
     explanation?: string
-    stem: string
     options?: string[]
-    answer: string | string[]
     audioUrl?: string
     phonetic?: string
     pairs?: { word: string; definition: string }[]
 }
+
+export type Question = MultipleChoiceQuestion | ClozeQuestion | MatchingQuestion | GenericQuestion
 
 export interface History {
     id?: number

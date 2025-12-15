@@ -3,6 +3,16 @@ async function resetDB(page) {
         if (window.resetAppDB) {
             await window.resetAppDB();
         }
+        // Seed Settings to bypass Onboarding
+        if (window.db) {
+            await window.db.settings.add({
+                apiKey: 'test-api-key',
+                articleLenPref: 'medium',
+                dailyNewLimit: 10,
+                difficultyLevel: 'L2',
+                hasCompletedOnboarding: true
+            });
+        }
     });
 }
 

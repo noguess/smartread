@@ -17,8 +17,7 @@ import { wordService } from '../services/wordService'
 import { articleService } from '../services/articleService'
 import { quizRecordService } from '../services/quizRecordService'
 import { llmService } from '../services/llmService'
-import { SRSAlgorithm } from '../utils/SRSAlgorithm'
-import { calculateNewDifficulty, DifficultyLevel } from '../utils/difficultyLogic'
+import { studyService } from '../services/studyService'
 
 // Components
 import ReadingLayout from '../components/reading/ReadingLayout'
@@ -407,75 +406,15 @@ export default function ReadingPage() {
     }
 
     const handleQuizSubmit = async (recordId: number, answers: { reading: Record<string, string>; vocabulary: Record<string, string | string[]> }) => {
-        const targetRecord = quizHistory.find(r => r.id === recordId) || await quizRecordService.getQuizRecordById(recordId)
-        if (!targetRecord || !targetRecord.id) return
-
         setIsSubmittingQuiz(true)
         try {
-            // 1. Calculate Score
-            const readingQs = targetRecord.questions.reading
-            const vocabQs = targetRecord.questions.vocabulary
-
-            let readingCorrect = 0
-            readingQs.forEach(q => {
-                if (answers.reading[q.id] === q.answer) readingCorrect++
-            })
-
-            let vocabCorrect = 0
-            const wordResults: Record<string, boolean> = {}
-
-            // Async SRS updates
-            for (const q of vocabQs) {
-                const userAns = answers.vocabulary[q.id]
-                const correctAns = q.answer // Assuming simple string or array match
-
-                // Flexible matching logic
-                let isCorrect = false
-                if (Array.isArray(correctAns) && Array.isArray(userAns)) {
-                    isCorrect = JSON.stringify(correctAns) === JSON.stringify(userAns)
-                } else {
-                    isCorrect = String(userAns).toLowerCase() === String(correctAns).toLowerCase()
-                }
-
-                if (isCorrect) vocabCorrect++
-
-                // Update SRS
-                // Using targetWord to find Word object
-                const word = targetWords.find(w => w.spelling === q.targetWord)
-                    || targetWords.find(w => q.stem.includes(w.spelling)) // Fallback
-
-                if (word) {
-                    wordResults[word.spelling] = isCorrect
-                    const updates = SRSAlgorithm.calculateNextReview(word, isCorrect)
-                    await wordService.updateWord(word.id!, updates)
-                }
-            }
-
-            const totalQ = readingQs.length + vocabQs.length
-            const totalCorrect = readingCorrect + vocabCorrect
-            const score = totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 0
-
-            // 2. Adjust Difficulty
-            await checkAndAdjustDifficulty(
-                readingQs.length > 0 ? readingCorrect / readingQs.length : 0,
-                totalQ > 0 ? totalCorrect / totalQ : 0
+            // New decoupled logic using studyService
+            const result = await studyService.submitQuizSession(
+                recordId,
+                answers,
+                targetWords, // Pass current target words for SRS mapping
+                timeSpent    // Pass current timer (quiz duration)
             )
-
-            // 3. Update Record in DB (mark as complete)
-            // 3. Update Record in DB (mark as complete)
-            // Determine reading duration (safely from record or assume 0 if missing)
-            const savedReadingTime = targetRecord.readingDuration || 0
-            const quizTime = timeSpent // Current timer is just quiz time because we reset it at start
-            const totalTime = savedReadingTime + quizTime
-
-            await quizRecordService.updateQuizRecord(targetRecord.id, {
-                userAnswers: answers,
-                score: score,
-                timeSpent: totalTime,
-                quizDuration: quizTime,
-                wordResults: wordResults,
-                difficultyFeedback: 3 // Default 'Just Right' for now
-            })
 
             // 4. Refresh History & Navigate
             if (currentArticle) {
@@ -483,13 +422,11 @@ export default function ReadingPage() {
                 setQuizHistory(updated)
             }
 
-            // Navigate to Absolute Path to avoid relative resolution issues
-            // /read/:articleId/result/:recordId
+            // Navigate to Absolute Path
             if (articleId) {
-                navigate(`/read/${articleId}/result/${targetRecord.id}`, { replace: true })
+                navigate(`/read/${articleId}/result/${result.recordId}`, { replace: true })
             } else {
-                // Fallback if oddly articleId is missing (shouldn't happen in this route)
-                navigate(`../result/${targetRecord.id}`, { replace: true })
+                navigate(`../result/${result.recordId}`, { replace: true })
             }
 
         } catch (err) {
@@ -500,16 +437,7 @@ export default function ReadingPage() {
         }
     }
 
-    const checkAndAdjustDifficulty = async (readingAccuracy: number, totalAccuracy: number) => {
-        if (!settings) return
-        const newLevel = calculateNewDifficulty(settings.difficultyLevel as DifficultyLevel, { readingAccuracy, totalAccuracy })
 
-        if (newLevel !== settings.difficultyLevel) {
-            await settingsService.saveSettings({ difficultyLevel: newLevel })
-            return `Difficulty adjusted to ${newLevel}`
-        }
-        return null
-    }
 
     // --- Render ---
 
@@ -593,8 +521,9 @@ export default function ReadingPage() {
             wordContexts={currentArticle.wordCtxMeanings}
             sidebarVisible={sidebarVisible}
             onWordScroll={handleWordScroll}
-            headerVisible={true}
+            headerVisible={!location.pathname.includes('/result')}
             showFontControls={sidebarVisible}
+            showTimer={!location.pathname.includes('/result')}
         >
             <Routes>
                 <Route index element={

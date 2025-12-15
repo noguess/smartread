@@ -31,6 +31,7 @@ interface ReadingHeaderProps {
     onTimerToggle: () => void
     onTimerReset: () => void
     showFontControls?: boolean
+    showTimer?: boolean
 }
 
 export default function ReadingHeader({
@@ -41,7 +42,8 @@ export default function ReadingHeader({
     seconds,
     onTimerToggle,
     onTimerReset,
-    showFontControls = true
+    showFontControls = true,
+    showTimer = true
 }: ReadingHeaderProps) {
     const { t } = useTranslation(['reading', 'common'])
     const navigate = useNavigate()
@@ -145,54 +147,56 @@ export default function ReadingHeader({
                     )}
 
                     {/* Timer Control */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1,
-                                color: 'primary.main',
-                                px: 1.5,
-                                py: 0.8,
-                                borderRadius: 2,
-                                fontWeight: 'medium',
-                                bgcolor: theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.08)' // Indigo-50 equivalent
-                            }}
-                        >
-                            {isTimerRunning ?
-                                <AccessTime sx={{ fontSize: 18, animation: 'pulse 2s infinite' }} /> :
-                                <Pause sx={{ fontSize: 18 }} />
-                            }
-                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 600 }}>
-                                {formatTime(seconds)}
-                            </Typography>
+                    {showTimer && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    color: 'primary.main',
+                                    px: 1.5,
+                                    py: 0.8,
+                                    borderRadius: 2,
+                                    fontWeight: 'medium',
+                                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.08)' // Indigo-50 equivalent
+                                }}
+                            >
+                                {isTimerRunning ?
+                                    <AccessTime sx={{ fontSize: 18, animation: 'pulse 2s infinite' }} /> :
+                                    <Pause sx={{ fontSize: 18 }} />
+                                }
+                                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 600 }}>
+                                    {formatTime(seconds)}
+                                </Typography>
+                            </Box>
+
+                            <IconButton
+                                onClick={onTimerReset}
+                                color="default"
+                                aria-label={t('reading:timer.reset', 'Reset timer')}
+                                sx={{
+                                    borderRadius: 2,
+                                    '&:hover': { bgcolor: 'action.hover' }
+                                }}
+                            >
+                                <RestartAlt />
+                            </IconButton>
+
+                            <IconButton
+                                onClick={onTimerToggle}
+                                color="primary"
+                                aria-label={isTimerRunning ? t('reading:timer.pause', 'Pause timer') : t('reading:timer.resume', 'Resume timer')}
+                                sx={{
+                                    borderRadius: 2,
+                                    bgcolor: 'transparent',
+                                    '&:hover': { bgcolor: theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.08)' }
+                                }}
+                            >
+                                {isTimerRunning ? <Pause /> : <PlayArrow />}
+                            </IconButton>
                         </Box>
-
-                        <IconButton
-                            onClick={onTimerReset}
-                            color="default"
-                            aria-label={t('reading:timer.reset', 'Reset timer')}
-                            sx={{
-                                borderRadius: 2,
-                                '&:hover': { bgcolor: 'action.hover' }
-                            }}
-                        >
-                            <RestartAlt />
-                        </IconButton>
-
-                        <IconButton
-                            onClick={onTimerToggle}
-                            color="primary"
-                            aria-label={isTimerRunning ? t('reading:timer.pause', 'Pause timer') : t('reading:timer.resume', 'Resume timer')}
-                            sx={{
-                                borderRadius: 2,
-                                bgcolor: 'transparent',
-                                '&:hover': { bgcolor: theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.08)' }
-                            }}
-                        >
-                            {isTimerRunning ? <Pause /> : <PlayArrow />}
-                        </IconButton>
-                    </Box>
+                    )}
                 </Stack>
             </Toolbar>
         </AppBar>

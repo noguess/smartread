@@ -57,3 +57,19 @@
 - [x] Interactive: Implement "Click-to-Scroll" and "Breath Highlight" for key words.
 - [x] Deep Dive: Fix "Deep Dive" modal trigger and interaction with scroll.
 - [x] Performance: Stabilize highlight animation during re-renders (useMemo/useCallback).
+
+## [Architectural Refactoring]
+
+### Prompt Management
+- [x] Task 1 (Externalize): Create `src/services/prompts.ts` and move all LLM prompts (system & user) from `llmService.ts`. Refactor `llmService.ts` to import them.
+
+### Migration Safety
+- [x] Task 2 (Safety): Refactor `src/services/migrationService.ts` to use Dexie `version().upgrade()` if possible or chunked fetching. Add lock mechanism in `App.tsx` to prevent race conditions.
+
+### Logic Decoupling (Quiz)
+- [x] Task 3 (Calculation): Create `src/services/studyService.ts`. Move score calculation, SRS, and difficulty logic from `ReadingPage` to `studyService.submitQuizSession`.
+- [x] Task 4 (Integration): Update `ReadingPage.tsx` to call `studyService.submitQuizSession`.
+
+### Type Safety (Question Interface)
+- [x] Task 5 (Definitions): Refactor `Question` interface in `src/services/db.ts` to use Discriminated Unions (`type: 'multiple_choice' | ...`).
+- [x] Task 6 (Updates): Update `llmService.ts`, `QuizView.tsx`, and `ManualGenerationDialog` to satisfy new strict types.
