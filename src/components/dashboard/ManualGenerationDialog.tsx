@@ -10,15 +10,13 @@ import {
     Box,
     Chip,
     TextField,
-    InputAdornment,
-    IconButton,
     Paper,
+    Autocomplete
 } from '@mui/material'
-import { Add, Refresh } from '@mui/icons-material'
+import { Refresh } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import { Word } from '../../services/db'
 import { WordSelector } from '../../utils/WordSelector'
-import { wordService } from '../../services/wordService'
 
 interface ManualGenerationDialogProps {
     open: boolean
@@ -36,7 +34,6 @@ export default function ManualGenerationDialog({
     const { t } = useTranslation(['home', 'common'])
     const [wordCount, setWordCount] = useState<number>(15)
     const [selectedWords, setSelectedWords] = useState<Word[]>([])
-    const [searchQuery, setSearchQuery] = useState('')
 
     // Reset selection when dialog opens
     useEffect(() => {
@@ -76,20 +73,8 @@ export default function ManualGenerationDialog({
         setSelectedWords(selectedWords.filter((w) => w.id !== wordId))
     }
 
-    const handleAddWord = async () => {
-        if (!searchQuery.trim()) return
-        // Find word in DB (case insensitive?)
-        const word = await wordService.getWordBySpelling(searchQuery.trim())
-        if (word) {
-            if (!selectedWords.find((w) => w.id === word.id)) {
-                setSelectedWords([...selectedWords, word])
-            }
-            setSearchQuery('')
-        } else {
-            // Show error or toast? For now just log
-            console.log('Word not found')
-        }
-    }
+
+
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -153,21 +138,22 @@ export default function ManualGenerationDialog({
                 </Box>
 
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                    <TextField
+                    <Autocomplete
                         fullWidth
                         size="small"
-                        placeholder={t('home:manual.searchPlaceholder')}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleAddWord()}
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <IconButton onClick={handleAddWord} edge="end">
-                                        <Add />
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
+                        freeSolo
+                        options={allWords.filter(w => !selectedWords.find(sw => sw.id === w.id))}
+                        getOptionLabel={(option: string | Word) => typeof option === 'string' ? option : option.spelling}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                placeholder={t('home:manual.searchPlaceholder')}
+                            />
+                        )}
+                        onChange={(_event: any, newValue: string | Word | null) => {
+                            if (newValue && typeof newValue !== 'string') {
+                                setSelectedWords([...selectedWords, newValue])
+                            }
                         }}
                     />
                 </Box>

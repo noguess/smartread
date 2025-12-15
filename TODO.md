@@ -5,6 +5,11 @@
 - [x] Task 4: 修改 `QuizView.tsx`，在第二部分（Step 1）将底部左侧按钮文案改为“返回上一部分”，并确保点击后回到第一部分。
 - [x] Task 5: 修改 `ReadingPage.tsx`，在传递给 `ReadingLayout` 时，根据是否为考试模式（`!sidebarVisible`）控制 `showFontControls` 属性，确保考试页隐藏字体调整模块。
 
+## [Feature] Manual Generation Autocomplete
+- [x] Task 1 (Test): 创建 `ManualGenerationDialog.test.tsx`，测试搜索联想与添加功能。
+- [x] Task 2 (UI): 修改 `ManualGenerationDialog.tsx`，使用 MUI `Autocomplete` 替换输入框。
+- [x] Task 3 (Logic): 实现 `Autocomplete` 的筛选逻辑（排除已选）与选中自动添加逻辑。
+
 ## [Feature] Better Article Generation Error Handling
 - [x] Task 1 (State & Logic): Add `error` state to `ReadingPage`. Update `useEffect` to block auto-generation if error exists. Update `handleGenerateArticle` to set error instead of navigating.
 - [x] Task 2 (UI Integration): Render `EmptyState` with Retry/Back buttons when error occurs.
