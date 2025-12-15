@@ -388,4 +388,17 @@ describe('ReadingPage Integration', () => {
         // Should eventually succeed and navigate
         await waitFor(() => expect(screen.getByTestId('article-view-redirected')).toBeInTheDocument())
     })
+    it('shows error when result record is missing', async () => {
+        vi.mocked(quizRecordService.getRecordsByArticleUuid).mockResolvedValue([])
+        vi.mocked(quizRecordService.getQuizRecordById).mockResolvedValue(undefined)
+
+        renderPage('/read/1/result/999')
+
+        // Should show PageError with message
+        // PageError usually renders error.message in description or title
+        // We look for the text
+        await waitFor(() => {
+            expect(screen.getByText(/Result not found for ID: 999/)).toBeInTheDocument()
+        })
+    })
 })

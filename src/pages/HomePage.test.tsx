@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
 import HomePage from '../pages/HomePage'
 import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
@@ -22,31 +22,43 @@ vi.mock('../components/dashboard/ManualGenerationDialog', () => ({
 vi.mock('../components/dashboard/DashboardVerticalLayout', () => ({
     default: () => <div data-testid="dashboard-vertical">Vertical Layout</div>
 }))
+vi.mock('../components/common/PageLoading', () => ({
+    default: () => <div data-testid="page-loading">Loading...</div>
+}))
+vi.mock('../components/common/PageError', () => ({
+    default: ({ error }: { error: Error }) => <div data-testid="page-error">{error.message}</div>
+}))
 
 // Mock services
+const mockGetAllWords = vi.fn()
+const mockGetHistory = vi.fn()
+const mockGetSettings = vi.fn()
+const mockGetArticles = vi.fn()
+const mockGetQuizzes = vi.fn()
+
 vi.mock('../services/wordService', () => ({
     wordService: {
-        getAllWords: vi.fn().mockResolvedValue([])
+        getAllWords: () => mockGetAllWords()
     }
 }))
 vi.mock('../services/historyService', () => ({
     historyService: {
-        getHistory: vi.fn().mockResolvedValue([])
+        getHistory: () => mockGetHistory()
     }
 }))
 vi.mock('../services/settingsService', () => ({
     settingsService: {
-        getSettings: vi.fn().mockResolvedValue({})
+        getSettings: () => mockGetSettings()
     }
 }))
 vi.mock('../services/articleService', () => ({
     articleService: {
-        getAll: vi.fn().mockResolvedValue([])
+        getAll: () => mockGetArticles()
     }
 }))
 vi.mock('../services/quizRecordService', () => ({
     quizRecordService: {
-        getAll: vi.fn().mockResolvedValue([])
+        getAll: () => mockGetQuizzes()
     }
 }))
 
@@ -69,9 +81,16 @@ vi.mock('@mui/material', async (importOriginal) => {
 
 const theme = createTheme()
 
-describe('HomePage Responsiveness', () => {
+describe('HomePage Responsiveness & States', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        // Default successful mocks
+        mockGetAllWords.mockResolvedValue([])
+        mockGetHistory.mockResolvedValue([])
+        mockGetSettings.mockResolvedValue({})
+        mockGetArticles.mockResolvedValue([])
+        mockGetQuizzes.mockResolvedValue([])
+        mockUseMediaQuery.mockReturnValue(false) // Desktop default
     })
 
     const renderPage = () => {
@@ -84,27 +103,56 @@ describe('HomePage Responsiveness', () => {
         )
     }
 
-    it('renders Desktop layout (Hero + Stats) when screen is large', () => {
+    it('renders Desktop layout (Hero + Stats) when screen is large', async () => {
         // Mock isMobile = false
         mockUseMediaQuery.mockReturnValue(false)
 
-        renderPage()
+        await act(async () => {
+            renderPage()
+        })
 
-        expect(screen.getByTestId('dashboard-hero')).toBeInTheDocument()
-        expect(screen.getByTestId('dashboard-stats')).toBeInTheDocument()
-        expect(screen.queryByTestId('dashboard-vertical')).not.toBeInTheDocument()
+        await waitFor(() => {
+            expect(screen.getByTestId('dashboard-hero')).toBeInTheDocument()
+            expect(screen.getByTestId('dashboard-stats')).toBeInTheDocument()
+            expect(screen.queryByTestId('dashboard-vertical')).not.toBeInTheDocument()
+        })
     })
 
-    it('renders Vertical Layout when screen is small (Tablet/Mobile)', () => {
-        // Mock isMobile = true (matches theme.breakpoints.down('lg'))
+    it('renders Vertical Layout when screen is small (Tablet/Mobile)', async () => {
+        // Mock isMobile = true
         mockUseMediaQuery.mockReturnValue(true)
+
+        await act(async () => {
+            renderPage()
+        })
+
+        await waitFor(() => {
+            expect(screen.getByTestId('dashboard-vertical')).toBeInTheDocument()
+            expect(screen.queryByTestId('dashboard-hero')).not.toBeInTheDocument()
+            expect(screen.queryByTestId('dashboard-stats')).not.toBeInTheDocument()
+        })
+    })
+
+    it('shows loading state initially', async () => {
+        // Mock promise that never resolves immediately to test loading state
+        mockGetAllWords.mockReturnValue(new Promise(() => { }))
 
         renderPage()
 
-        expect(screen.getByTestId('dashboard-vertical')).toBeInTheDocument()
+        expect(screen.getByTestId('page-loading')).toBeInTheDocument()
+    })
 
-        // Ensure Desktop components are NOT rendered
-        expect(screen.queryByTestId('dashboard-hero')).not.toBeInTheDocument()
-        expect(screen.queryByTestId('dashboard-stats')).not.toBeInTheDocument()
+    it('shows error state when data loading fails', async () => {
+        const errorMsg = 'Failed to fetch data'
+        mockGetAllWords.mockRejectedValue(new Error(errorMsg))
+
+        await act(async () => {
+            renderPage()
+        })
+
+        await waitFor(() => {
+            expect(screen.getByTestId('page-error')).toBeInTheDocument()
+            expect(screen.getByText(errorMsg)).toBeInTheDocument()
+        })
     })
 })

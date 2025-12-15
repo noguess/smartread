@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
 import { AnimatePresence } from 'framer-motion'
 import Layout from './components/Layout'
@@ -14,6 +14,9 @@ import { themes } from './theme'
 import QuizHistoryPage from './features/history/QuizHistoryPage'
 import QuizResultPage from './features/history/QuizResultPage'
 import PageTransition from './components/common/PageTransition'
+import { ErrorBoundary } from 'react-error-boundary'
+import { PageError } from './components/common'
+import NotFoundPage from './pages/NotFoundPage'
 
 function AnimatedRoutes() {
     const location = useLocation()
@@ -26,7 +29,7 @@ function AnimatedRoutes() {
                         <HomePage />
                     </PageTransition>
                 } />
-                <Route path="/reading" element={
+                <Route path="/reading/*" element={
                     <PageTransition>
                         <ReadingPage />
                     </PageTransition>
@@ -69,7 +72,7 @@ function AnimatedRoutes() {
                         <SettingsPage />
                     </PageTransition>
                 } />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </AnimatePresence>
     )
@@ -87,9 +90,11 @@ function AppContent() {
 
     return (
         <MuiThemeProvider theme={themes[themeMode]}>
-            <Layout>
-                <AnimatedRoutes />
-            </Layout>
+            <ErrorBoundary FallbackComponent={PageError}>
+                <Layout>
+                    <AnimatedRoutes />
+                </Layout>
+            </ErrorBoundary>
         </MuiThemeProvider>
     )
 }

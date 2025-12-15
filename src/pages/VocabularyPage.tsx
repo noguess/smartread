@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { Word } from '../services/db'
 import { wordService } from '../services/wordService'
 import WordDetailModal from '../components/WordDetailModal'
-import { EmptyState, StyledCard, StatusBadge } from '../components/common'
+import { EmptyState, StyledCard, StatusBadge, PageLoading, PageError } from '../components/common'
 
 const WordCard = memo(({ word, onClick }: { word: Word; onClick: (spelling: string) => void }) => (
     <Grid item xs={12} sm={6} md={4} lg={3}>
@@ -59,6 +59,8 @@ export default function VocabularyPage() {
     const [tabValue, setTabValue] = useState(0)
     const [selectedWord, setSelectedWord] = useState('')
     const [modalOpen, setModalOpen] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<Error | null>(null)
 
     useEffect(() => {
         loadWords()
@@ -69,8 +71,17 @@ export default function VocabularyPage() {
     }, [words, searchQuery, tabValue])
 
     const loadWords = async () => {
-        const allWords = await wordService.getAllWords()
-        setWords(allWords)
+        try {
+            setLoading(true)
+            const allWords = await wordService.getAllWords()
+            setWords(allWords)
+            setError(null)
+        } catch (err) {
+            console.error('Failed to load words:', err)
+            setError(err instanceof Error ? err : new Error('Failed to load words'))
+        } finally {
+            setLoading(false)
+        }
     }
 
     const filterWords = () => {
@@ -108,62 +119,73 @@ export default function VocabularyPage() {
 
     return (
         <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                <LibraryBooksIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-                <Typography variant="h4" fontWeight="bold">
-                    {t('vocabulary:title')}
-                </Typography>
-            </Box>
+            {/* Show error if likely fatal (no words loaded yet) */}
+            {error && !words.length ? (
+                <PageError error={error} resetErrorBoundary={loadWords} />
+            ) : null}
 
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-                    <Tab label={t('vocabulary:tabs.all', { count: counts.All })} />
-                    <Tab label={t('vocabulary:tabs.new', { count: counts.New })} />
-                    <Tab label={t('vocabulary:tabs.learning', { count: counts.Learning })} />
-                    <Tab label={t('vocabulary:tabs.review', { count: counts.Review })} />
-                    <Tab label={t('vocabulary:tabs.mastered', { count: counts.Mastered })} />
-                </Tabs>
-            </Box>
-
-            <TextField
-                fullWidth
-                placeholder={t('vocabulary:searchPlaceholder')}
-                variant="outlined"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                sx={{ mb: 3 }}
-                InputProps={{
-                    startAdornment: (
-                        <InputAdornment position="start">
-                            <SearchIcon />
-                        </InputAdornment>
-                    ),
-                }}
-            />
-
-            {filteredWords.length > 0 ? (
-                <Grid container spacing={2}>
-                    {filteredWords.map((word) => (
-                        <WordCard key={word.id} word={word} onClick={handleWordClick} />
-                    ))}
-                </Grid>
+            {loading && !words.length ? (
+                <PageLoading message={t('common:common.loading')} />
             ) : (
-                <EmptyState
-                    icon="🔍"
-                    title={searchQuery ? t('vocabulary:emptyState.noResults') : t('vocabulary:emptyState.noWords')}
-                    description={
-                        searchQuery
-                            ? t('vocabulary:emptyState.noResultsDesc')
-                            : t('vocabulary:emptyState.noWordsDesc')
-                    }
-                />
-            )}
+                <>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                        <LibraryBooksIcon sx={{ fontSize: 32, color: 'primary.main' }} />
+                        <Typography variant="h4" fontWeight="bold">
+                            {t('vocabulary:title')}
+                        </Typography>
+                    </Box>
 
-            <WordDetailModal
-                word={selectedWord}
-                open={modalOpen}
-                onClose={() => setModalOpen(false)}
-            />
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+                        <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
+                            <Tab label={t('vocabulary:tabs.all', { count: counts.All })} />
+                            <Tab label={t('vocabulary:tabs.new', { count: counts.New })} />
+                            <Tab label={t('vocabulary:tabs.learning', { count: counts.Learning })} />
+                            <Tab label={t('vocabulary:tabs.review', { count: counts.Review })} />
+                            <Tab label={t('vocabulary:tabs.mastered', { count: counts.Mastered })} />
+                        </Tabs>
+                    </Box>
+
+                    <TextField
+                        fullWidth
+                        placeholder={t('vocabulary:searchPlaceholder')}
+                        variant="outlined"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        sx={{ mb: 3 }}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+
+                    {filteredWords.length > 0 ? (
+                        <Grid container spacing={2}>
+                            {filteredWords.map((word) => (
+                                <WordCard key={word.id} word={word} onClick={handleWordClick} />
+                            ))}
+                        </Grid>
+                    ) : (
+                        <EmptyState
+                            icon="🔍"
+                            title={searchQuery ? t('vocabulary:emptyState.noResults') : t('vocabulary:emptyState.noWords')}
+                            description={
+                                searchQuery
+                                    ? t('vocabulary:emptyState.noResultsDesc')
+                                    : t('vocabulary:emptyState.noWordsDesc')
+                            }
+                        />
+                    )}
+
+                    <WordDetailModal
+                        word={selectedWord}
+                        open={modalOpen}
+                        onClose={() => setModalOpen(false)}
+                    />
+                </>
+            )}
         </Box>
     )
 }

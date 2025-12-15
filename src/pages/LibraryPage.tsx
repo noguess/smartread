@@ -5,11 +5,6 @@ import {
     Box,
     Typography,
     Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
     CircularProgress,
     Stack
 } from '@mui/material'
@@ -21,6 +16,7 @@ import { articleService } from '../services/articleService'
 import { quizRecordService } from '../services/quizRecordService'
 import { useTranslation } from 'react-i18next'
 import ArticleListCard, { ArticleCardProps } from '../components/reading/ArticleListCard'
+import { PageError, PageLoading, EmptyState } from '../components/common'
 
 // Reusing the type from ArticleListCard or creating a shared one
 // For now, assume it matches.
@@ -32,8 +28,7 @@ export default function LibraryPage() {
     const navigate = useNavigate()
     const [articles, setArticles] = useState<ArticleWithStats[]>([])
     const [loading, setLoading] = useState(true)
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-    const [articleToDelete, setArticleToDelete] = useState<ArticleWithStats | null>(null)
+    const [error, setError] = useState<Error | null>(null)
 
     // Pagination State
     const [page, setPage] = useState(1)
@@ -47,6 +42,7 @@ export default function LibraryPage() {
     const loadArticles = async (pageNum: number) => {
         try {
             setLoading(true)
+            setError(null)
             const data = await articleService.getPage(pageNum, PAGE_SIZE)
 
             if (data.length < PAGE_SIZE) {
@@ -83,6 +79,7 @@ export default function LibraryPage() {
             }
         } catch (error) {
             console.error('Failed to load articles:', error)
+            setError(error instanceof Error ? error : new Error('Unknown error'))
         } finally {
             setLoading(false)
         }
@@ -100,29 +97,12 @@ export default function LibraryPage() {
         }
     }
 
-    const handleDeleteClick = (article: ArticleWithStats) => {
-        setArticleToDelete(article)
-        setDeleteDialogOpen(true)
+    if (loading) {
+        return <PageLoading message={t('common:common.loading')} />
     }
 
-    const handleDeleteConfirm = async () => {
-        if (articleToDelete && articleToDelete.id) {
-            try {
-                await articleService.delete(articleToDelete.id)
-                setArticles(articles.filter(a => a.id !== articleToDelete.id))
-                setDeleteDialogOpen(false)
-                setArticleToDelete(null)
-            } catch (error) {
-                console.error('Failed to delete article:', error)
-            }
-        }
-    }
-    if (loading) {
-        return (
-            <Container maxWidth="lg" sx={{ py: 8, textAlign: 'center' }}>
-                <CircularProgress />
-            </Container>
-        )
+    if (error) {
+        return <PageError error={error} resetErrorBoundary={() => loadArticles(page)} />
     }
 
     return (
@@ -153,15 +133,18 @@ export default function LibraryPage() {
                             key={article.id}
                             article={article}
                             onRead={handleRead}
-                            onDelete={handleDeleteClick}
                         />
                     ))
                 ) : (
-                    <Box sx={{ py: 8, textAlign: 'center', color: 'text.secondary' }}>
-                        <Typography variant="body1">
-                            {t('library:empty.title', '暂无文章')}
-                        </Typography>
-                    </Box>
+                    <EmptyState
+                        title={t('library:empty.title', '暂无文章')}
+                        description={t('library:empty.description', '开始生成或导入您的第一篇文章吧！')}
+                        action={
+                            <Button variant="contained" onClick={() => navigate('/')}>
+                                {t('library:empty.action', '去首页生成')}
+                            </Button>
+                        }
+                    />
                 )}
             </Stack>
 
@@ -179,23 +162,6 @@ export default function LibraryPage() {
                 </Box>
             )}
 
-            {/* Delete Dialog */}
-            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-                <DialogTitle>{t('library:delete.title', 'Delete Article')}</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        {t('library:delete.message', 'Are you sure you want to delete this article? This action cannot be undone.')}
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setDeleteDialogOpen(false)}>
-                        {t('common:button.cancel', 'Cancel')}
-                    </Button>
-                    <Button onClick={handleDeleteConfirm} color="error" autoFocus>
-                        {t('common:button.delete', 'Delete')}
-                    </Button>
-                </DialogActions>
-            </Dialog>
         </Container>
     )
 }

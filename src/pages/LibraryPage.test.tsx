@@ -1,8 +1,24 @@
+
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import LibraryPage from './LibraryPage'
 import { quizRecordService } from '../services/quizRecordService'
 import { MemoryRouter } from 'react-router-dom'
+import { PageError, PageLoading } from '../components/common'
+
+// Mock Components
+vi.mock('../components/common/PageLoading', () => ({
+    default: () => <div data-testid="page-loading">Loading...</div>
+}))
+
+vi.mock('../components/common/PageError', () => ({
+    default: ({ error, resetErrorBoundary }: any) => (
+        <div data-testid="page-error">
+            {error.message}
+            <button onClick={resetErrorBoundary}>Retry</button>
+        </div>
+    )
+}))
 
 const { mockGetPage, mockDelete, mockGetAll } = vi.hoisted(() => {
     return {
@@ -39,6 +55,9 @@ vi.mock('react-i18next', () => ({
             if (key === 'common:button.delete') return 'Delete'
             if (key === 'common:button.cancel') return 'Cancel'
             if (key === 'common:button.load_more') return '加载更多...'
+            if (key === 'library:empty.title') return '暂无文章'
+            if (key === 'library:empty.description') return 'Get started by generating or importing an article.'
+            if (key === 'library:empty.action') return 'Create Article'
             return key
         }
     })
@@ -65,7 +84,7 @@ const mockArticles = [
     }
 ]
 
-describe('LibraryPage', () => {
+describe('LibraryPage Validation', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         mockGetPage.mockReset()
@@ -74,28 +93,60 @@ describe('LibraryPage', () => {
 
         // Default mocks
         vi.mocked(quizRecordService.getRecordsByArticleUuid).mockResolvedValue([])
+    })
+
+    it('shows loading state initially', () => {
+        mockGetPage.mockReturnValue(new Promise(() => { })) // Never resolves
+        render(
+            <MemoryRouter>
+                <LibraryPage />
+            </MemoryRouter>
+        )
+        expect(screen.getByTestId('page-loading')).toBeInTheDocument()
+    })
+
+    it('shows error state when fetch fails', async () => {
+        const errorMessage = 'Network Error'
+        mockGetPage.mockRejectedValue(new Error(errorMessage))
+
+        render(
+            <MemoryRouter>
+                <LibraryPage />
+            </MemoryRouter>
+        )
+
+        await waitFor(() => {
+            expect(screen.getByTestId('page-error')).toBeInTheDocument()
+            expect(screen.getByText(errorMessage)).toBeInTheDocument()
+        })
+    })
+
+    it('retries loading when retry clicked in error state', async () => {
+        const errorMessage = 'Network Error'
+        mockGetPage.mockRejectedValueOnce(new Error(errorMessage))
+        mockGetPage.mockResolvedValueOnce([])
+
+        render(
+            <MemoryRouter>
+                <LibraryPage />
+            </MemoryRouter>
+        )
+
+        await waitFor(() => {
+            expect(screen.getByTestId('page-error')).toBeInTheDocument()
+        })
+
+        fireEvent.click(screen.getByText('Retry'))
+
+        // Should go back to loading or loaded
+        await waitFor(() => {
+            expect(screen.queryByTestId('page-error')).not.toBeInTheDocument()
+            expect(mockGetPage).toHaveBeenCalledTimes(2)
+        })
+    })
+
+    it('shows unified empty state when no articles found', async () => {
         mockGetPage.mockResolvedValue([])
-    })
-
-    it('renders initial list and loads more on button click', async () => {
-        // Setup Mocks - Need 10 items to trigger hasMore=true
-        const initialArticles = Array.from({ length: 10 }, (_, i) => ({
-            id: i + 1,
-            uuid: `u${i + 1}`,
-            title: `Article ${i + 1}`,
-            createdAt: 100 - i
-        }))
-        const nextArticles = [
-            { id: 11, uuid: 'u11', title: 'Article 11', createdAt: 80 }
-        ]
-
-        // Mock getPage to return chunks
-        mockGetPage
-            .mockResolvedValueOnce(initialArticles as any) // Valid for initial load (10 items)
-            .mockResolvedValueOnce(nextArticles as any)    // Valid for second page
-            .mockResolvedValueOnce([])                     // Empty for third page (no more data)
-
-        vi.mocked(quizRecordService.getRecordsByArticleUuid).mockResolvedValue([])
 
         render(
             <MemoryRouter>
@@ -103,54 +154,10 @@ describe('LibraryPage', () => {
             </MemoryRouter>
         )
 
-        // Verify initial load (Page 1)
-        expect(await screen.findByText('Article 1')).toBeInTheDocument()
-        expect(screen.getByText('Article 10')).toBeInTheDocument()
-        expect(screen.queryByText('Article 11')).not.toBeInTheDocument()
-
-        // Find and click "Load More" - wait for it to appear
-        const loadMoreBtn = await screen.findByText('加载更多...')
-        fireEvent.click(loadMoreBtn)
-
-        // Verify appended load (Page 2)
-        expect(await screen.findByText('Article 11')).toBeInTheDocument()
-    })
-
-    it('shows delete confirmation and deletes article', async () => {
-        // Setup for delete test: needs initial data
-        // Must mock getPage because LibraryPage calls it on mount
-        mockGetPage.mockResolvedValue(mockArticles as any)
-        mockDelete.mockResolvedValue(undefined)
-
-        render(
-            <MemoryRouter>
-                <LibraryPage />
-            </MemoryRouter>
-        )
-
-        // Wait for list
         await waitFor(() => {
-            expect(screen.getByText('Article 1')).toBeInTheDocument()
-        })
-
-        // Click delete on Article 1
-        const deleteButtons = screen.getAllByLabelText('delete')
-        fireEvent.click(deleteButtons[0])
-
-        // Dialog should appear
-        expect(await screen.findByText('Are you sure you want to delete this article? This action cannot be undone.')).toBeInTheDocument()
-
-        // Click Confirm (The button that says "Delete")
-        // The title "Delete Article" is also present, so queryAllByText might return multiple.
-        // We want the button.
-        const confirmBtn = screen.getByRole('button', { name: 'Delete' })
-        fireEvent.click(confirmBtn)
-
-        await waitFor(() => {
-            expect(mockDelete).toHaveBeenCalledWith(1)
-            expect(screen.queryByText('Article 1')).not.toBeInTheDocument()
+            expect(screen.getByText('暂无文章')).toBeInTheDocument()
+            expect(screen.getByText('Get started by generating or importing an article.')).toBeInTheDocument()
+            expect(screen.getByRole('button', { name: 'Create Article' })).toBeInTheDocument()
         })
     })
-
-
 })

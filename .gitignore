@@ -40,4 +40,5 @@ scripts/video_indexer/temp_downloads_youtube/
 *.mkv
 *.flv
 *.mov
-*.wav
+*.wavtest-results/
+playwright-report/

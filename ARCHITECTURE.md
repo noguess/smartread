@@ -10,7 +10,7 @@
 src/
 ├── assets/                 # 静态资源 (Images, Global CSS)
 ├── components/             # UI 组件库
-│   ├── common/             # 通用基础组件 (无关业务, 如: Loading, CustomButton)
+│   ├── common/             # 通用基础组件 (PageLoading, PageError, EmptyState)
 │   └── layout/             # 布局组件 (Sidebar, Header, MainLayout)
 ├── features/               # 业务功能模块 (推荐)
 │   ├── reading/            # 阅读相关 (ReaderView, ArticleGenerator)
@@ -18,7 +18,7 @@ src/
 │   ├── quiz/               # 测试相关 (QuizForm, ResultChart)
 │    ├── history/            # 学习记录 (QuizHistory, HistoryListCard, QuizResult)
 ├── hooks/                  # 全局自定义 Hooks (useTheme, useDebounce)
-├── pages/                  # 路由页面 (Home, Library, Settings)
+├── pages/                  # 路由页面 (Home, Library, Settings, NotFoundPage)
 ├── services/               # 数据服务层 (API & DB)
 │   ├── db.ts               # Dexie 数据库实例配置
 │   ├── llm.ts              # AI 接口服务 (Deepseek)

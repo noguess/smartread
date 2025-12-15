@@ -1,3 +1,11 @@
+## [Feature] 异常链路统一 (Exception Handling)
+- [x] Task 1 (Infra): 创建统一组件 `PageLoading`, `PageError`, `NotFoundPage`，并在 `App.tsx` 中集成 `react-error-boundary`。
+- [x] Task 2 (Home): 重构 `HomePage.tsx`，接入 Loading 和 Error 状态处理。
+- [x] Task 3 (Library): 重构 `LibraryPage.tsx`，使用标准 Loading/Error 组件，优化 Empty 状态。
+- [x] Task 4 (Reading): 重构 `ReadingPage.tsx`，移除临时加载文字，标准化加载与错误反馈。
+- [x] Task 5 (Vocabulary): 重构 `VocabularyPage.tsx`，补充缺失的 Loading 状态。
+- [x] Task 6 (Routing): 将全局 404 路由指向 `NotFoundPage`，并更新架构文档。
+
 ## [Feature] Quiz Navigation & Header Fixes
 - [x] Task 1: 改造 `ReadingLayout.tsx`，解耦 Header 显示逻辑（新增 `headerVisible` prop，默认 true），使其不再受 `sidebarVisible` 限制。
 - [x] Task 2: 更新 `ReadingPage.tsx`，在渲染 `ReadingLayout` 时显式传递 `headerVisible={true}`，确保考试页显示顶部计时器栏。

@@ -16,9 +16,10 @@ import ManualGenerationDialog from '../components/dashboard/ManualGenerationDial
 import { useTranslation } from 'react-i18next'
 import { useTheme, useMediaQuery } from '@mui/material'
 import WordDetailModal from '../components/WordDetailModal'
+import { PageLoading, PageError } from '../components/common'
 
 export default function HomePage() {
-    const { t } = useTranslation(['home'])
+    const { t } = useTranslation(['home', 'common'])
     const navigate = useNavigate()
     const location = useLocation()
     const theme = useTheme()
@@ -35,6 +36,10 @@ export default function HomePage() {
     const [isManualDialogOpen, setIsManualDialogOpen] = useState(false)
     const [detailWord, setDetailWord] = useState('')
     const [isDetailOpen, setIsDetailOpen] = useState(false)
+
+    // Loading & Error State
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<Error | null>(null)
 
     const handleOpenDetail = (word: string) => {
         setDetailWord(word)
@@ -64,76 +69,90 @@ export default function HomePage() {
     }, [])
 
     const loadData = async () => {
-        const words = (await wordService.getAllWords()) || []
-        const hist = (await historyService.getHistory()) || []
+        try {
+            setLoading(true)
+            setError(null)
 
-        // Load V2 Data
-        const articles = (await articleService.getAll()) || []
-        const quizzes = (await quizRecordService.getAll()) || []
+            // Parallel loading for performance
+            const [words, hist, articles, quizzes] = await Promise.all([
+                wordService.getAllWords(),
+                historyService.getHistory(),
+                articleService.getAll(),
+                quizRecordService.getAll()
+            ])
 
-        setAllWords(words)
+            const safeWords = words || []
+            const safeHist = hist || []
+            const safeArticles = articles || []
+            const safeQuizzes = quizzes || []
 
-        // Process Activities
-        const articleMap = new Map(articles.map(a => [a.uuid, a]))
+            setAllWords(safeWords)
 
-        const articleActivities: DashboardActivity[] = articles.map(a => ({
-            id: a.id!,
-            type: 'article',
-            title: a.title,
-            date: a.createdAt,
-            difficultyLevel: a.difficultyLevel,
-            articleId: a.id // Keep same ID for direct article access
-        }))
+            // Process Activities
+            const articleMap = new Map(safeArticles.map(a => [a.uuid, a]))
 
-        const quizActivities: DashboardActivity[] = quizzes.map(q => {
-            const article = articleMap.get(q.articleId)
-            return {
-                id: q.id!,
-                type: 'quiz',
-                title: article ? article.title : t('home:recentActivity.unknownArticle'),
-                date: q.date,
-                score: q.score,
-                articleId: article?.id
+            const articleActivities: DashboardActivity[] = safeArticles.map(a => ({
+                id: a.id!,
+                type: 'article',
+                title: a.title,
+                date: a.createdAt,
+                difficultyLevel: a.difficultyLevel,
+                articleId: a.id // Keep same ID for direct article access
+            }))
+
+            const quizActivities: DashboardActivity[] = safeQuizzes.map(q => {
+                const article = articleMap.get(q.articleId)
+                return {
+                    id: q.id!,
+                    type: 'quiz',
+                    title: article ? article.title : t('home:recentActivity.unknownArticle'),
+                    date: q.date,
+                    score: q.score,
+                    articleId: article?.id
+                }
+            })
+
+            // Merge and Sort
+            const allActivities = [...articleActivities, ...quizActivities]
+                .sort((a, b) => b.date - a.date)
+
+            setActivities(allActivities)
+
+            const counts = {
+                New: 0,
+                Learning: 0,
+                Review: 0,
+                Mastered: 0,
             }
-        })
+            safeWords.forEach((w) => {
+                counts[w.status]++
+            })
+            setStatusCounts(counts)
 
-        // Merge and Sort
-        const allActivities = [...articleActivities, ...quizActivities]
-            .sort((a, b) => b.date - a.date)
+            // Calculate Stats
+            calculateStats(safeHist, safeQuizzes)
 
-        setActivities(allActivities)
+            // Select Recommended Word
+            if (safeWords.length > 0) {
+                const reviewWords = safeWords.filter(w => w.status === 'Review')
+                const learningWords = safeWords.filter(w => w.status === 'Learning')
+                const newWords = safeWords.filter(w => w.status === 'New')
 
-        const counts = {
-            New: 0,
-            Learning: 0,
-            Review: 0,
-            Mastered: 0,
-        }
-        words.forEach((w) => {
-            counts[w.status]++
-        })
-        setStatusCounts(counts)
+                let pool = reviewWords
+                if (pool.length === 0) pool = learningWords
+                if (pool.length === 0) pool = newWords
+                if (pool.length === 0) pool = safeWords
 
-        // Calculate Stats
-        // Merge legacy history with new quiz records for stats calculation if needed
-        // For now, we prefer V2 stats but keep V1 compatibility
-        calculateStats(hist, quizzes)
-
-        // Select Recommended Word
-        if (words.length > 0) {
-            const reviewWords = words.filter(w => w.status === 'Review')
-            const learningWords = words.filter(w => w.status === 'Learning')
-            const newWords = words.filter(w => w.status === 'New')
-
-            let pool = reviewWords
-            if (pool.length === 0) pool = learningWords
-            if (pool.length === 0) pool = newWords
-            if (pool.length === 0) pool = words
-
-            if (pool.length > 0) {
-                const random = pool[Math.floor(Math.random() * pool.length)]
-                setRecommendedWord(random)
+                if (pool.length > 0) {
+                    const random = pool[Math.floor(Math.random() * pool.length)]
+                    setRecommendedWord(random)
+                }
             }
+        } catch (err) {
+            console.error('Failed to load dashboard data:', err)
+            setError(err instanceof Error ? err : new Error('Unknown error'))
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -240,6 +259,14 @@ export default function HomePage() {
                 state: { quizId: item.id }
             })
         }
+    }
+
+    if (loading) {
+        return <PageLoading message={t('common:common.loading')} />
+    }
+
+    if (error) {
+        return <PageError error={error} resetErrorBoundary={loadData} />
     }
 
     return (

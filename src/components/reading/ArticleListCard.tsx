@@ -29,7 +29,7 @@ export interface ArticleCardProps {
         highestScore: number
     }
     onRead: (article: any) => void
-    onDelete: (article: any) => void
+    onDelete?: (article: any) => void
 }
 
 const LevelColors: Record<string, { bg: string, text: string, color: 'success' | 'info' | 'error' | 'warning' }> = {
@@ -222,22 +222,23 @@ const ArticleListCard: React.FC<ArticleCardProps> = ({ article, onRead, onDelete
                     {t('library:card.read', '开始阅读')}
                 </Button>
 
-                <IconButton
-                    onClick={() => onDelete(article)}
-                    aria-label="delete"
-                    sx={{
-                        color: 'text.disabled',
-                        '&:hover': {
-                            color: 'error.main',
-                            bgcolor: 'error.50'
-                        },
-                        borderRadius: 2,
-                    }}
-                >
-                    <DeleteIcon />
-                </IconButton>
+                {onDelete && (
+                    <IconButton
+                        onClick={() => onDelete(article)}
+                        aria-label="delete"
+                        sx={{
+                            color: 'text.disabled',
+                            '&:hover': {
+                                color: 'error.main',
+                                bgcolor: 'error.50'
+                            },
+                            borderRadius: 2,
+                        }}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                )}
             </Box>
-
         </Paper>
     )
 }

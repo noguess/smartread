@@ -28,6 +28,7 @@ import ResultPage from './ResultPage'
 import GenerationLoading from '../components/reading/GenerationLoading'
 import { useStudyTimer } from '../hooks/useStudyTimer'
 import WordDetailModal from '../components/WordDetailModal'
+import { PageLoading, PageError } from '../components/common'
 import EmptyState from '../components/common/EmptyState'
 import { Button } from '@mui/material'
 
@@ -108,6 +109,7 @@ function ResultRouteWrapper({
     const navigate = useNavigate()
     const [record, setRecord] = useState<QuizRecord | null>(null)
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<Error | null>(null)
 
     useEffect(() => {
         if (!recordId) return
@@ -121,14 +123,20 @@ function ResultRouteWrapper({
             quizRecordService.getQuizRecordById(id).then(r => {
                 if (r) {
                     setRecord(r)
+                } else {
+                    setError(new Error(`Result not found for ID: ${recordId}`))
                 }
+                setLoading(false)
+            }).catch(err => {
+                setError(err)
                 setLoading(false)
             })
         }
     }, [recordId, quizHistory])
 
-    if (loading) return <div style={{ padding: 20 }}>Loading Result...</div>
-    if (!record) return <div style={{ padding: 20 }}>Result not found for ID: {recordId}</div>
+    if (loading) return <PageLoading />
+    if (error) return <PageError error={error} resetErrorBoundary={onRetry} />
+    if (!record) return <PageError error={new Error('Result not found')} />
 
     return (
         <ResultPage
@@ -160,7 +168,8 @@ export default function ReadingPage() {
     const [isGenerating, setIsGenerating] = useState(false)
     const [generationProgress, setGenerationProgress] = useState(0)
     const [generationMode, setGenerationMode] = useState<'article' | 'quiz'>('article')
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<Error | null>(null)
+    const [isLoadingArticle, setIsLoadingArticle] = useState(false)
 
     // Quiz State
     const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false)
@@ -239,11 +248,19 @@ export default function ReadingPage() {
             const history = await quizRecordService.getRecordsByArticleUuid(article.uuid)
             setQuizHistory(history)
 
-        } catch (err) {
+            setLoadingArticle(false) // Reset loading if success
+        } catch (err: any) {
             console.error('Failed to load article:', err)
-            // navigate('/') // Optional handle error
+            setError(err instanceof Error ? err : new Error(err.message || 'Failed to load article'))
+            setLoadingArticle(false)
         }
     }, [])
+
+    const setLoadingArticle = (loading: boolean) => {
+        setIsLoadingArticle(loading)
+    }
+
+
 
     const handleGenerateArticle = useCallback(async (words: Word[], settings: any, uuid?: string) => {
         setIsGenerating(true)
@@ -279,7 +296,7 @@ export default function ReadingPage() {
             navigate(`/read/${id}`, { replace: true })
         } catch (err: any) {
             console.error('Generation failed:', err)
-            setError(err.message || 'Generation failed')
+            setError(err instanceof Error ? err : new Error(err.message || 'Generation failed'))
         } finally {
             setIsGenerating(false)
         }
@@ -513,7 +530,7 @@ export default function ReadingPage() {
                 <EmptyState
                     icon="⚠️"
                     title={t ? t('reading:error.title') : 'Generation Failed'}
-                    description={error}
+                    description={error.message}
                     action={
                         <div style={{ display: 'flex', gap: 10 }}>
                             <Button
@@ -526,13 +543,7 @@ export default function ReadingPage() {
                                 <Button
                                     variant="contained"
                                     onClick={() => {
-                                        // Reset error and re-trigger generation
-                                        // We need to reset the ref too presumably?
-                                        // Actually simplest is to call the handler directly
                                         if (state?.words && state?.settings) {
-                                            // Force a new UUID for the retry to avoid DB constraint if that was the issue?
-                                            // Or reuse if we think it failed before saving.
-                                            // Let's generate new UUID to be safe and avoid "ConstraintError" if partial save happened.
                                             handleGenerateArticle(state.words, state.settings)
                                         } else {
                                             window.location.reload()
@@ -549,9 +560,13 @@ export default function ReadingPage() {
         )
     }
 
+    if (isLoadingArticle) {
+        return <PageLoading message={t('common:common.loading')} />
+    }
+
     if (!currentArticle) {
         // Initial loading or 404
-        return null // Or a specific skeleton loader for the whole page
+        return null // Or <PageLoading /> if we consider this implicit loading
     }
 
     // Determine layout mode based on route
