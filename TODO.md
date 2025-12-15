@@ -57,6 +57,7 @@
 - [x] Interactive: Implement "Click-to-Scroll" and "Breath Highlight" for key words.
 - [x] Deep Dive: Fix "Deep Dive" modal trigger and interaction with scroll.
 - [x] Performance: Stabilize highlight animation during re-renders (useMemo/useCallback).
+- [x] Performance: Fix global re-render caused by study timer in ReadingPage (Memoized Sidebar).
 
 ## [Architectural Refactoring]
 

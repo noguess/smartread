@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Box, Paper, Typography, Button, Stack } from '@mui/material'
 import {
     Highlight as Highlighter,
@@ -19,7 +20,7 @@ interface ReadingSidebarProps {
     onWordClick?: (word: string) => void
 }
 
-export const ReadingSidebar = ({
+export const ReadingSidebar = memo(({
     words,
     activeWord,
     onHoverWord,
@@ -301,4 +302,4 @@ export const ReadingSidebar = ({
             </Paper>
         </Box>
     )
-}
+})

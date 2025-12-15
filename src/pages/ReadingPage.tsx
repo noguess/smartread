@@ -184,11 +184,11 @@ export default function ReadingPage() {
     // New State for scrolling interaction (Moved to top level)
     const [scrollingWord, setScrollingWord] = useState<string | null>(null)
 
-    const handleWordScroll = (word: string) => {
+    const handleWordScroll = useCallback((word: string) => {
         setScrollingWord(word)
         // Reset after a short delay so clicking the same word again works
         setTimeout(() => setScrollingWord(null), 500)
-    }
+    }, [])
 
     // Derived State
     // activeQuizRecord and latestResult are less critical now as we use URL, 
@@ -351,7 +351,7 @@ export default function ReadingPage() {
         setWordDetailModalState(word)
     }, [])
 
-    const handleStartQuiz = async () => {
+    const handleStartQuiz = useCallback(async () => {
         if (!currentArticle) return
 
         // Per user request: Always generate a new quiz when clicking Challenge
@@ -394,7 +394,8 @@ export default function ReadingPage() {
             const updatedHistory = await quizRecordService.getRecordsByArticleUuid(currentArticle.uuid)
             setQuizHistory(updatedHistory)
 
-            setQuizHistory(updatedHistory)
+            // No second setQuizHistory needed
+            // setQuizHistory(updatedHistory)
 
             navigate(`quiz/${newRecordId}`)
         } catch (err) {
@@ -403,9 +404,9 @@ export default function ReadingPage() {
         } finally {
             setIsGenerating(false)
         }
-    }
+    }, [currentArticle, settings, targetWords, timeSpent, navigate, startTimer, resetTimer])
 
-    const handleQuizSubmit = async (recordId: number, answers: { reading: Record<string, string>; vocabulary: Record<string, string | string[]> }) => {
+    const handleQuizSubmit = useCallback(async (recordId: number, answers: { reading: Record<string, string>; vocabulary: Record<string, string | string[]> }) => {
         setIsSubmittingQuiz(true)
         try {
             // New decoupled logic using studyService
@@ -435,9 +436,20 @@ export default function ReadingPage() {
             setIsSubmittingQuiz(false)
             pauseTimer()
         }
-    }
+    }, [currentArticle, targetWords, timeSpent, articleId, navigate, pauseTimer])
 
 
+
+
+
+    const handleHoverWord = useCallback((_word: string | null) => {
+        // TODO: Implement Sidebar hover logic if needed
+    }, [])
+
+    const handleReviewQuiz = useCallback((record: QuizRecord) => {
+        if (!currentArticle) return
+        navigate(`/read/${currentArticle.id}/result/${record.id}`)
+    }, [navigate, currentArticle])
 
     // --- Render ---
 
@@ -508,12 +520,10 @@ export default function ReadingPage() {
             onFontSizeChange={handleFontSizeChange}
             targetWords={targetWords}
             activeWord={null} // TODO: Track active word from Hover
-            onHoverWord={() => { }} // TODO: Implement Sidebar hover logic if needed
+            onHoverWord={handleHoverWord}
             quizHistory={completedQuizzes}
             onStartQuiz={handleStartQuiz}
-            onReviewQuiz={(record) => {
-                navigate(`/read/${currentArticle.id}/result/${record.id}`)
-            }}
+            onReviewQuiz={handleReviewQuiz}
             onTimerToggle={isTimerRunning ? pauseTimer : startTimer}
             isTimerRunning={isTimerRunning}
             seconds={timeSpent}
