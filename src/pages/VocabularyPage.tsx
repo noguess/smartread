@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react'
+import React, { useState, useEffect, memo } from 'react'
 import {
     Box,
     Typography,
@@ -62,29 +62,8 @@ export default function VocabularyPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<Error | null>(null)
 
-    useEffect(() => {
-        loadWords()
-    }, [])
-
-    useEffect(() => {
-        filterWords()
-    }, [words, searchQuery, tabValue])
-
-    const loadWords = async () => {
-        try {
-            setLoading(true)
-            const allWords = await wordService.getAllWords()
-            setWords(allWords)
-            setError(null)
-        } catch (err) {
-            console.error('Failed to load words:', err)
-            setError(err instanceof Error ? err : new Error('Failed to load words'))
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const filterWords = () => {
+    // Memoize filterWords to be used in dependency array
+    const filterWords = React.useCallback(() => {
         let result = words
 
         // Filter by Tab (Status)
@@ -102,7 +81,31 @@ export default function VocabularyPage() {
         }
 
         setFilteredWords(result)
+    }, [words, searchQuery, tabValue])
+
+    useEffect(() => {
+        loadWords()
+    }, [])
+
+    useEffect(() => {
+        filterWords()
+    }, [filterWords])
+
+    const loadWords = async () => {
+        try {
+            setLoading(true)
+            const allWords = await wordService.getAllWords()
+            setWords(allWords)
+            setError(null)
+        } catch (err) {
+            console.error('Failed to load words:', err)
+            setError(err instanceof Error ? err : new Error('Failed to load words'))
+        } finally {
+            setLoading(false)
+        }
     }
+
+
 
     const handleWordClick = (word: string) => {
         setSelectedWord(word)

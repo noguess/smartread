@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
     Dialog,
     DialogTitle,
@@ -35,14 +35,7 @@ export default function ManualGenerationDialog({
     const [wordCount, setWordCount] = useState<number>(15)
     const [selectedWords, setSelectedWords] = useState<Word[]>([])
 
-    // Reset selection when dialog opens
-    useEffect(() => {
-        if (open) {
-            handleAutoFill()
-        }
-    }, [open])
-
-    const handleAutoFill = () => {
+    const handleAutoFill = useCallback(() => {
         if (!allWords) return
         const currentCount = selectedWords.length
         if (currentCount < wordCount) {
@@ -52,10 +45,10 @@ export default function ManualGenerationDialog({
             // Use WordSelector logic but we need to adapt it to pick from specific list
             // For simplicity, let's just use WordSelector on the available pool
             const newPicks = WordSelector.selectWordsForArticle(available, needed)
-            setSelectedWords([...selectedWords, ...newPicks])
+            setSelectedWords(prev => [...prev, ...newPicks])
         } else if (currentCount > wordCount) {
             // If we have too many, trim from the end (assuming end are auto-added)
-            setSelectedWords(selectedWords.slice(0, wordCount))
+            setSelectedWords(prev => prev.slice(0, wordCount))
         } else {
             // If equal, maybe we want to refresh?
             // If called explicitly via button, we might want to refresh non-locked words.
@@ -63,7 +56,14 @@ export default function ManualGenerationDialog({
             const newPicks = WordSelector.selectWordsForArticle(allWords, wordCount)
             setSelectedWords(newPicks)
         }
-    }
+    }, [allWords, selectedWords, wordCount])
+
+    // Reset selection when dialog opens
+    useEffect(() => {
+        if (open) {
+            handleAutoFill()
+        }
+    }, [open, handleAutoFill])
 
     const handleSliderChange = (_: Event, newValue: number | number[]) => {
         setWordCount(newValue as number)

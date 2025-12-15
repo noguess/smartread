@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Box, Grid, Typography, Container, Snackbar, Alert } from '@mui/material'
 import { wordService } from '../services/wordService'
@@ -55,20 +55,60 @@ export default function HomePage() {
 
     const [activities, setActivities] = useState<DashboardActivity[]>([])
 
-    useEffect(() => {
-        loadData()
+    const calculateStats = (hist: History[], quizzes: any[]) => {
+        // Construct a unified timeline for stats
+        const relevantDates = [
+            ...hist.map(h => h.date),
+            ...quizzes.map(q => q.date)
+        ].sort((a, b) => b - a)
 
-        // Check for message in navigation state
-        const state = location.state as { message?: string }
-        if (state?.message) {
-            setSnackbarMsg(state.message)
-            setSnackbarOpen(true)
-            // Clear state to prevent showing again on refresh
-            window.history.replaceState({}, document.title)
+        // Total Minutes
+        const v1Seconds = hist.reduce((acc, curr) => acc + (curr.timeSpent || 300), 0)
+        const v2Seconds = quizzes.reduce((acc, curr) => acc + (curr.timeSpent || 300), 0)
+        const totalMinutes = Math.floor((v1Seconds + v2Seconds) / 60)
+
+        // Consecutive Days
+        let consecutive = 0
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const uniqueDates = Array.from(new Set(relevantDates.map(ts => {
+            const d = new Date(ts)
+            d.setHours(0, 0, 0, 0)
+            return d.getTime()
+        }))).sort((a, b) => b - a)
+
+        if (uniqueDates.length > 0) {
+            const lastDate = new Date(uniqueDates[0])
+            const diffTime = Math.abs(today.getTime() - lastDate.getTime())
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+            if (diffDays <= 1) {
+                consecutive = 1
+                let currentDate = lastDate
+
+                for (let i = 1; i < uniqueDates.length; i++) {
+                    const prevDate = new Date(uniqueDates[i])
+                    const dayDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
+
+                    if (Math.round(dayDiff) === 1) {
+                        consecutive++
+                        currentDate = prevDate
+                    } else {
+                        break
+                    }
+                }
+            }
         }
-    }, [])
 
-    const loadData = async () => {
+        setStats({
+            consecutiveDays: consecutive,
+            totalMinutes,
+            lastLearningDate: uniqueDates.length > 0 ? new Date(uniqueDates[0]).toLocaleDateString() : ''
+        })
+    }
+
+    const loadData = useCallback(async () => {
         try {
             setLoading(true)
             setError(null)
@@ -154,60 +194,22 @@ export default function HomePage() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [t])
 
-    const calculateStats = (hist: History[], quizzes: any[]) => {
-        // Construct a unified timeline for stats
-        const relevantDates = [
-            ...hist.map(h => h.date),
-            ...quizzes.map(q => q.date)
-        ].sort((a, b) => b - a)
+    useEffect(() => {
+        loadData()
 
-        // Total Minutes
-        const v1Seconds = hist.reduce((acc, curr) => acc + (curr.timeSpent || 300), 0)
-        const v2Seconds = quizzes.reduce((acc, curr) => acc + (curr.timeSpent || 300), 0)
-        const totalMinutes = Math.floor((v1Seconds + v2Seconds) / 60)
-
-        // Consecutive Days
-        let consecutive = 0
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-
-        const uniqueDates = Array.from(new Set(relevantDates.map(ts => {
-            const d = new Date(ts)
-            d.setHours(0, 0, 0, 0)
-            return d.getTime()
-        }))).sort((a, b) => b - a)
-
-        if (uniqueDates.length > 0) {
-            const lastDate = new Date(uniqueDates[0])
-            const diffTime = Math.abs(today.getTime() - lastDate.getTime())
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-            if (diffDays <= 1) {
-                consecutive = 1
-                let currentDate = lastDate
-
-                for (let i = 1; i < uniqueDates.length; i++) {
-                    const prevDate = new Date(uniqueDates[i])
-                    const dayDiff = (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
-
-                    if (Math.round(dayDiff) === 1) {
-                        consecutive++
-                        currentDate = prevDate
-                    } else {
-                        break
-                    }
-                }
-            }
+        // Check for message in navigation state
+        const state = location.state as { message?: string }
+        if (state?.message) {
+            setSnackbarMsg(state.message)
+            setSnackbarOpen(true)
+            // Clear state to prevent showing again on refresh
+            window.history.replaceState({}, document.title)
         }
+    }, [loadData, location.state])
 
-        setStats({
-            consecutiveDays: consecutive,
-            totalMinutes,
-            lastLearningDate: uniqueDates.length > 0 ? new Date(uniqueDates[0]).toLocaleDateString() : ''
-        })
-    }
+
 
     const handleSmartGenerate = async () => {
         // Default to 15 words for smart generate

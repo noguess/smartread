@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
     Dialog,
     DialogTitle,
@@ -51,19 +51,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
 
     const listRef = useRef<HTMLUListElement>(null)
 
-    useEffect(() => {
-        if (open && word) {
-            loadWordData()
-        }
-    }, [open, word])
-
-    const showToast = (message: string, severity: AlertColor = 'success') => {
-        setSnackbarMessage(message)
-        setSnackbarSeverity(severity)
-        setSnackbarOpen(true)
-    }
-
-    const loadWordData = async () => {
+    const loadWordData = useCallback(async (wordToLoad: string) => {
         setLoading(true)
         // Reset states
         setDictionaryData(null)
@@ -71,7 +59,7 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
 
         try {
             // 0. Normalize to Lemma
-            const lemma = getLemma(word)
+            const lemma = getLemma(wordToLoad)
 
             // 1. Try to get word (Lemma) from DB
             let dbWord = await wordService.getWordBySpelling(lemma)
@@ -141,7 +129,21 @@ export default function WordDetailModal({ word, open, onClose }: WordDetailModal
         } finally {
             setLoading(false)
         }
+    }, [t])
+
+    useEffect(() => {
+        if (open && word) {
+            loadWordData(word) // Load every time validation opens for a new word
+        }
+    }, [open, word, loadWordData])
+
+    const showToast = (message: string, severity: AlertColor = 'success') => {
+        setSnackbarMessage(message)
+        setSnackbarSeverity(severity)
+        setSnackbarOpen(true)
     }
+
+
 
     const sortOccurrences = (results: VideoOccurrence[], pinned: any) => {
         return [...results].sort((a, b) => {

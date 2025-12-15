@@ -1,10 +1,9 @@
-
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import LibraryPage from './LibraryPage'
 import { quizRecordService } from '../services/quizRecordService'
 import { MemoryRouter } from 'react-router-dom'
-import { PageError, PageLoading } from '../components/common'
+
 
 // Mock Components
 vi.mock('../components/common/PageLoading', () => ({
@@ -63,26 +62,7 @@ vi.mock('react-i18next', () => ({
     })
 }))
 
-const mockArticles = [
-    {
-        id: 1,
-        uuid: 'uuid-1',
-        title: 'Article 1',
-        difficultyLevel: 'L1',
-        createdAt: Date.now(),
-        targetWords: ['word1'],
-        source: 'generated'
-    },
-    {
-        id: 2,
-        uuid: 'uuid-2',
-        title: 'Article 2',
-        difficultyLevel: 'L2',
-        createdAt: Date.now(),
-        targetWords: ['word2'],
-        source: 'generated'
-    }
-]
+
 
 describe('LibraryPage Validation', () => {
     beforeEach(() => {

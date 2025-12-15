@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
     Popover,
     Typography,
@@ -40,13 +40,18 @@ export default function DefinitionPopover({
     const [data, setData] = useState<DefinitionData | null>(null)
     const [error, setError] = useState(false)
 
-    useEffect(() => {
-        if (word && anchorPosition) {
-            loadDefinition()
-        }
-    }, [word, anchorPosition])
+    const open = Boolean(anchorPosition)
 
-    const loadDefinition = async () => {
+    const loadEnglishDict = useCallback(async () => {
+        const results = await dictionaryService.getDefinition(word)
+        if (results && results?.length > 0) {
+            setData({ type: 'complex', entry: results[0], sourceWord: word })
+        } else {
+            setError(true)
+        }
+    }, [word])
+
+    const loadDefinition = useCallback(async () => {
         setLoading(true)
         setData(null)
         setError(false)
@@ -100,16 +105,13 @@ export default function DefinitionPopover({
         } finally {
             setLoading(false)
         }
-    }
+    }, [word, loadEnglishDict])
 
-    const loadEnglishDict = async () => {
-        const results = await dictionaryService.getDefinition(word)
-        if (results && results?.length > 0) {
-            setData({ type: 'complex', entry: results[0], sourceWord: word })
-        } else {
-            setError(true)
+    useEffect(() => {
+        if (open && word) {
+            loadDefinition()
         }
-    }
+    }, [open, word, loadDefinition])
 
     const handleSpeak = (e: React.MouseEvent) => {
         e.stopPropagation()
@@ -123,8 +125,7 @@ export default function DefinitionPopover({
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
-    const open = Boolean(anchorPosition)
-    if (!open) return null
+    if (!anchorPosition) return null
 
     const phonetic = data?.type === 'simple' ? data.phonetic : data?.type === 'complex' ? data.entry.phonetic : null
 
@@ -204,7 +205,7 @@ export default function DefinitionPopover({
         return (
             <Drawer
                 anchor="bottom"
-                open={open}
+                open={Boolean(anchorPosition)}
                 onClose={onClose}
                 PaperProps={{
                     sx: {
@@ -220,7 +221,7 @@ export default function DefinitionPopover({
 
     return (
         <Popover
-            open={open}
+            open={Boolean(anchorPosition)}
             onClose={onClose}
             anchorReference="anchorPosition"
             anchorPosition={anchorPosition || undefined}

@@ -324,7 +324,7 @@ export default function ReadingPage() {
         else if (articleId && !currentArticle && !isGenerating) {
             loadArticle(Number(articleId) || articleId)
         }
-    }, [articleId, location.state, currentArticle, isGenerating, handleGenerateArticle, loadArticle])
+    }, [articleId, location.state, currentArticle, isGenerating, error, handleGenerateArticle, loadArticle])
 
     // --- Actions ---
 
