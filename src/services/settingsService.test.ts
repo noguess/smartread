@@ -37,9 +37,9 @@ describe('SettingsService', () => {
         }
     })
 
-    it('should initialize with default videoSource as bilibili', async () => {
+    it('should initialize with default videoSource as youtube', async () => {
         const settings = await settingsService.getSettings()
-        expect(settings.videoSource).toBe('bilibili')
+        expect(settings.videoSource).toBe('youtube')
     })
 
     it('should update videoSource setting', async () => {

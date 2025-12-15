@@ -22,50 +22,66 @@ vi.mock('../components/dashboard/ManualGenerationDialog', () => ({
 vi.mock('../components/dashboard/DashboardVerticalLayout', () => ({
     default: () => <div data-testid="dashboard-vertical">Vertical Layout</div>
 }))
-vi.mock('../components/common/PageLoading', () => ({
-    default: () => <div data-testid="page-loading">Loading...</div>
+vi.mock('../components/common', () => ({
+    PageLoading: () => <div data-testid="page-loading">Loading...</div>,
+    PageError: ({ error }: { error: Error }) => <div data-testid="page-error">{error.message}</div>
 }))
-vi.mock('../components/common/PageError', () => ({
-    default: ({ error }: { error: Error }) => <div data-testid="page-error">{error.message}</div>
+vi.mock('../components/onboarding/OnboardingDialog', () => ({
+    default: () => <div data-testid="onboarding-dialog">Onboarding</div>
+}))
+vi.mock('../components/WordDetailModal', () => ({
+    default: () => <div data-testid="word-detail-modal">Word Detail</div>
 }))
 
 // Mock services
-const mockGetAllWords = vi.fn()
-const mockGetHistory = vi.fn()
-const mockGetSettings = vi.fn()
-const mockGetArticles = vi.fn()
-const mockGetQuizzes = vi.fn()
+const {
+    mockGetAllWords,
+    mockGetHistory,
+    mockGetSettings,
+    mockGetArticles,
+    mockGetQuizzes
+} = vi.hoisted(() => {
+    return {
+        mockGetAllWords: vi.fn(),
+        mockGetHistory: vi.fn(),
+        mockGetSettings: vi.fn(),
+        mockGetArticles: vi.fn(),
+        mockGetQuizzes: vi.fn(),
+    }
+})
 
 vi.mock('../services/wordService', () => ({
     wordService: {
-        getAllWords: () => mockGetAllWords()
+        getAllWords: mockGetAllWords
     }
 }))
 vi.mock('../services/historyService', () => ({
     historyService: {
-        getHistory: () => mockGetHistory()
+        getHistory: mockGetHistory
     }
 }))
 vi.mock('../services/settingsService', () => ({
     settingsService: {
-        getSettings: () => mockGetSettings()
+        getSettings: mockGetSettings,
+        saveSettings: vi.fn()
     }
 }))
 vi.mock('../services/articleService', () => ({
     articleService: {
-        getAll: () => mockGetArticles()
+        getAll: mockGetArticles
     }
 }))
 vi.mock('../services/quizRecordService', () => ({
     quizRecordService: {
-        getAll: () => mockGetQuizzes()
+        getAll: mockGetQuizzes
     }
 }))
 
 // Mock react-i18next
+const mockT = (key: string) => key
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
-        t: (key: string) => key,
+        t: mockT,
     }),
 }))
 

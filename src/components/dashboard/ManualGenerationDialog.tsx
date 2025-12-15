@@ -63,7 +63,8 @@ export default function ManualGenerationDialog({
         if (open) {
             handleAutoFill()
         }
-    }, [open, handleAutoFill])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open])
 
     const handleSliderChange = (_: Event, newValue: number | number[]) => {
         setWordCount(newValue as number)

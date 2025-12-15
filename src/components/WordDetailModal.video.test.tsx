@@ -8,8 +8,9 @@ import { wordService } from '../services/wordService'
 
 
 // Mock dependencies
+const mockT = (key: string) => key
 vi.mock('react-i18next', () => ({
-    useTranslation: () => ({ t: (key: string) => key }),
+    useTranslation: () => ({ t: mockT }),
 }))
 
 vi.mock('../services/videoIndexService', () => ({

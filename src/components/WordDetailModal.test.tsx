@@ -36,6 +36,11 @@ vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: (key: string) => key })
 }))
 
+const mockT = (key: string) => key
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({ t: mockT })
+}))
+
 vi.mock('../services/settingsService', () => ({
     settingsService: {
         getSettings: vi.fn().mockResolvedValue({ videoSource: 'bilibili' })

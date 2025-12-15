@@ -3,8 +3,9 @@ import { describe, it, expect, vi } from 'vitest'
 import ManualGenerationDialog from './ManualGenerationDialog'
 
 // Mock Translations
+const mockT = (key: string) => key
 vi.mock('react-i18next', () => ({
-    useTranslation: () => ({ t: (key: string) => key })
+    useTranslation: () => ({ t: mockT })
 }))
 
 // Mock MUI Autocomplete (since it's complex to test fully in jsdom sometimes)
