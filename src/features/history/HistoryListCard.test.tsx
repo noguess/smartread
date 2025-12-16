@@ -10,7 +10,11 @@ vi.mock('@mui/icons-material', () => ({
     History: () => <div data-testid="HistoryIcon" />,
     EmojiEvents: () => <div data-testid="EmojiEventsIcon" />,
     ChevronRight: () => <div data-testid="ChevronRightIcon" />,
-    DeleteOutline: () => <div data-testid="DeleteIcon" />
+    DeleteOutline: () => <div data-testid="DeleteIcon" />,
+    FiberNew: () => <div data-testid="FiberNewIcon" />,
+    School: () => <div data-testid="SchoolIcon" />,
+    Refresh: () => <div data-testid="RefreshIcon" />,
+    CheckCircle: () => <div data-testid="CheckCircleIcon" />
 }))
 
 // Mock Translation

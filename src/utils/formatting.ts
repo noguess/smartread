@@ -29,7 +29,7 @@ export const formatDate = (
         // Check for invalid date
         if (isNaN(d.getTime())) return ''
         return d.toLocaleDateString(locale, options)
-    } catch (e) {
+    } catch {
         return ''
     }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     Container,
@@ -67,7 +67,7 @@ export default function LibraryPage() {
 
     const { loading, error, execute: executeFetch } = useAsyncData(fetchArticlesFn)
 
-    const loadArticles = async (pageNum: number) => {
+    const loadArticles = useCallback(async (pageNum: number) => {
         try {
             // We use the return value from execute
             const result = await executeFetch(pageNum)
@@ -79,15 +79,15 @@ export default function LibraryPage() {
             } else {
                 setArticles(prev => [...prev, ...result.articles])
             }
-        } catch (error) {
+        } catch {
             // Error is handled by hook state, but we log here if needed
             // console.error('Create load failed', error)
         }
-    }
+    }, [executeFetch, setArticles, setHasMore])
 
     useEffect(() => {
         loadArticles(1)
-    }, [])
+    }, [loadArticles])
 
     const handleLoadMore = () => {
         const nextPage = page + 1

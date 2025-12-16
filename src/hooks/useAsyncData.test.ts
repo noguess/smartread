@@ -60,7 +60,7 @@ describe('useAsyncData', () => {
         await act(async () => {
             try {
                 await result.current.execute()
-            } catch (e) {
+            } catch {
                 // Hook might re-throw or just set error state. 
                 // Let's assume it catches internally to set state, but maybe returns it?
             }

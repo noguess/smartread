@@ -201,7 +201,7 @@ export default function HomePage() {
     // Convert loadData to initial effect
     useEffect(() => {
         loadData().catch(e => console.error('Initial load failed', e))
-    }, []) // Run once on mount
+    }, [loadData]) // Run once on mount (loadData is stable)
 
     useEffect(() => {
         // Check for message in navigation state

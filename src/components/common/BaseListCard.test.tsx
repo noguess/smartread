@@ -46,7 +46,7 @@ describe('BaseListCard', () => {
     })
 
     it('applies custom icon box colors', () => {
-        const { container } = render(
+        render(
             <BaseListCard
                 {...defaultProps}
                 iconBoxColor={{ bg: 'rgb(255, 0, 0)', color: 'rgb(0, 255, 0)' }}
