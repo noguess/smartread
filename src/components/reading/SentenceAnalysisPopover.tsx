@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
     Popover,
     Typography,
@@ -33,9 +33,18 @@ export default function SentenceAnalysisPopover({
     articleId
 }: SentenceAnalysisPopoverProps) {
     const { t } = useTranslation(['common'])
+    const abortController = useRef<AbortController | null>(null)
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState<string | null>(null)
     const [error, setError] = useState(false)
+    const endRef = useRef<HTMLDivElement>(null)
+
+    // Auto-scroll to bottom as result streams in
+    useEffect(() => {
+        if (result && loading) {
+            endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+        }
+    }, [result, loading])
 
     // Reset state when popover opens/closes or sentence changes
     // But since this component is likely unmounted/remounted or controlled by parent,
@@ -46,6 +55,8 @@ export default function SentenceAnalysisPopover({
     const handleAnalyze = async () => {
         setLoading(true)
         setError(false)
+        abortController.current = new AbortController()
+
         try {
             // Check cache first
             if (articleId) {
@@ -57,18 +68,26 @@ export default function SentenceAnalysisPopover({
                 }
             }
 
-            const data = await llmService.analyzeSentence(sentence, settings)
-            setResult(data)
+            const data = await llmService.analyzeSentence(sentence, settings, (token) => {
+                setResult(prev => (prev || '') + token)
+            }, abortController.current.signal)
+            setResult(data) // Ensure full consistence at the end
 
             // Save to cache
             if (articleId && data) {
                 await analysisStorageService.saveAnalysis(articleId, sentence, data)
             }
-        } catch (err) {
+        } catch (err: any) {
+            if (err.name === 'AbortError') {
+                console.log('Analysis Aborted')
+                // Keep result as is, stop loading
+                return
+            }
             console.error('Sentence analysis failed:', err)
             setError(true)
         } finally {
             setLoading(false)
+            abortController.current = null
         }
     }
 
@@ -139,15 +158,6 @@ export default function SentenceAnalysisPopover({
                     </Box>
                 )}
 
-                {loading && (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, gap: 2 }}>
-                        <CircularProgress size={32} />
-                        <Typography variant="caption" color="text.secondary">
-                            {t('status.analyzing', 'AI is analyzing...')}
-                        </Typography>
-                    </Box>
-                )}
-
                 {error && (
                     <Box sx={{ py: 4, textAlign: 'center' }}>
                         <Typography color="error" variant="body2" sx={{ mb: 1 }}>
@@ -159,7 +169,8 @@ export default function SentenceAnalysisPopover({
                     </Box>
                 )}
 
-                {result && (
+                {/* Content Area - show if result exists (streaming) OR if it's strictly the Result view */}
+                {(result || loading) && (
                     <Box className="markdown-content" sx={{
                         '& h2': {
                             fontSize: '1rem',
@@ -203,7 +214,33 @@ export default function SentenceAnalysisPopover({
                             fontStyle: 'italic'
                         }
                     }}>
-                        <ReactMarkdown>{result}</ReactMarkdown>
+                        {!result && loading && (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, gap: 2 }}>
+                                <CircularProgress size={32} />
+                                <Typography variant="caption" color="text.secondary">
+                                    {t('status.analyzing', 'AI is analyzing...')}
+                                </Typography>
+                            </Box>
+                        )}
+
+                        {result && <ReactMarkdown>{result}</ReactMarkdown>}
+
+                        {/* Blinking cursor at the end of streaming content */}
+                        {loading && result && (
+                            <Box component="span" sx={{
+                                display: 'inline-block',
+                                width: '8px',
+                                height: '16px',
+                                bgcolor: 'primary.main',
+                                ml: 0.5,
+                                animation: 'blink 1s step-end infinite',
+                                '@keyframes blink': {
+                                    '0%, 100%': { opacity: 1 },
+                                    '50%': { opacity: 0 }
+                                }
+                            }} />
+                        )}
+                        <div ref={endRef} />
                     </Box>
                 )}
             </Box>

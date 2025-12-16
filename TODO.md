@@ -1,9 +1,16 @@
-## [Feature] Onboarding Flow
-- [x] Task 1 (DB): Update `db.ts` to include `hasCompletedOnboarding` in `Setting` interface, and update `settingsService.ts` initialization logic.
-- [x] Task 2 (UI): Create `OnboardingDialog.tsx` with Stepper skeleton and "Welcome" step.
-- [x] Task 3 (Logic): Implement API Key input step in `OnboardingDialog` (reuse `settingsService`).
-- [x] Task 4 (Logic): Implement Vocabulary Import step in `OnboardingDialog` (reuse fetch logic).
-- [x] Task 5 (Integration): Mount `OnboardingDialog` in `HomePage.tsx` and trigger conditionally.
+- [x] Task 1 (Service): Refactor `llmService.ts` to support real streaming. Add `_callDeepSeekStream` method that yields chunks via async generator or callback.
+- [x] Task 2 (Mock): Create/Update `mockLLMService.ts` to simulate character-by-character streaming for testing.
+- [x] Task 3 (Endpoint): Update `analyzeSentence` in `llmService` to use the new streaming method and accept an `onToken` callback.
+- [x] Task 4 (UI): Refactor `SentenceAnalysisPopover.tsx` to handle streaming state (accumulating tokens) instead of waiting for full result.
+- [x] Task 5 (UX): Add "Stop Generation" button in UI during streaming.
+
+## [Feature] Article Streaming (Incremental JSON)
+- [x] Task 1 (Infra): Install `best-effort-json-parser` and create `src/utils/jsonParser.ts` wrapper.
+- [x] Task 2 (Service): Implement `llmService.generateArticleStream` using `_callDeepSeekStream` and the incremental parser.
+- [x] Task 3 (UI): Refactor `GenerationLoading.tsx` to accept and display partial article content (Title + Body Preview).
+- [x] Task 4 (Integration): Update `ReadingPage.tsx` / `ArticleGenerator` to use the streaming API.
+- [x] Refactor `GenerationLoading` component to avoid useEffect loops and fix unit tests.
+
 
 ## [Feature] 异常链路统一 (Exception Handling)
 - [x] Task 1 (Infra): 创建统一组件 `PageLoading`, `PageError`, `NotFoundPage`，并在 `App.tsx` 中集成 `react-error-boundary`。

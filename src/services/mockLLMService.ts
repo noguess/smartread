@@ -55,6 +55,57 @@ Current Word List: ${wordList}.
         }
     },
 
+    async generateArticleStream(
+        words: Word[],
+        settings: any,
+        onProgress?: (progress: number) => void,
+        onPartialData?: (data: any) => void
+    ): Promise<{ title: string; content: string; targetWords: string[]; word_study?: any[] }> {
+        const difficultyLevel = settings?.difficultyLevel || 'L2'
+        const fullTitle = `Mock Article - ${difficultyLevel}`
+        const fullContent = `This is a **mock** streaming article generated for ${difficultyLevel} difficulty. \n\nIt includes target words like **${words[0]?.spelling || 'word'}** and **${words[1]?.spelling || 'vocabulary'}**.\n\nThe content is designed to help you prepare for exams.`
+
+        let currentContent = ''
+        const chunkSize = 10
+        const totalLength = fullContent.length
+
+        // Simulate streaming
+        for (let i = 0; i < totalLength; i += chunkSize) {
+            currentContent = fullContent.slice(0, i + chunkSize)
+            onPartialData?.({
+                title: fullTitle,
+                content: currentContent
+            })
+            onProgress?.(Math.min(99, Math.floor((i / totalLength) * 100)))
+            await new Promise(r => setTimeout(r, 100))
+        }
+
+        // Trigger "Optimizing" phase (metadata arrival)
+        onPartialData?.({
+            title: fullTitle,
+            content: fullContent,
+            word_study: words.map(w => ({
+                word: w.spelling,
+                part_of_speech: 'n.',
+                meaning_in_context: `(Mock Context of ${w.spelling})`
+            })),
+            difficulty_assessed: difficultyLevel
+        })
+
+        onProgress?.(100)
+
+        return {
+            title: fullTitle,
+            content: fullContent,
+            targetWords: words.map(w => w.spelling),
+            word_study: words.map(w => ({
+                word: w.spelling,
+                part_of_speech: 'n.',
+                meaning_in_context: `(Contextual Meaning of ${w.spelling})`
+            }))
+        }
+    },
+
     async generateQuizForArticle(
         _articleContent: string,
         words: Word[],
@@ -116,6 +167,29 @@ Current Word List: ${wordList}.
             readingQuestions,
             vocabularyQuestions
         }
+    },
+
+    async analyzeSentence(
+        sentence: string,
+        _settings: any,
+        onToken?: (token: string) => void
+    ): Promise<string> {
+        const mockResponse = `### Mock Analysis for: "${sentence}"
+- **Grammar**: Subject + Verb + Object.
+- **Translation**: 这是一个模拟分析。
+- **Key Points**:
+  1. *Mocking* is useful for testing.
+  2. Streaming simulates real-time AI.
+`
+        // Simulate streaming character by character
+        const chunkSize = 5
+        for (let i = 0; i < mockResponse.length; i += chunkSize) {
+            const chunk = mockResponse.slice(i, i + chunkSize)
+            onToken?.(chunk)
+            await new Promise(r => setTimeout(r, 10))
+        }
+
+        return mockResponse
     },
 
     async _simulateProgress(onProgress?: (p: number) => void) {

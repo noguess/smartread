@@ -18,7 +18,14 @@ vi.mock('../services/settingsService')
 vi.mock('../services/llmService')
 vi.mock('../services/mockLLMService')
 
-vi.mock('../components/reading/GenerationLoading', () => ({ default: () => <div data-testid="generation-loading">Loading...</div> }))
+vi.mock('../components/reading/GenerationLoading', () => ({
+    default: ({ partialData }: any) => (
+        <div data-testid="generation-loading">
+            Loading...
+            {partialData && <div data-testid="partial-preview">{partialData.title}</div>}
+        </div>
+    )
+}))
 
 // Component Mocks
 vi.mock('../hooks/useStudyTimer', () => ({
@@ -243,18 +250,20 @@ describe('ReadingPage Integration', () => {
         const generationSettings = { difficultyLevel: 'L2', apiKey: 'test-key' }
 
         // Mock generate response
-        vi.mocked(llmService.generateArticleOnly).mockResolvedValue({
-            title: 'Gen Title',
-            content: 'Gen Content',
-            targetWords: ['hello'],
-            word_study: []
-        } as any)
-        vi.mocked(mockLLMService.generateArticleOnly).mockResolvedValue({
-            title: 'Gen Title',
-            content: 'Gen Content',
-            targetWords: ['hello'],
-            word_study: []
-        } as any)
+        // Mock generate response (Stream)
+        const mockStreamResponse = async (_words: any, _settings: any, onProgress: any, _onPartialData: any) => {
+            // Instant finish
+            onProgress?.(100)
+            return {
+                title: 'Gen Title',
+                content: 'Gen Content',
+                targetWords: ['hello'],
+                word_study: []
+            }
+        }
+
+        vi.mocked(llmService.generateArticleStream).mockImplementation(mockStreamResponse as any)
+        vi.mocked(mockLLMService.generateArticleStream).mockImplementation(mockStreamResponse as any)
 
         vi.mocked(articleService.add).mockResolvedValue(999)
 
@@ -281,9 +290,9 @@ describe('ReadingPage Integration', () => {
         // Should show loading
         await waitFor(() => expect(screen.getByTestId('generation-loading')).toBeInTheDocument())
 
-        // Should call generate
+        // Should call generate stream
         await waitFor(() => {
-            expect(llmService.generateArticleOnly).toHaveBeenCalled() // or mockLLMService depending on setup
+            expect(llmService.generateArticleStream).toHaveBeenCalled()
         })
 
         // Should save article with PROVIDED UUID
@@ -297,13 +306,72 @@ describe('ReadingPage Integration', () => {
         // Should navigate to /read/999
         await waitFor(() => expect(screen.getByTestId('article-view-redirected')).toBeInTheDocument())
     })
+
+    it('updates partial preview during streaming', async () => {
+        const generationUuid = 'stream-uuid-123'
+        const generationWords = [{ spelling: 'stream', status: 'New' }]
+        vi.mocked(llmService.generateArticleStream).mockImplementation(async (...args: any[]) => {
+            const onPartialData = args[3];
+            // Simulate stream
+            onPartialData?.({ title: 'Stream Title', content: 'Part 1' })
+            await new Promise(r => setTimeout(r, 10))
+            onPartialData?.({ title: 'Stream Title', content: 'Part 1 + Part 2' })
+            return {
+                title: 'Stream Title',
+                content: 'Part 1 + Part 2',
+                targetWords: ['stream'],
+                word_study: []
+            }
+        })
+        vi.mocked(mockLLMService.generateArticleStream).mockImplementation(async (_words, _settings, _onProgress, onPartialData) => {
+            // Simulate stream
+            onPartialData?.({ title: 'Stream Title', content: 'Part 1' })
+            await new Promise(r => setTimeout(r, 10))
+            onPartialData?.({ title: 'Stream Title', content: 'Part 1 + Part 2' })
+            return {
+                title: 'Stream Title',
+                content: 'Part 1 + Part 2',
+                targetWords: ['stream'],
+                word_study: []
+            }
+        })
+        vi.mocked(articleService.add).mockResolvedValue(777)
+
+        render(
+            <MemoryRouter initialEntries={[{
+                pathname: '/reading',
+                state: {
+                    mode: 'generate',
+                    words: generationWords,
+                    settings: { difficultyLevel: 'L2', apiKey: 'test-key' },
+                    uuid: generationUuid
+                }
+            }]}>
+                <Routes>
+                    <Route path="/reading" element={<ReadingPage />} />
+                    <Route path="/read/:articleId" element={<div data-testid="article-view-redirected">Redirected</div>} />
+                </Routes>
+            </MemoryRouter>
+        )
+
+        // Loading appears
+        await waitFor(() => expect(screen.getByTestId('generation-loading')).toBeInTheDocument())
+
+        // Check for partial update
+        await waitFor(() => {
+            expect(screen.getByTestId('partial-preview')).toHaveTextContent('Stream Title')
+        })
+
+        // Finally success
+        await waitFor(() => expect(screen.getByTestId('article-view-redirected')).toBeInTheDocument())
+    })
     it('shows error message when generation fails', async () => {
         const generationUuid = 'fail-uuid-123'
         const generationWords = [{ spelling: 'fail', status: 'New' }]
 
         // Mock generate failure
-        vi.mocked(llmService.generateArticleOnly).mockRejectedValue(new Error('API Error'))
-        vi.mocked(mockLLMService.generateArticleOnly).mockRejectedValue(new Error('API Error'))
+        vi.mocked(llmService.generateArticleStream).mockRejectedValue(new Error('API Error'))
+        vi.mocked(mockLLMService.generateArticleStream).mockRejectedValue(new Error('API Error'))
 
         render(
             <MemoryRouter initialEntries={[{
@@ -340,22 +408,18 @@ describe('ReadingPage Integration', () => {
         const generationSettings = { difficultyLevel: 'L2', apiKey: 'test-key' }
 
         // 1. First attempt fails
-        vi.mocked(llmService.generateArticleOnly).mockRejectedValueOnce(new Error('First Fail'))
-        vi.mocked(mockLLMService.generateArticleOnly).mockRejectedValueOnce(new Error('First Fail'))
+        vi.mocked(llmService.generateArticleStream).mockRejectedValueOnce(new Error('First Fail'))
+        vi.mocked(mockLLMService.generateArticleStream).mockRejectedValueOnce(new Error('First Fail'))
 
         // 2. Second attempt succeeds
-        vi.mocked(llmService.generateArticleOnly).mockResolvedValue({
+        const mockStreamSuccess = async () => ({
             title: 'Retry Success',
             content: 'Content',
             targetWords: ['retry'],
             word_study: []
-        } as any)
-        vi.mocked(mockLLMService.generateArticleOnly).mockResolvedValue({
-            title: 'Retry Success',
-            content: 'Content',
-            targetWords: ['retry'],
-            word_study: []
-        } as any)
+        })
+        vi.mocked(llmService.generateArticleStream).mockImplementation(mockStreamSuccess as any)
+        vi.mocked(mockLLMService.generateArticleStream).mockImplementation(mockStreamSuccess as any)
         vi.mocked(articleService.add).mockResolvedValue(888)
 
         render(

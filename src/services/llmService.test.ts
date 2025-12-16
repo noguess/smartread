@@ -35,6 +35,34 @@ describe('llmService', () => {
         expect(systemPrompt).toContain('结构拆解')
     })
 
+    it('analyzeSentence uses streaming when onToken is provided', async () => {
+        const encoder = new TextEncoder()
+        const stream = new ReadableStream({
+            start(controller) {
+                controller.enqueue(encoder.encode('data: ' + JSON.stringify({ choices: [{ delta: { content: 'S' } }] }) + '\n\n'))
+                controller.enqueue(encoder.encode('data: ' + JSON.stringify({ choices: [{ delta: { content: 't' } }] }) + '\n\n'))
+                controller.close()
+            }
+        })
+        const mockResponse = {
+            ok: true,
+            body: stream
+        }
+        mockFetch.mockResolvedValue(mockResponse)
+
+        const onToken = vi.fn()
+        await llmService.analyzeSentence("Test sentence.", { apiKey: 'test' } as any, onToken)
+
+        expect(onToken).toHaveBeenCalledTimes(2)
+        expect(onToken).toHaveBeenNthCalledWith(1, 'S')
+        expect(onToken).toHaveBeenNthCalledWith(2, 't')
+
+        // callback body should have stream: true
+        const callArgs = mockFetch.mock.calls[0]
+        const body = JSON.parse(callArgs[1].body)
+        expect(body.stream).toBe(true)
+    })
+
     it('generateArticleOnly sends prompt with Word Study instructions', async () => {
         // Mock Response with word_study
         const mockResponseData = {
@@ -111,5 +139,38 @@ describe('llmService', () => {
         // Verify Stem Normalization (question -> stem)
         expect(result.readingQuestions[0].stem).toBe('Q1')
         expect(result.vocabularyQuestions[0].stem).toBe('V1')
+    })
+
+    describe('_callDeepSeekStream', () => {
+        it('streams response chunks via onToken callback', async () => {
+            const encoder = new TextEncoder()
+            const stream = new ReadableStream({
+                start(controller) {
+                    controller.enqueue(encoder.encode('data: ' + JSON.stringify({ choices: [{ delta: { content: 'Hello' } }] }) + '\n\n'))
+                    controller.enqueue(encoder.encode('data: ' + JSON.stringify({ choices: [{ delta: { content: ' World' } }] }) + '\n\n'))
+                    controller.close()
+                }
+            })
+
+            const mockResponse = {
+                ok: true,
+                body: stream
+            }
+            mockFetch.mockResolvedValue(mockResponse)
+
+            const onToken = vi.fn()
+
+            await (llmService as any)._callDeepSeekStream(
+                'test-key',
+                '/api',
+                'sys',
+                'user',
+                onToken
+            )
+
+            expect(onToken).toHaveBeenCalledTimes(2)
+            expect(onToken).toHaveBeenNthCalledWith(1, 'Hello')
+            expect(onToken).toHaveBeenNthCalledWith(2, ' World')
+        })
     })
 })

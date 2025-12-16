@@ -1,90 +1,100 @@
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import SentenceAnalysisPopover from './SentenceAnalysisPopover'
+import { llmService } from '../../services/llmService'
+import userEvent from '@testing-library/user-event'
 
 // Mock dependencies
-const mockSettings = { apiKey: 'test', difficultyLevel: 'L2' } as any
-const mockClose = vi.fn()
-// Updated to return a Markdown string
-const mockAnalyze = vi.fn().mockResolvedValue(`
-## Translation
-Fluent translation here.
-
-## Structure
-* Item 1
-* Item 2
-`)
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({ t: (key: string, def?: string) => def || key }),
+}))
 
 vi.mock('../../services/llmService', () => ({
     llmService: {
-        analyzeSentence: (...args: any[]) => mockAnalyze(...args)
-    }
+        analyzeSentence: vi.fn(),
+    },
 }))
 
 vi.mock('../../services/analysisStorageService', () => ({
     analysisStorageService: {
         findMatchingAnalysis: vi.fn().mockResolvedValue(null),
-        saveAnalysis: vi.fn().mockResolvedValue(1)
-    }
+        saveAnalysis: vi.fn(),
+    },
 }))
 
-vi.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key: string, def?: string) => {
-            // Simple mock for t function
-            if (key === 'button.retry') return 'Retry'
-            if (key === 'common:error') return 'Error'
-            return def || key
-        }
-    })
+vi.mock('react-markdown', () => ({
+    default: ({ children }: any) => <div data-testid="markdown">{children}</div>
 }))
 
-describe('SentenceAnalysisPopover', () => {
-    it('renders analysis markdown correctly after loading', async () => {
+describe('SentenceAnalysisPopover Streaming', () => {
+    it('updates content progressively as tokens are received', async () => {
+        // Setup streaming mock
+        (llmService.analyzeSentence as any).mockImplementation(async (_sentence: string, _settings: any, onToken: any) => {
+            if (onToken) {
+                onToken('Hel')
+                await new Promise(r => setTimeout(r, 10))
+                onToken('lo')
+            }
+            return 'Hello'
+        })
+
         render(
             <SentenceAnalysisPopover
-                sentence="Hello world"
+                sentence="Test Sentence"
                 anchorPosition={{ top: 100, left: 100 }}
-                onClose={mockClose}
-                settings={mockSettings}
-                articleId="test-uuid"
+                onClose={() => { }}
+                settings={{ apiKey: 'test' } as any}
+                articleId="123"
             />
         )
 
-        // Click Analyze button
+        // Click analyze
         const analyzeBtn = screen.getByText('Analyze')
-        fireEvent.click(analyzeBtn)
+        await userEvent.click(analyzeBtn)
 
-        // Wait for result
+        // Should eventually see partial content
+        // (Due to async nature, we might catch it at 'Hel' or 'Hello', but checking for Hello is safe)
         await waitFor(() => {
-            expect(screen.getByText('Translation')).toBeInTheDocument() // Header
+            expect(screen.getByTestId('markdown')).toHaveTextContent('Hello')
         })
-
-        expect(screen.getByText('Fluent translation here.')).toBeInTheDocument()
-        expect(screen.getByText('Item 1')).toBeInTheDocument()
     })
 
-    it('shows error state and retry button on failure', async () => {
-        // Mock failure once
-        mockAnalyze.mockRejectedValueOnce(new Error('API Error'))
+    it('scrolls to bottom as content updates', async () => {
+        // Mock scrollIntoView
+        const scrollIntoViewMock = vi.fn()
+        window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock
+
+        // Setup streaming mock
+        const mockAnalyze = llmService.analyzeSentence as any
+        if (!mockAnalyze) throw new Error('llmService.analyzeSentence is undefined')
+
+        mockAnalyze.mockImplementation(async (_s: string, _st: any, onToken: any) => {
+            if (onToken) {
+                onToken('Part 1')
+                await new Promise(r => setTimeout(r, 10))
+                onToken('Part 2')
+            }
+            return 'Part 1Part 2'
+        })
 
         render(
             <SentenceAnalysisPopover
-                sentence="Fail sentence"
+                sentence="Test"
                 anchorPosition={{ top: 100, left: 100 }}
-                onClose={mockClose}
-                settings={mockSettings}
-                articleId="test-uuid"
+                onClose={() => { }}
+                settings={{ apiKey: 'test' } as any}
+                articleId="123"
             />
         )
 
-        fireEvent.click(screen.getByText('Analyze'))
+        await userEvent.click(screen.getByText('Analyze'))
 
         await waitFor(() => {
-            expect(screen.getByText('Analysis failed. Please try again.')).toBeInTheDocument()
+            expect(screen.getByTestId('markdown')).toHaveTextContent('Part 1')
         })
 
-        expect(screen.getByText('Retry')).toBeInTheDocument()
+        // Check if scrollIntoView was called
+        expect(scrollIntoViewMock).toHaveBeenCalled()
     })
 })

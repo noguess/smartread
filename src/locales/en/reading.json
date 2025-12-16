@@ -4,10 +4,12 @@
         "subtitle": "Incorporating {{count}} target words",
         "steps": {
             "analyze": "Analyzing vocabulary...",
-            "structure": "Structuring article...",
-            "draft": "Drafting content...",
-            "questions": "Generating questions...",
-            "finalize": "Finalizing..."
+            "generating": "Generating article content...",
+            "optimizing": "Optimizing layout..."
+        },
+        "terminal": {
+            "quiz": "zsh — generate-quiz",
+            "article": "zsh — generate-article"
         },
         "generatingQuiz": {
             "title": "Generating Quiz...",

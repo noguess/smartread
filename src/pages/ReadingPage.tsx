@@ -16,7 +16,7 @@ import { settingsService } from '../services/settingsService'
 import { wordService } from '../services/wordService'
 import { articleService } from '../services/articleService'
 import { quizRecordService } from '../services/quizRecordService'
-import { llmService } from '../services/llmService'
+import { llmService, PartialArticleData } from '../services/llmService'
 import { studyService } from '../services/studyService'
 
 // Components
@@ -167,6 +167,7 @@ export default function ReadingPage() {
     const [isGenerating, setIsGenerating] = useState(false)
     const [generationProgress, setGenerationProgress] = useState(0)
     const [generationMode, setGenerationMode] = useState<'article' | 'quiz'>('article')
+    const [streamingData, setStreamingData] = useState<PartialArticleData | undefined>(undefined)
     const [error, setError] = useState<Error | null>(null)
     const [isLoadingArticle, setIsLoadingArticle] = useState(false)
 
@@ -266,11 +267,24 @@ export default function ReadingPage() {
         setError(null)
         setGenerationMode('article')
         setGenerationProgress(0)
+        setStreamingData(undefined) // Reset previous data
 
         // Prevent duplicates with a lock if needed (skipped for brevity, assuming effect dependency handles mostly)
         try {
             const apiCall = settings.apiKey ? llmService : mockLLMService
-            const data = await apiCall.generateArticleOnly(words, settings, setGenerationProgress)
+
+            // Start streaming if available
+            let data: any
+            if ('generateArticleStream' in apiCall) {
+                data = await (apiCall as any).generateArticleStream(
+                    words,
+                    settings,
+                    setGenerationProgress,
+                    (partial: PartialArticleData) => setStreamingData(partial)
+                )
+            } else {
+                data = await (apiCall as any).generateArticleOnly(words, settings, setGenerationProgress)
+            }
 
             const finalUuid = uuid || uuidv4()
             const newArticle: Article = {
@@ -404,11 +418,18 @@ export default function ReadingPage() {
             navigate(`quiz/${newRecordId}`)
         } catch (err) {
             console.error('Quiz generation failed:', err)
+            setIsGenerating(false)
             // Show snackbar?
-        } finally {
+        }
+        // finally block removed to prevent flashing (state update happens before route change)
+    }, [currentArticle, settings, targetWords, timeSpent, navigate, startTimer, resetTimer])
+
+    // Cleanup generating state when navigation completes (prevents flashing)
+    useEffect(() => {
+        if (isGenerating && (location.pathname.includes('/quiz') || location.pathname.includes('/result'))) {
             setIsGenerating(false)
         }
-    }, [currentArticle, settings, targetWords, timeSpent, navigate, startTimer, resetTimer])
+    }, [location.pathname, isGenerating])
 
     const handleQuizSubmit = useCallback(async (recordId: number, answers: { reading: Record<string, string>; vocabulary: Record<string, string | string[]> }) => {
         setIsSubmittingQuiz(true)
@@ -459,7 +480,7 @@ export default function ReadingPage() {
 
     if (isGenerating) {
         // Can be improved to show specific loading state context
-        return <GenerationLoading mode={generationMode} realProgress={generationProgress} words={targetWords} />
+        return <GenerationLoading mode={generationMode} realProgress={generationProgress} words={targetWords} partialData={streamingData} />
     }
 
     if (error) {
