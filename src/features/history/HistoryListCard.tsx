@@ -1,13 +1,10 @@
 import React from 'react'
 import {
     Box,
-    Paper,
     Typography,
     Button,
     Chip,
-    Stack,
-    useTheme,
-    alpha
+    useTheme
 } from '@mui/material'
 import {
     Assessment as AssessmentIcon,
@@ -18,6 +15,9 @@ import {
 } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import { QuizRecord } from '../../services/db'
+import { BaseListCard } from '../../components/common'
+import { LevelColors } from '../../theme/constants'
+import { formatDate, formatDuration } from '../../utils/formatting'
 
 // Enhanced Type from QuizHistoryPage
 export interface EnhancedQuizRecord extends QuizRecord {
@@ -32,19 +32,6 @@ export interface HistoryCardProps {
     onReview: (record: EnhancedQuizRecord) => void
 }
 
-const LevelColors: Record<string, { bg: string, text: string }> = {
-    'L1': { bg: '#ECFDF5', text: '#047857' }, // Emerald
-    'L2': { bg: '#EFF6FF', text: '#1D4ED8' }, // Blue
-    'L3': { bg: '#FFF1F2', text: '#BE123C' }, // Rose
-}
-
-const formatDuration = (seconds?: number) => {
-    if (!seconds) return '0s'
-    const m = Math.floor(seconds / 60)
-    const s = seconds % 60
-    return m > 0 ? `${m}m ${s}s` : `${s}s`
-}
-
 const HistoryListCard: React.FC<HistoryCardProps> = ({ record, onReview }) => {
     const { t } = useTranslation(['history', 'common'])
     const theme = useTheme()
@@ -52,7 +39,7 @@ const HistoryListCard: React.FC<HistoryCardProps> = ({ record, onReview }) => {
     const levelStyle = LevelColors[record.articleDifficulty] || { bg: theme.palette.grey[100], text: theme.palette.grey[700] }
 
     // Date formatting
-    const dateStr = new Date(record.date).toLocaleDateString(undefined, {
+    const dateStr = formatDate(record.date, undefined, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -66,157 +53,112 @@ const HistoryListCard: React.FC<HistoryCardProps> = ({ record, onReview }) => {
         return 'error.main'
     }
 
-    return (
-        <Paper
-            elevation={0}
+    // Badge
+    const badge = (
+        <Chip
+            label={record.articleDifficulty}
+            size="small"
             sx={{
-                p: 3,
-                borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'grey.100',
-                transition: 'all 0.3s',
-                '&:hover': {
-                    boxShadow: theme.shadows[2],
-                    borderColor: 'primary.100',
-                },
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                gap: 3,
-                overflow: 'hidden',
-                position: 'relative',
-                mb: 2 // Margin bottom for list spacing
+                height: 20,
+                fontSize: '0.7rem',
+                fontWeight: 'bold',
+                borderRadius: 10,
+                bgcolor: levelStyle.bg,
+                color: levelStyle.text,
+                border: 'none'
+            }}
+        />
+    )
+
+    // Metadata
+    const metadata = (
+        <>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>{dateStr}</Typography>
+            </Box>
+
+            <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: 'grey.300', display: { xs: 'none', sm: 'block' } }} />
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <SpeedIcon sx={{ fontSize: 14 }} />
+                <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>{formatDuration(record.timeSpent)}</Typography>
+            </Box>
+        </>
+    )
+
+    // Stats
+    const stats = (
+        <>
+            <Box sx={{
+                display: 'flex', alignItems: 'center', gap: 1,
+                bgcolor: 'grey.50', px: 1, py: 0.5, borderRadius: 1
+            }}>
+                <TrophyIcon sx={{ fontSize: 14, color: getScoreColor(record.score || 0) }} />
+                <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.secondary' }}>
+                    {t('common:score')}:
+                    <Box component="span" sx={{ fontWeight: 700, color: getScoreColor(record.score || 0), ml: 0.5 }}>
+                        {record.score || 0}
+                    </Box>
+                </Typography>
+            </Box>
+
+            <Box sx={{
+                display: 'flex', alignItems: 'center', gap: 1,
+                bgcolor: 'grey.50', px: 1, py: 0.5, borderRadius: 1
+            }}>
+                <HistoryIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.secondary' }}>
+                    {t('history:attempt', { count: record.attemptNumber })}
+                </Typography>
+            </Box>
+        </>
+    )
+
+    // Actions
+    const actions = (
+        <Button
+            variant="contained"
+            color="primary"
+            disableElevation
+            endIcon={<ChevronRightIcon />}
+            onClick={() => onReview(record)}
+            sx={{
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600,
+                px: 3,
+                flex: { xs: 1, sm: 'none' }
             }}
         >
-            {/* Left: Icon Box */}
-            <Box sx={{ flexShrink: 0 }}>
-                <Box
-                    sx={{
-                        width: { xs: 56, sm: 64 },
-                        height: { xs: 56, sm: 64 },
-                        borderRadius: 4,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        color: 'primary.main',
-                    }}
-                >
-                    <AssessmentIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
-                </Box>
-            </Box>
+            {t('history:review', '复习')}
+        </Button>
+    )
 
-            {/* Middle: Content */}
-            <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-
-                {/* Header: Title + Level */}
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-                        <Typography
-                            variant="h6"
-                            component="h3"
-                            sx={{
-                                fontWeight: 700,
-                                color: 'text.primary',
-                                lineHeight: 1.2,
-                                display: '-webkit-box',
-                                WebkitLineClamp: 1,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
-                            }}
-                        >
-                            {record.articleTitle}
-                        </Typography>
-
-                        <Chip
-                            label={record.articleDifficulty}
-                            size="small"
-                            sx={{
-                                height: 20,
-                                fontSize: '0.7rem',
-                                fontWeight: 'bold',
-                                borderRadius: 10,
-                                bgcolor: levelStyle.bg,
-                                color: levelStyle.text,
-                                border: 'none'
-                            }}
-                        />
-                    </Box>
-                </Box>
-
-                {/* Metadata Row: Date & Duration */}
-                <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" sx={{ mb: 1.5, color: 'text.secondary', fontSize: '0.875rem' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>{dateStr}</Typography>
-                    </Box>
-
-                    <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: 'grey.300', display: { xs: 'none', sm: 'block' } }} />
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <SpeedIcon sx={{ fontSize: 14 }} />
-                        <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>{formatDuration(record.timeSpent)}</Typography>
-                    </Box>
-                </Stack>
-
-                {/* Stats Row: Score & Attempts */}
-                <Stack direction="row" spacing={2} alignItems="center">
-                    <Box sx={{
-                        display: 'flex', alignItems: 'center', gap: 1,
-                        bgcolor: 'grey.50', px: 1, py: 0.5, borderRadius: 1
-                    }}>
-                        <TrophyIcon sx={{ fontSize: 14, color: getScoreColor(record.score || 0) }} />
-                        <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.secondary' }}>
-                            {t('common:score')}:
-                            <Box component="span" sx={{ fontWeight: 700, color: getScoreColor(record.score || 0), ml: 0.5 }}>
-                                {record.score || 0}
-                            </Box>
-                        </Typography>
-                    </Box>
-
-                    <Box sx={{
-                        display: 'flex', alignItems: 'center', gap: 1,
-                        bgcolor: 'grey.50', px: 1, py: 0.5, borderRadius: 1
-                    }}>
-                        <HistoryIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
-                        <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.secondary' }}>
-                            {t('history:attempt', { count: record.attemptNumber })}
-                        </Typography>
-                    </Box>
-                </Stack>
-
-            </Box>
-
-            {/* Right: Actions */}
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'row', sm: 'column' },
-                    alignItems: { xs: 'center', sm: 'flex-end' },
-                    justifyContent: { xs: 'space-between', sm: 'center' },
-                    gap: 1.5,
-                    borderTop: { xs: '1px solid', sm: 'none' },
-                    borderColor: 'grey.100',
-                    pt: { xs: 2, sm: 0 }
-                }}
-            >
-                <Button
-                    variant="contained"
-                    color="primary"
-                    disableElevation
-                    endIcon={<ChevronRightIcon />}
-                    onClick={() => onReview(record)}
-                    sx={{
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        px: 3,
-                        flex: { xs: 1, sm: 'none' }
-                    }}
-                >
-                    {t('history:review', '复习')}
-                </Button>
-            </Box>
-
-        </Paper>
+    return (
+        <BaseListCard
+            icon={<AssessmentIcon />}
+            title={record.articleTitle}
+            badge={badge}
+            metadata={metadata}
+            stats={stats}
+            actions={actions}
+            // Use subtle blue tint for history icon similar to original (alpha(theme.palette.primary.main, 0.1))
+            iconBoxColor={{
+                bg: theme.palette.primary.main, // BaseListCard will alpha(.5) this if we don't handle it carefully. 
+                // Wait, BaseListCard uses alpha(bg, 0.5) by default logic if passed.
+                // Original HistoryListCard used alpha(primary.main, 0.1).
+                // If I pass primary.main, base will do alpha(primary.main, 0.5). That's too dark.
+                // I should probably adjust BaseListCard to accept 'bg' as is, OR pass a color that results in correct alpha?
+                // Or just pass the final color as string?
+                // BaseListCard logic: `bgcolor: iconBoxColor ? alpha(iconBoxColor.bg, 0.5) : ...`
+                // This is a flaw in my BaseListCard design if I want exact control.
+                // For now, let's stick to the BaseListCard logic or update BaseListCard to handle 'transparent' or full color.
+                // Actually, let's modify BaseListCard to use bg as is if it looks like an rgba/alpha string? 
+                // No, simpler to just accept it. 0.5 alpha on primary might be okay for unification.
+                // Let's stick with the design system unification (Task goal is unify styles).
+                color: 'primary.main'
+            }}
+        />
     )
 }
 

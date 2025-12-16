@@ -17,6 +17,7 @@ import { quizRecordService } from '../services/quizRecordService'
 import { useTranslation } from 'react-i18next'
 import ArticleListCard, { ArticleCardProps } from '../components/reading/ArticleListCard'
 import { PageError, PageLoading, EmptyState } from '../components/common'
+import { useAsyncData } from '../hooks'
 
 // Reusing the type from ArticleListCard or creating a shared one
 // For now, assume it matches.
@@ -27,63 +28,66 @@ export default function LibraryPage() {
     const { t } = useTranslation(['library', 'common'])
     const navigate = useNavigate()
     const [articles, setArticles] = useState<ArticleWithStats[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<Error | null>(null)
 
     // Pagination State
     const [page, setPage] = useState(1)
     const [hasMore, setHasMore] = useState(true)
     const PAGE_SIZE = 10
 
-    useEffect(() => {
-        loadArticles(1)
-    }, [])
+    // Async Fetcher
+    const fetchArticlesFn = async (pageNum: number) => {
+        const data = await articleService.getPage(pageNum, PAGE_SIZE)
+
+        let fetchedHasMore = true
+        if (data.length < PAGE_SIZE) {
+            fetchedHasMore = false
+        }
+
+        // Load quiz statistics
+        const articlesWithStats = await Promise.all(
+            data.map(async (article) => {
+                const quizRecords = await quizRecordService.getRecordsByArticleUuid(article.uuid)
+                const quizCount = quizRecords.length
+                const highestScore = quizRecords.length > 0
+                    ? Math.max(...quizRecords.map(r => r.score || 0))
+                    : 0
+
+                return {
+                    ...article,
+                    quizCount,
+                    highestScore: quizRecords.length > 0 ? highestScore : null
+                } as any as ArticleWithStats
+            })
+        )
+        // Sort
+        articlesWithStats.sort((a, b) => b.createdAt - a.createdAt)
+
+        return { articles: articlesWithStats, hasMore: fetchedHasMore }
+    }
+
+    const { loading, error, execute: executeFetch } = useAsyncData(fetchArticlesFn)
 
     const loadArticles = async (pageNum: number) => {
         try {
-            setLoading(true)
-            setError(null)
-            const data = await articleService.getPage(pageNum, PAGE_SIZE)
+            // We use the return value from execute
+            const result = await executeFetch(pageNum)
 
-            if (data.length < PAGE_SIZE) {
-                setHasMore(false)
-            } else {
-                setHasMore(true) // Should remain true if full page returned, unless we want to lookahead. 
-                // Simple logic: if < limit, no more. If == limit, assume more.
-            }
-
-            // Load quiz statistics for each article
-            const articlesWithStats = await Promise.all(
-                data.map(async (article) => {
-                    const quizRecords = await quizRecordService.getRecordsByArticleUuid(article.uuid)
-                    const quizCount = quizRecords.length
-                    const highestScore = quizRecords.length > 0
-                        ? Math.max(...quizRecords.map(r => r.score || 0))
-                        : 0
-
-                    return {
-                        ...article,
-                        quizCount,
-                        highestScore: quizRecords.length > 0 ? highestScore : null
-                    } as any as ArticleWithStats
-                })
-            )
-
-            // Sort by date desc
-            articlesWithStats.sort((a, b) => b.createdAt - a.createdAt)
+            setHasMore(result.hasMore)
 
             if (pageNum === 1) {
-                setArticles(articlesWithStats)
+                setArticles(result.articles)
             } else {
-                setArticles(prev => [...prev, ...articlesWithStats])
+                setArticles(prev => [...prev, ...result.articles])
             }
         } catch (error) {
-            console.error('Failed to load articles:', error)
-            setError(error instanceof Error ? error : new Error('Unknown error'))
-        } finally {
-            setLoading(false)
+            // Error is handled by hook state, but we log here if needed
+            // console.error('Create load failed', error)
         }
     }
+
+    useEffect(() => {
+        loadArticles(1)
+    }, [])
 
     const handleLoadMore = () => {
         const nextPage = page + 1

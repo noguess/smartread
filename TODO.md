@@ -59,6 +59,13 @@
 - [x] Performance: Stabilize highlight animation during re-renders (useMemo/useCallback).
 - [x] Performance: Fix global re-render caused by study timer in ReadingPage (Memoized Sidebar).
 
+## [Refactor] Codebase Optimization & Abstraction
+- [x] Task 1 (UI): Create `BaseListCard` in `src/components/common` to unify `ArticleListCard` and `HistoryListCard` styles (85% duplication).
+- [x] Task 2 (Theme): Extract `LevelColors` and Difficulty Chips to `src/theme/constants.ts`. Apply to `ArticleListCard`, `HistoryListCard`, and `RecentActivityList`.
+- [x] Task 3 (Hooks): Create `useAsyncData` hook to standardize `loading/error` state management (replacing manual try-catch in Pages).
+- [x] Task 4 (Utils): Centralize date and duration formatting logic into `src/utils/formatting.ts`. Apply to `RecentActivityList` and cards.
+- [x] Task 5 (Cleanup): Refactor `HomePage.tsx` and `LibraryPage.tsx` to use the new `useAsyncData` and utils.
+
 ## [Architectural Refactoring]
 
 ### Prompt Management

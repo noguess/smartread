@@ -10,7 +10,7 @@
 src/
 ├── assets/                 # 静态资源 (Images, Global CSS)
 ├── components/             # UI 组件库
-│   ├── common/             # 通用基础组件 (PageLoading, PageError, EmptyState)
+│   ├── common/             # 通用基础组件 (BaseListCard, PageLoading, PageError)
 │   └── layout/             # 布局组件 (Sidebar, Header, MainLayout)
 ├── features/               # 业务功能模块 (推荐)
 │   ├── reading/            # 阅读相关 (ReaderView, ArticleGenerator)
@@ -18,8 +18,9 @@ src/
 │   ├── quiz/               # 测试相关 (QuizForm, ResultChart)
 │    ├── history/            # 学习记录 (QuizHistory, HistoryListCard, QuizResult)
 │   ├── onboarding/         # [NEW] 首次引导 (OnboardingDialog)
-├── hooks/                  # 全局自定义 Hooks (useTheme, useDebounce)
+├── hooks/                  # 全局自定义 Hooks (useAsyncData, useStudyTimer)
 ├── pages/                  # 路由页面 (Home, Library, Settings, NotFoundPage)
+├── theme/                  # [NEW] 主题配置 (constants.ts)
 ├── services/               # 数据服务层 (API & DB)
 │   ├── db.ts               # Dexie 数据库实例配置
 │   ├── llmService.ts       # AI 接口服务 (Deepseek)
@@ -29,7 +30,7 @@ src/
 │   ├── dictionary.ts       # 外部词典 API
 │   └── statsService.ts     # 统计数据聚合服务
 ├── types/                  # 全局 TypeScript 类型定义
-├── utils/                  # 纯函数工具库 (date, math, string)
+├── utils/                  # 纯函数工具库 (formatting, date, math)
 ├── App.tsx                 # 根组件 (Providers, Router Outlet)
 └── main.tsx                # 入口文件
 ```

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Box, Grid, Typography, Container, Snackbar, Alert } from '@mui/material'
+import { useAsyncData } from '../hooks'
+import { formatDate } from '../utils/formatting'
 import { wordService } from '../services/wordService'
 import { historyService } from '../services/historyService'
 import { settingsService } from '../services/settingsService'
@@ -39,9 +41,7 @@ export default function HomePage() {
     const [isDetailOpen, setIsDetailOpen] = useState(false)
     const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
 
-    // Loading & Error State
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<Error | null>(null)
+    // Manual states removed in favor of useAsyncData
 
     const handleOpenDetail = (word: string) => {
         setDetailWord(word)
@@ -106,101 +106,104 @@ export default function HomePage() {
         setStats({
             consecutiveDays: consecutive,
             totalMinutes,
-            lastLearningDate: uniqueDates.length > 0 ? new Date(uniqueDates[0]).toLocaleDateString() : ''
+            lastLearningDate: uniqueDates.length > 0 ? formatDate(uniqueDates[0]) : ''
         })
     }
 
-    const loadData = useCallback(async () => {
-        try {
-            setLoading(true)
-            setError(null)
+    const fetchDashboardData = useCallback(async () => {
+        // Parallel loading for performance
+        const [words, hist, articles, quizzes] = await Promise.all([
+            wordService.getAllWords(),
+            historyService.getHistory(),
+            articleService.getAll(),
+            quizRecordService.getAll()
+        ])
+        return { words, hist, articles, quizzes }
+    }, [])
 
-            // Parallel loading for performance
-            const [words, hist, articles, quizzes] = await Promise.all([
-                wordService.getAllWords(),
-                historyService.getHistory(),
-                articleService.getAll(),
-                quizRecordService.getAll()
-            ])
-
-            const safeWords = words || []
-            const safeHist = hist || []
-            const safeArticles = articles || []
-            const safeQuizzes = quizzes || []
-
-            setAllWords(safeWords)
-
-            // Process Activities
-            const articleMap = new Map(safeArticles.map(a => [a.uuid, a]))
-
-            const articleActivities: DashboardActivity[] = safeArticles.map(a => ({
-                id: a.id!,
-                type: 'article',
-                title: a.title,
-                date: a.createdAt,
-                difficultyLevel: a.difficultyLevel,
-                articleId: a.id // Keep same ID for direct article access
-            }))
-
-            const quizActivities: DashboardActivity[] = safeQuizzes.map(q => {
-                const article = articleMap.get(q.articleId)
-                return {
-                    id: q.id!,
-                    type: 'quiz',
-                    title: article ? article.title : t('home:recentActivity.unknownArticle'),
-                    date: q.date,
-                    score: q.score,
-                    articleId: article?.id
-                }
-            })
-
-            // Merge and Sort
-            const allActivities = [...articleActivities, ...quizActivities]
-                .sort((a, b) => b.date - a.date)
-
-            setActivities(allActivities)
-
-            const counts = {
-                New: 0,
-                Learning: 0,
-                Review: 0,
-                Mastered: 0,
-            }
-            safeWords.forEach((w) => {
-                counts[w.status]++
-            })
-            setStatusCounts(counts)
-
-            // Calculate Stats
-            calculateStats(safeHist, safeQuizzes)
-
-            // Select Recommended Word
-            if (safeWords.length > 0) {
-                const reviewWords = safeWords.filter(w => w.status === 'Review')
-                const learningWords = safeWords.filter(w => w.status === 'Learning')
-                const newWords = safeWords.filter(w => w.status === 'New')
-
-                let pool = reviewWords
-                if (pool.length === 0) pool = learningWords
-                if (pool.length === 0) pool = newWords
-                if (pool.length === 0) pool = safeWords
-
-                if (pool.length > 0) {
-                    const random = pool[Math.floor(Math.random() * pool.length)]
-                    setRecommendedWord(random)
-                }
-            }
-        } catch (err) {
-            console.error('Failed to load dashboard data:', err)
-            setError(err instanceof Error ? err : new Error('Unknown error'))
-        } finally {
-            setLoading(false)
-        }
-    }, [t])
+    const { data: dashboardData, loading, error, execute: loadData } = useAsyncData(fetchDashboardData)
 
     useEffect(() => {
-        loadData()
+        if (!dashboardData) return
 
+        const { words, hist, articles, quizzes } = dashboardData
+        const safeWords = words || []
+        const safeHist = hist || []
+        const safeArticles = articles || []
+        const safeQuizzes = quizzes || []
+
+        setAllWords(safeWords)
+
+        // Process Activities
+        const articleMap = new Map(safeArticles.map(a => [a.uuid, a]))
+
+        const articleActivities: DashboardActivity[] = safeArticles.map(a => ({
+            id: a.id!,
+            type: 'article',
+            title: a.title,
+            date: a.createdAt,
+            difficultyLevel: a.difficultyLevel,
+            articleId: a.id // Keep same ID for direct article access
+        }))
+
+        const quizActivities: DashboardActivity[] = safeQuizzes.map(q => {
+            const article = articleMap.get(q.articleId)
+            return {
+                id: q.id!,
+                type: 'quiz',
+                title: article ? article.title : t('home:recentActivity.unknownArticle'),
+                date: q.date,
+                score: q.score,
+                articleId: article?.id,
+                difficultyLevel: article?.difficultyLevel
+            }
+        })
+
+        // Merge and Sort
+        const allActivities = [...articleActivities, ...quizActivities]
+            .sort((a, b) => b.date - a.date)
+
+        setActivities(allActivities)
+
+        const counts = {
+            New: 0,
+            Learning: 0,
+            Review: 0,
+            Mastered: 0,
+        }
+        safeWords.forEach((w) => {
+            // @ts-ignore
+            if (counts[w.status] !== undefined) counts[w.status]++
+        })
+        setStatusCounts(counts)
+
+        // Calculate Stats
+        calculateStats(safeHist, safeQuizzes)
+
+        // Select Recommended Word
+        if (safeWords.length > 0) {
+            const reviewWords = safeWords.filter(w => w.status === 'Review')
+            const learningWords = safeWords.filter(w => w.status === 'Learning')
+            const newWords = safeWords.filter(w => w.status === 'New')
+
+            let pool = reviewWords
+            if (pool.length === 0) pool = learningWords
+            if (pool.length === 0) pool = newWords
+            if (pool.length === 0) pool = safeWords
+
+            if (pool.length > 0) {
+                const random = pool[Math.floor(Math.random() * pool.length)]
+                setRecommendedWord(random)
+            }
+        }
+    }, [dashboardData, t]) // Removed calculateStats from deps as it's defined in component
+
+    // Convert loadData to initial effect
+    useEffect(() => {
+        loadData().catch(e => console.error('Initial load failed', e))
+    }, []) // Run once on mount
+
+    useEffect(() => {
         // Check for message in navigation state
         const state = location.state as { message?: string }
         if (state?.message) {
@@ -209,13 +212,7 @@ export default function HomePage() {
             // Clear state to prevent showing again on refresh
             window.history.replaceState({}, document.title)
         }
-        if (state?.message) {
-            setSnackbarMsg(state.message)
-            setSnackbarOpen(true)
-            // Clear state to prevent showing again on refresh
-            window.history.replaceState({}, document.title)
-        }
-    }, [loadData, location.state])
+    }, [location.state])
 
     useEffect(() => {
         const checkSettings = async () => {

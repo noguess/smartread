@@ -1,6 +1,8 @@
 import { Typography, List, ListItem, ListItemText, Chip, Box, Avatar } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { StyledCard } from '../common'
+import { LevelColors } from '../../theme/constants'
+import { formatDate } from '../../utils/formatting'
 import AutoStoriesIcon from '@mui/icons-material/AutoStories'
 import QuizIcon from '@mui/icons-material/Quiz'
 
@@ -100,16 +102,33 @@ export default function RecentActivityList({ activities, onItemClick }: RecentAc
                                                 : item.difficultyLevel || 'L2'
                                             }
                                             size="small"
-                                            color={
-                                                item.type === 'quiz'
-                                                    ? (item.score! >= 80 ? 'success' : item.score! >= 60 ? 'warning' : 'default')
-                                                    : 'secondary'
-                                            }
-                                            variant={item.type === 'article' ? 'outlined' : 'filled'}
-                                            sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600 }}
+                                            // Apply shared colors for articles
+                                            {...(item.type === 'article' && LevelColors[item.difficultyLevel || 'L2']
+                                                ? {
+                                                    sx: {
+                                                        height: 20,
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: 600,
+                                                        bgcolor: LevelColors[item.difficultyLevel || 'L2'].bg,
+                                                        color: LevelColors[item.difficultyLevel || 'L2'].text,
+                                                        border: 'none'
+                                                    },
+                                                    variant: 'filled' // Override 'outlined'
+                                                }
+                                                : {
+                                                    // Fallback or Quiz logic
+                                                    color: item.type === 'quiz'
+                                                        ? (item.score! >= 80 ? 'success' : item.score! >= 60 ? 'warning' : 'default')
+                                                        : 'secondary',
+                                                    variant: item.type === 'article' ? 'outlined' : 'filled', // Keep original outlined for fallback? Or just filled?
+                                                    // Task goal: Unified styles. ArticleListCard uses 'filled' (colored bg).
+                                                    // So we should try to match that style.
+                                                    sx: { height: 20, fontSize: '0.7rem', fontWeight: 600 }
+                                                }
+                                            )}
                                         />
                                         <Typography variant="caption" color="text.secondary">
-                                            {item.type === 'article' ? t('home:recentActivity.createdOn') : t('home:recentActivity.quizOn')} {new Date(item.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}
+                                            {item.type === 'article' ? t('home:recentActivity.createdOn') : t('home:recentActivity.quizOn')} {formatDate(item.date, i18n.language, { month: 'short', day: 'numeric' })}
                                         </Typography>
                                     </Box>
                                 }
