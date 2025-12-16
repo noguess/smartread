@@ -16,17 +16,9 @@ describe('llmService', () => {
         const mockResponse = {
             ok: true,
             headers: { get: () => '1000' },
-            body: {
-                getReader: () => ({
-                    read: vi.fn()
-                        .mockResolvedValueOnce({
-                            done: false, value: new TextEncoder().encode(JSON.stringify({
-                                choices: [{ message: { content: '{}' } }]
-                            }))
-                        })
-                        .mockResolvedValueOnce({ done: true })
-                })
-            }
+            json: vi.fn().mockResolvedValue({
+                choices: [{ message: { content: '{}' } }]
+            })
         }
         mockFetch.mockResolvedValue(mockResponse)
 
@@ -57,17 +49,9 @@ describe('llmService', () => {
         const mockResponse = {
             ok: true,
             headers: { get: () => '1000' },
-            body: {
-                getReader: () => ({
-                    read: vi.fn()
-                        .mockResolvedValueOnce({
-                            done: false, value: new TextEncoder().encode(JSON.stringify({
-                                choices: [{ message: { content: JSON.stringify(mockResponseData) } }]
-                            }))
-                        })
-                        .mockResolvedValueOnce({ done: true })
-                })
-            }
+            json: vi.fn().mockResolvedValue({
+                choices: [{ message: { content: JSON.stringify(mockResponseData) } }]
+            })
         }
         mockFetch.mockResolvedValue(mockResponse)
 
@@ -89,6 +73,7 @@ describe('llmService', () => {
         expect(result.word_study).toHaveLength(1)
         expect(result.word_study![0].meaning_in_context).toBe('点燃')
     })
+
     it('generateQuizForArticle injects IDs if missing', async () => {
         // Mock Response with questions missing IDs
         const mockQuizData = {
@@ -105,17 +90,9 @@ describe('llmService', () => {
         const mockResponse = {
             ok: true,
             headers: { get: () => '1000' },
-            body: {
-                getReader: () => ({
-                    read: vi.fn()
-                        .mockResolvedValueOnce({
-                            done: false, value: new TextEncoder().encode(JSON.stringify({
-                                choices: [{ message: { content: JSON.stringify(mockQuizData) } }]
-                            }))
-                        })
-                        .mockResolvedValueOnce({ done: true })
-                })
-            }
+            json: vi.fn().mockResolvedValue({
+                choices: [{ message: { content: JSON.stringify(mockQuizData) } }]
+            })
         }
         mockFetch.mockResolvedValue(mockResponse)
 

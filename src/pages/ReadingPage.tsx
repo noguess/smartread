@@ -286,19 +286,23 @@ export default function ReadingPage() {
             }
 
             const id = await articleService.add(newArticle)
-            const savedArticle = { ...newArticle, id }
+            // const savedArticle = { ...newArticle, id }
 
-            setCurrentArticle(savedArticle)
-            setTargetWords(words)
+            // Do NOT update local state here. 
+            // The navigation below will trigger a route change, forcing a remount/re-effect 
+            // which will load the article from DB correctly.
+            // Updating state here causes a "flash" of content before the route transition occurs.
+            // setCurrentArticle(savedArticle)
+            // setTargetWords(words)
 
             // Navigate to the real URL so refresh works
             navigate(`/read/${id}`, { replace: true })
         } catch (err: any) {
             console.error('Generation failed:', err)
             setError(err instanceof Error ? err : new Error(err.message || 'Generation failed'))
-        } finally {
-            setIsGenerating(false)
+            setIsGenerating(false) // Only stop generating if error. If success, we navigate away.
         }
+        // finally block removed to avoid setting isGenerating=false before unmount on success
     }, [navigate])
 
     // Generation Guard
@@ -506,7 +510,7 @@ export default function ReadingPage() {
 
     if (!currentArticle) {
         // Initial loading or 404
-        return null // Or <PageLoading /> if we consider this implicit loading
+        return <PageLoading message={t('common:common.loading')} />
     }
 
     // Determine layout mode based on route

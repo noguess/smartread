@@ -181,6 +181,7 @@ export const llmService = {
       const timeoutId = setTimeout(() => controller.abort(), 60000)
 
       try {
+         // 1. 发起 API 请求
          const response = await fetch(`${baseUrl}/chat/completions`, {
             method: 'POST',
             headers: {
@@ -194,6 +195,7 @@ export const llmService = {
                   { role: 'user', content: userPrompt },
                ],
                temperature: 0.7,
+               // 如果预期 JSON，强制模型输出 JSON 格式
                response_format: expectJson ? { type: 'json_object' } : undefined,
             }),
             signal: controller.signal
@@ -201,44 +203,35 @@ export const llmService = {
 
          clearTimeout(timeoutId)
 
+         // 2. 错误处理
          if (!response.ok) {
             const err = await response.json().catch(() => ({}))
             throw new Error(`API Error: ${response.status} ${err.error?.message || ''}`)
          }
 
-         const reader = response.body?.getReader()
-         if (!reader) throw new Error('Response body is not readable')
+         // 3. 直接等待完整响应 (前端 Loading 组件会展示模拟进度)
+         // 放弃了之前的"字节流伪进度"，改用 Loading 组件内部的假进度算法，更平滑
+         const data = await response.json()
 
-         const contentLength = Number(response.headers.get('Content-Length')) || 50000
-         let receivedLength = 0
-         const chunks: Uint8Array[] = []
-
-         while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
-            chunks.push(value)
-            receivedLength += value.length
-            const progress = Math.min((receivedLength / contentLength) * 99, 99)
-            onProgress?.(progress)
-         }
-
-         const chunksAll = new Uint8Array(receivedLength)
-         let position = 0
-         for (const chunk of chunks) {
-            chunksAll.set(chunk, position)
-            position += chunk.length
-         }
-
-         const responseText = new TextDecoder('utf-8').decode(chunksAll)
-         const data = JSON.parse(responseText)
+         // 4. 解析内容
          const contentStr = data.choices[0]?.message?.content
-
          if (!contentStr) throw new Error('Empty response from API')
 
+         // 5. 标记完成
          onProgress?.(100)
 
          if (expectJson) {
-            return JSON.parse(contentStr)
+            // DeepSeek 在 json_object 模式下有时会返回 markdown code block，需要剥离
+            // 虽然 json_object 模式通常只返回 json，但做一层防御更好
+            // 这里假设它返回的是纯 JSON 字符串，直接 parse
+            try {
+               return JSON.parse(contentStr)
+            } catch (e) {
+               console.warn('JSON Parse failed, trying to strip markdown...')
+               // 简单的 markdown strip
+               const cleanStr = contentStr.replace(/```json\n?|\n?```/g, '')
+               return JSON.parse(cleanStr)
+            }
          }
          return contentStr
 

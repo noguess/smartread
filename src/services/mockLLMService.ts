@@ -70,41 +70,46 @@ Current Word List: ${wordList}.
         const readingQuestions: Question[] = [
             {
                 id: 'r1',
-                type: 'contextual',
-                stem: 'What is the main purpose of this article?',
+                type: 'multiple_choice',
+                stem: 'What is the main purpose of this article? (Mock)',
                 options: ['To inform', 'To entertain', 'To persuade', 'To confuse'],
-                answer: 'To inform'
+                answer: 'To inform',
+                explanation: 'Mock analysis'
             },
             {
                 id: 'r2',
-                type: 'contextual',
+                type: 'multiple_choice',
                 stem: `What difficulty level is this? (It is ${difficultyLevel})`,
                 options: ['L1', 'L2', 'L3', 'None'],
-                answer: difficultyLevel
+                answer: difficultyLevel,
+                explanation: 'Mock analysis'
             },
             {
                 id: 'r3',
-                type: 'contextual',
+                type: 'multiple_choice',
                 stem: 'Which word is mentioned?',
                 options: [words[0]?.spelling || 'A', 'B', 'C', 'D'],
-                answer: words[0]?.spelling || 'A'
+                answer: words[0]?.spelling || 'A',
+                explanation: 'Mock analysis'
             },
             {
                 id: 'r4',
-                type: 'contextual',
+                type: 'multiple_choice',
                 stem: 'Is this a mock test?',
                 options: ['Yes', 'No', 'Maybe', 'Unknown'],
-                answer: 'Yes'
+                answer: 'Yes',
+                explanation: 'Mock analysis'
             }
         ]
 
         const vocabularyQuestions: Question[] = words.map((w, i) => ({
             id: `v${i}`,
-            type: 'definition',
+            type: 'multiple_choice',
             targetWord: w.spelling,
             stem: `What is the definition of ${w.spelling}?`,
             options: [`Definition of ${w.spelling}`, 'Wrong 1', 'Wrong 2', 'Wrong 3'],
-            answer: `Definition of ${w.spelling}`
+            answer: `Definition of ${w.spelling}`,
+            explanation: 'Mock analysis'
         }))
 
         return {
