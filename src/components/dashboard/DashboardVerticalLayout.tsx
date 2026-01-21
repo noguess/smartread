@@ -1,6 +1,7 @@
 import { Box, Typography, Button, Stack, Paper, Grid, LinearProgress } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { AutoAwesome, Tune, VolumeUp, LocalFireDepartment, AccessTime, TrendingUp } from '@mui/icons-material'
+import { AutoAwesome, Tune, VolumeUp, LocalFireDepartment, AccessTime, TrendingUp, School } from '@mui/icons-material'
+
 import { styled } from '@mui/material/styles'
 import { Word, WordStatus } from '../../services/db'
 import { GradientButton } from '../common'
@@ -57,7 +58,9 @@ interface DashboardVerticalLayoutProps {
     masteredCount: number
     statusCounts: Record<WordStatus, number>
     onOpenDetail: (word: string) => void
+    onStartDrill: () => void
 }
+
 
 // --- Component ---
 
@@ -71,8 +74,10 @@ export default function DashboardVerticalLayout({
     totalWords,
     masteredCount,
     statusCounts,
-    onOpenDetail
+    onOpenDetail,
+    onStartDrill
 }: DashboardVerticalLayoutProps) {
+
     const { t } = useTranslation(['home', 'common'])
     // Removed unused theme hook
 
@@ -171,6 +176,22 @@ export default function DashboardVerticalLayout({
                         {t('home:hero.customMode')}
                     </Button>
                 </Box>
+
+                <GradientButton
+                    startIcon={<School />}
+                    onClick={onStartDrill}
+                    fullWidth
+                    sx={{
+                        mt: 2,
+                        py: 1.5,
+                        borderRadius: 3,
+                        background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
+                        boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)',
+                    }}
+                >
+                    {t('home:hero.startDrill')}
+                </GradientButton>
+
             </SectionCard>
 
             {/* 2. Daily Word Card */}

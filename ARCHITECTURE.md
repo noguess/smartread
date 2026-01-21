@@ -18,6 +18,7 @@ src/
 │   ├── quiz/               # 测试相关 (QuizForm, ResultChart)
 │    ├── history/            # 学习记录 (QuizHistory, HistoryListCard, QuizResult)
 │   ├── onboarding/         # [NEW] 首次引导 (OnboardingDialog)
+│   ├── drill/              # [NEW] 每日特训 (Selection, Process, Exam)
 ├── hooks/                  # 全局自定义 Hooks (useAsyncData, useStudyTimer)
 ├── pages/                  # 路由页面 (Home, Library, Settings, NotFoundPage)
 ├── theme/                  # [NEW] 主题配置 (constants.ts)

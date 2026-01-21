@@ -1,55 +1,68 @@
 import { Word, WordStatus } from '../services/db'
 
-// Constants for SRS
-const MASTERED_THRESHOLD_DAYS = 60
+/**
+ * SuperMemo 2 (SM-2) Algorithm implementation
+ * Grades:
+ * 0: Total blackout
+ * 1: Incorrect response, but remembered when revealed
+ * 2: Incorrect response, but seemed easy to recall
+ * 3: Correct response, but with significant difficulty
+ * 4: Correct response after a hesitation
+ * 5: Perfect response
+ */
+export type Grade = 0 | 1 | 2 | 3 | 4 | 5
+
+export interface SRSUpdate {
+    status: WordStatus
+    nextReviewAt: number
+    interval: number
+    repetitionCount: number
+    easinessFactor: number
+}
 
 export const SRSAlgorithm = {
-    /**
-     * Calculates the next review date and interval based on user performance.
-     * @param word The word being reviewed
-     * @param isCorrect Whether the user answered correctly
-     * @returns Updated fields for the word
-     */
-    calculateNextReview(word: Word, isCorrect: boolean): {
-        status: WordStatus
-        nextReviewAt: number
-        interval: number
-        repetitionCount: number
-    } {
-        let { interval, repetitionCount } = word
+    calculateNextReview(word: Word, gradeOrCorrect: Grade | boolean): SRSUpdate {
+        const grade = typeof gradeOrCorrect === 'boolean'
+            ? SRSAlgorithm.mapBooleanToGrade(gradeOrCorrect)
+            : gradeOrCorrect;
+        let { repetitionCount, interval, easinessFactor = 2.5 } = word
         let status: WordStatus = word.status
-        const now = Date.now()
-        const oneDayMs = 24 * 60 * 60 * 1000
 
-        if (isCorrect) {
-            // Case A: User Correct
-            repetitionCount++
-
-            if (interval === 0) {
+        if (grade >= 3) {
+            // Success
+            if (repetitionCount === 0) {
                 interval = 1
-            } else if (interval === 1) {
-                interval = 3
+            } else if (repetitionCount === 1) {
+                interval = 6
             } else {
-                // Apply multiplier logic (simplified to ~2x for now)
-                interval = Math.ceil(interval * 2.2)
+                interval = Math.round(interval * easinessFactor)
             }
-
-            // Check for Mastered status
-            if (interval > MASTERED_THRESHOLD_DAYS) {
-                status = 'Mastered'
-            } else {
-                status = 'Review'
-            }
+            repetitionCount++
         } else {
-            // Case B: User Incorrect
-            interval = 1 // Reset to 1 day
-            status = 'Learning'
-            // Repetition count doesn't necessarily reset, but interval does
+            // Failure
+            repetitionCount = 0
+            interval = 1
         }
 
-        // Calculate next review timestamp
-        // If incorrect, review tomorrow (now + 1 day)
-        // If correct, review in 'interval' days
+        // Calculate new Easiness Factor
+        // EF = EF + (0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02))
+        easinessFactor = easinessFactor + (0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02))
+        if (easinessFactor < 1.3) easinessFactor = 1.3
+
+        // Update status
+        if (repetitionCount === 0) {
+            status = 'Learning'
+        } else if (repetitionCount >= 5) {
+            status = 'Mastered'
+        } else if (repetitionCount >= 2) {
+            status = 'Review'
+        } else {
+            status = 'Learning'
+        }
+
+        // Set next review timestamp
+        const now = Date.now()
+        const oneDayMs = 24 * 60 * 60 * 1000
         const nextReviewAt = now + interval * oneDayMs
 
         return {
@@ -57,6 +70,15 @@ export const SRSAlgorithm = {
             nextReviewAt,
             interval,
             repetitionCount,
+            easinessFactor
         }
     },
+
+    /**
+     * Map a simple boolean result (e.g. from quiz) to a grade
+     */
+    mapBooleanToGrade(isCorrect: boolean, mode: 'reading' | 'drill' = 'reading'): Grade {
+        if (!isCorrect) return 0
+        return mode === 'drill' ? 5 : 4
+    }
 }

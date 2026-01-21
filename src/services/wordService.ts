@@ -48,6 +48,34 @@ export const wordService = {
         return await db.words.delete(id)
     },
 
+    async getDailyCandidates(limit: number, excludeIds: number[] = []): Promise<Word[]> {
+        const now = Date.now()
+        const excludeSet = new Set(excludeIds)
+
+        // 1. Get Due words first (Learning or Review status)
+        const dueWords = await db.words
+            .where('nextReviewAt')
+            .belowOrEqual(now)
+            .filter(w => (w.status === 'Learning' || w.status === 'Review') && !excludeSet.has(w.id!))
+            .limit(limit)
+            .toArray()
+
+        if (dueWords.length >= limit) {
+            return dueWords.slice(0, limit)
+        }
+
+        // 2. Fill with New words
+        const needed = limit - dueWords.length
+        const newWords = await db.words
+            .where('status')
+            .equals('New')
+            .filter(w => !excludeSet.has(w.id!))
+            .limit(needed)
+            .toArray()
+
+        return [...dueWords, ...newWords]
+    },
+
     async importWords(words: Word[]): Promise<{ added: number, skipped: number }> {
         let added = 0
         let skipped = 0
@@ -66,6 +94,7 @@ export const wordService = {
                     await db.words.add({
                         ...word,
                         status: 'New',
+                        easinessFactor: 2.5, // Default for new words
                         // Ensure defaults if not present
                         nextReviewAt: word.nextReviewAt || 0,
                         interval: word.interval || 0,

@@ -1,0 +1,53 @@
+{
+    "selection": {
+        "title": "Daily Drill Selection",
+        "subtitle": "Please pick the words you want to train today. Selecting {{total}} is recommended for best results.",
+        "count_stat": "Selected: {{current}} / Target {{total}}",
+        "start_btn": "Start Drill",
+        "refresh_btn": "Shuffle",
+        "refresh_tooltip": "Don't like these? Shuffle for more",
+        "reset_btn": "Reset Selection",
+        "remove_tooltip": "Skip this",
+        "empty_title": "No words available",
+        "empty_desc": "Your word book is currently empty. Go read some articles and mark some new words!",
+        "go_reading": "Go Reading"
+    },
+    "process": {
+        "round1_title": "Round 1: Shadowing",
+        "round1_desc": "Listen to the pronunciation and repeat loudly",
+        "round2_title": "Round 2: Reading",
+        "round2_desc": "Look at the word and read it out loud",
+        "round3_title": "Round 3: En to Zh",
+        "round3_desc": "Listen to the word and say its Chinese meaning",
+        "round4_title": "Round 4: Zh to En",
+        "round4_desc": "Look at the meaning and say the English word",
+        "grading": "AI Grading...",
+        "listening": "Listening...",
+        "wait_audio": "Preparing audio...",
+        "recording": "Recording...",
+        "match": "Match: {{percent}}%",
+        "next_btn": "Next",
+        "skip_btn": "Skip",
+        "finish_round_btn": "Next Round",
+        "retry_btn": "Retry",
+        "excellent": "Excellent!",
+        "good": "Good, keep it up!",
+        "keep_trying": "Try again?",
+        "back_to_selection": "Back to Selection"
+    },
+    "exam": {
+        "title": "Final Exam",
+        "step_1_title": "Step 1: Read English",
+        "step_1_desc": "Read the word on the screen loudly",
+        "step_2_title": "Step 2: Say Chinese",
+        "step_2_desc": "Now, say the Chinese meaning of the word",
+        "submitting": "AI Batch Grading, please wait...",
+        "passed_count": "Passed",
+        "total_count": "Total Words",
+        "score_label": "Score",
+        "finish_btn": "Finish Drill",
+        "retry_failed": "Retry Failed Words",
+        "exam_perfect": "Excellent! You've mastered all words.",
+        "exam_good": "Good job, but some words need more practice."
+    }
+}

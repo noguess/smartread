@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, lazy } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
 import { AnimatePresence } from 'framer-motion'
@@ -17,6 +17,13 @@ import PageTransition from './components/common/PageTransition'
 import { ErrorBoundary } from 'react-error-boundary'
 import { PageError } from './components/common'
 import NotFoundPage from './pages/NotFoundPage'
+
+const SpeechTestPageWrapper = lazy(() => import('./pages/SpeechTestPage'))
+const DrillSelectionPage = lazy(() => import('./features/drill/DrillSelectionPage'))
+const DrillProcessPage = lazy(() => import('./features/drill/DrillProcessPage'))
+const DrillExamPage = lazy(() => import('./features/drill/DrillExamPage'))
+
+
 
 function AnimatedRoutes() {
     const location = useLocation()
@@ -42,7 +49,30 @@ function AnimatedRoutes() {
                     <Route path="quiz/:recordId" element={null} />
                     <Route path="result/:recordId" element={null} />
                 </Route>
+
+                {/* Temporary Test Route */}
+                <Route path="/speech-test" element={<SpeechTestPageWrapper />} />
+
+                {/* Daily Word Drill */}
+                <Route path="/drill/selection" element={
+                    <PageTransition>
+                        <DrillSelectionPage />
+                    </PageTransition>
+                } />
+                <Route path="/drill/process" element={
+                    <PageTransition>
+                        <DrillProcessPage />
+                    </PageTransition>
+                } />
+                <Route path="/drill/exam" element={
+                    <PageTransition>
+                        <DrillExamPage />
+                    </PageTransition>
+                } />
+
+
                 <Route path="/library" element={
+
                     <PageTransition>
                         <LibraryPage />
                     </PageTransition>

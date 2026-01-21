@@ -1,6 +1,7 @@
 import { Box, Typography, Button, Grid, Paper } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { AutoAwesome, Tune, VolumeUp, LocalFireDepartment, AccessTime } from '@mui/icons-material'
+import { AutoAwesome, Tune, VolumeUp, LocalFireDepartment, AccessTime, School } from '@mui/icons-material'
+
 import { styled } from '@mui/material/styles'
 import { Word } from '../../services/db'
 
@@ -55,7 +56,9 @@ interface DashboardHeroProps {
     lastLearningDate: string
     recommendedWord?: Word | null
     onOpenDetail: (word: string) => void
+    onStartDrill: () => void
 }
+
 
 export default function DashboardHero({
     onSmartGenerate,
@@ -65,7 +68,9 @@ export default function DashboardHero({
     lastLearningDate,
     recommendedWord,
     onOpenDetail,
+    onStartDrill,
 }: DashboardHeroProps) {
+
     const { t } = useTranslation(['home'])
     const playPronunciation = () => {
         if (recommendedWord?.phonetic) {
@@ -179,6 +184,30 @@ export default function DashboardHero({
                             >
                                 {t('home:hero.customMode')}
                             </Button>
+
+                            <GradientButton
+                                variant="contained"
+                                size="large"
+                                startIcon={<School />}
+                                onClick={onStartDrill}
+                                sx={{
+                                    px: 4,
+                                    py: 1.5,
+                                    fontSize: '1rem',
+                                    fontWeight: 'bold',
+                                    color: 'white',
+                                    textTransform: 'none',
+                                    minWidth: 200,
+                                    background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)', // Distinct orange/red for drill
+                                    boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #EE5B5B 0%, #EF7E43 100%)',
+                                    }
+                                }}
+                            >
+                                {t('home:hero.startDrill')}
+                            </GradientButton>
+
                         </Box>
                     </Box>
                 </Grid>
@@ -225,8 +254,9 @@ export default function DashboardHero({
                                 </Typography>
 
                                 <Typography variant="h6">
-                                    v.{recommendedWord.meaning}
+                                    {recommendedWord.meaning}
                                 </Typography>
+
 
                                 <Typography
                                     variant="caption"

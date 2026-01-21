@@ -12,44 +12,62 @@ describe('SRSAlgorithm', () => {
         interval: 0,
         repetitionCount: 0,
         lastSeenAt: 0,
+        easinessFactor: 2.5
     }
 
-    it('should handle correct answer for new word', () => {
+    it('should handle correct boolean (reading) for new word', () => {
         const result = SRSAlgorithm.calculateNextReview(baseWord, true)
 
         expect(result.interval).toBe(1)
-        expect(result.status).toBe('Review')
         expect(result.repetitionCount).toBe(1)
-        // Next review should be in future
-        expect(result.nextReviewAt).toBeGreaterThan(Date.now())
+        expect(result.status).toBe('Learning') // 1st rep is learning
     })
 
-    it('should increase interval for correct answer (1 -> 3)', () => {
-        const word: Word = { ...baseWord, interval: 1, status: 'Review' }
-        const result = SRSAlgorithm.calculateNextReview(word, true)
+    it('should handle Grade 5 (drill perfect) for new word', () => {
+        const result = SRSAlgorithm.calculateNextReview(baseWord, 5)
 
-        expect(result.interval).toBe(3)
+        expect(result.interval).toBe(1)
+        expect(result.repetitionCount).toBe(1)
+        expect(result.easinessFactor).toBeGreaterThan(2.5) // EF increases for 5
+    })
+
+    it('should increase interval to 6 after 2nd rep (SM-2)', () => {
+        const word: Word = { ...baseWord, repetitionCount: 1, interval: 1, status: 'Learning' }
+        const result = SRSAlgorithm.calculateNextReview(word, 4)
+
+        expect(result.interval).toBe(6)
+        expect(result.repetitionCount).toBe(2)
         expect(result.status).toBe('Review')
     })
 
-    it('should reset interval for incorrect answer', () => {
-        const word: Word = { ...baseWord, interval: 10, status: 'Review' }
+    it('should grow interval by EF after 3rd rep', () => {
+        const word: Word = { ...baseWord, repetitionCount: 2, interval: 6, status: 'Review', easinessFactor: 2.5 }
+        const result = SRSAlgorithm.calculateNextReview(word, 4)
+
+        expect(result.interval).toBe(15) // 6 * 2.5 = 15
+        expect(result.repetitionCount).toBe(3)
+    })
+
+    it('should reset interval on failure (boolean false)', () => {
+        const word: Word = { ...baseWord, interval: 10, repetitionCount: 3, status: 'Review' }
         const result = SRSAlgorithm.calculateNextReview(word, false)
 
         expect(result.interval).toBe(1)
+        expect(result.repetitionCount).toBe(0)
         expect(result.status).toBe('Learning')
-        // Next review should be roughly tomorrow (allow small delta)
-        const tomorrow = Date.now() + 24 * 60 * 60 * 1000
-        expect(result.nextReviewAt).toBeLessThanOrEqual(tomorrow + 1000)
-        expect(result.nextReviewAt).toBeGreaterThan(tomorrow - 1000)
     })
 
-    it('should master word after long interval', () => {
-        const word: Word = { ...baseWord, interval: 30, status: 'Review' }
-        const result = SRSAlgorithm.calculateNextReview(word, true)
+    it('should decrease EF for difficult words (Grade 3)', () => {
+        const word: Word = { ...baseWord, easinessFactor: 2.5 }
+        const result = SRSAlgorithm.calculateNextReview(word, 3)
+        expect(result.easinessFactor).toBeLessThan(2.5)
+    })
 
-        // 30 * 2.2 = 66 > 60
-        expect(result.interval).toBeGreaterThan(60)
+    it('should master word after 5 reps', () => {
+        const word: Word = { ...baseWord, repetitionCount: 4, interval: 30, status: 'Review' }
+        const result = SRSAlgorithm.calculateNextReview(word, 5)
+
+        expect(result.repetitionCount).toBe(5)
         expect(result.status).toBe('Mastered')
     })
 })

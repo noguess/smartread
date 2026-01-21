@@ -88,3 +88,12 @@
 ### Type Safety (Question Interface)
 - [x] Task 5 (Definitions): Refactor `Question` interface in `src/services/db.ts` to use Discriminated Unions (`type: 'multiple_choice' | ...`).
 - [x] Task 6 (Updates): Update `llmService.ts`, `QuizView.tsx`, and `ManualGenerationDialog` to satisfy new strict types.
+
+## [Feature] Daily Word Drill (Back Word)
+- [x] Task 1 (Infra): Create `SpeechService.ts` wrapper for `webkitSpeechRecognition` (handle En/Zh modes, permissions, errors).
+- [x] Task 2 (Data): Update `wordService` to support "Daily Selection" query (algorithm) and `db.ts` for SRS fields.
+- [x] Task 3 (UI - Selection): Implement `DrillSelectionPage`. Active selection (shopping cart) -> Target count -> Start Drill.
+- [x] Task 4 (UI - Drill R1/R2): Implement `DrillTeachRound` (Shadowing) and `DrillPracticeRound` (Self-Reading) with En-ASR.
+- [x] Task 5 (UI - Drill R3/R4): Implement `DrillTestRound` (Visual/Audio Translation) with Zh-ASR and batch LLM grading.
+- [x] Task 6 (UI - Exam): Implement `DrillExamPage`. Final Two-step verification (En+Zh).
+- [x] Task 7 (Integration): Add Home Page entry "Start Daily Drill" and wire up router flow.

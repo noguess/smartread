@@ -12,7 +12,8 @@
         "lastStudy": "Last Study",
         "keepGoing": "Keep Going!",
         "deepLearning": "Deep Study",
-        "dailyLabel": "DAILY"
+        "dailyLabel": "DAILY",
+        "startDrill": "Start Daily Drill"
     },
     "stats": {
         "title": "Memory Status",

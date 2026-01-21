@@ -12,6 +12,9 @@ export interface Word {
     interval: number // Days
     repetitionCount: number
     lastSeenAt: number // Timestamp
+    easinessFactor?: number // [NEW] SM-2 EF
+    contextSentence?: string // [NEW] Source sentence for memory
+    sourceArticleId?: string // [NEW] Link back to article
     pinnedVideo?: {
         bvid: string
         page: number
@@ -192,6 +195,14 @@ export class SmartReaderDB extends Dexie {
 
         // Version 5: Add Sentence Analysis
         this.version(5).stores({
+            sentenceAnalysis: '++id, articleId'
+        })
+
+        // Version 6: Word enhancements (no new indexes needed, just adding fields)
+        this.version(6).stores({
+            words: '++id, spelling, status, nextReviewAt',
+            articles: '++id, &uuid, createdAt',
+            quizRecords: '++id, articleId, date',
             sentenceAnalysis: '++id, articleId'
         })
     }

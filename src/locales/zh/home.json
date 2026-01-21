@@ -12,7 +12,8 @@
         "lastStudy": "上次学习",
         "keepGoing": "加油！",
         "deepLearning": "深度学习",
-        "dailyLabel": "每日"
+        "dailyLabel": "每日",
+        "startDrill": "开始今日特训"
     },
     "stats": {
         "title": "记忆状态",

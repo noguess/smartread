@@ -438,4 +438,41 @@ export const llmService = {
          throw error
       }
    },
+   // 评价翻译准确度 (Round 3/4)
+   async gradeTranslation(
+      word: string,
+      context: string,
+      userInput: string,
+      settings: any
+   ): Promise<{ score: number; feedback: string }> {
+      const apiKey = settings.apiKey
+      const baseUrl = settings.apiBaseUrl || '/api/deepseek/v1'
+
+      if (!apiKey) throw new Error(i18n.t('common:common.apiKeyMissing'))
+
+      const systemPrompt = PROMPTS.TRANSLATION_GRADING.SYSTEM_PROMPT;
+      const userPrompt = `
+      - Word: "${word}"
+      - Context: "${context}"
+      - User Said: "${userInput}"
+      `
+
+      return this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt)
+   },
+
+   // 批量评价翻译准确度 (Exam)
+   async batchGradeTranslations(
+      items: { word: string; userInput: string }[],
+      settings: any
+   ): Promise<{ word: string; score: number; feedback: string }[]> {
+      const apiKey = settings.apiKey
+      const baseUrl = settings.apiBaseUrl || '/api/deepseek/v1'
+
+      if (!apiKey) throw new Error(i18n.t('common:common.apiKeyMissing'))
+
+      const systemPrompt = PROMPTS.BATCH_TRANSLATION_GRADING.SYSTEM_PROMPT;
+      const userPrompt = JSON.stringify(items)
+
+      return this._callDeepSeek(apiKey, baseUrl, systemPrompt, userPrompt)
+   },
 }

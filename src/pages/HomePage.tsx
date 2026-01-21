@@ -267,6 +267,11 @@ export default function HomePage() {
         }
     }
 
+    const handleStartDrill = () => {
+        navigate('/drill/selection')
+    }
+
+
     const handleActivityClick = (item: DashboardActivity) => {
         if (item.type === 'article') {
             navigate(`/read/${item.id}`)
@@ -309,7 +314,9 @@ export default function HomePage() {
                                 masteredCount={statusCounts.Mastered}
                                 statusCounts={statusCounts}
                                 onOpenDetail={handleOpenDetail}
+                                onStartDrill={handleStartDrill}
                             />
+
                         </Grid>
                     ) : (
                         <>
@@ -322,7 +329,9 @@ export default function HomePage() {
                                     onSmartGenerate={handleSmartGenerate}
                                     onManualMode={() => setIsManualDialogOpen(true)}
                                     onOpenDetail={handleOpenDetail}
+                                    onStartDrill={handleStartDrill}
                                 />
+
                             </Grid>
 
                             {/* Stats Section */}

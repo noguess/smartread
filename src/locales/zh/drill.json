@@ -1,0 +1,53 @@
+{
+    "selection": {
+        "title": "今日特训选词",
+        "subtitle": "请挑选您今天想要训练的单词，选够 {{total}} 个效果最佳",
+        "count_stat": "已选择: {{current}} / 目标 {{total}}",
+        "start_btn": "开始特训",
+        "refresh_btn": "换一批",
+        "refresh_tooltip": "不喜欢这些词？换一批试试",
+        "reset_btn": "重置已选单词",
+        "remove_tooltip": "不训练这个",
+        "empty_title": "暂无可选单词",
+        "empty_desc": "您的生词本目前很干净，去阅读文章并标记一些生词吧！",
+        "go_reading": "去阅读"
+    },
+    "process": {
+        "round1_title": "第一轮：听音跟读",
+        "round1_desc": "听系统朗读并大声跟读单词及例句",
+        "round2_title": "第二轮：主动朗读",
+        "round2_desc": "请看着单词主动大声朗读出来",
+        "round3_title": "第三轮：英译中",
+        "round3_desc": "请听单词发音，说出它的中文意思",
+        "round4_title": "第四轮：中译英",
+        "round4_desc": "请看中文释义，说出并拼写英文单词",
+        "grading": "AI 正在评分...",
+        "listening": "正在倾听...",
+        "wait_audio": "正在准备音频...",
+        "recording": "录音中...",
+        "match": "匹配度: {{percent}}%",
+        "next_btn": "下一个",
+        "skip_btn": "跳过",
+        "finish_round_btn": "进入下一轮",
+        "retry_btn": "重读",
+        "excellent": "真棒！",
+        "good": "还可以，加油！",
+        "keep_trying": "再试一次？",
+        "back_to_selection": "返回重新选词"
+    },
+    "exam": {
+        "title": "终极考核 (Exam)",
+        "step_1_title": "第一步：读英文",
+        "step_1_desc": "大声朗读屏幕上的单词",
+        "step_2_title": "第二步：说中文",
+        "step_2_desc": "读对后，请立刻说出该词的中文意思",
+        "submitting": "AI 正在批量评分，请稍候...",
+        "passed_count": "已通过词数",
+        "total_count": "考核总词数",
+        "score_label": "得分",
+        "finish_btn": "完成本次特训",
+        "retry_failed": "重学不合格单词",
+        "exam_perfect": "太棒了！所有单词都已掌握。",
+        "exam_good": "表现不错，部分单词还需加强。"
+    }
+}

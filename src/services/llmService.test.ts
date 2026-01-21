@@ -173,4 +173,62 @@ describe('llmService', () => {
             expect(onToken).toHaveBeenNthCalledWith(2, ' World')
         })
     })
+
+    describe('gradeTranslation', () => {
+        it('sends correct prompt and parses response', async () => {
+            const mockGradeData = { score: 95, feedback: "Perfect" }
+            const mockResponse = {
+                ok: true,
+                headers: { get: () => '1000' },
+                json: vi.fn().mockResolvedValue({
+                    choices: [{ message: { content: JSON.stringify(mockGradeData) } }]
+                })
+            }
+            mockFetch.mockResolvedValue(mockResponse)
+
+            const result = await llmService.gradeTranslation(
+                "apple",
+                "I ate an apple.",
+                "我吃了一个苹果",
+                { apiKey: 'test' } as any
+            )
+
+            expect(result.score).toBe(95)
+            expect(result.feedback).toBe("Perfect")
+
+            const callArgs = mockFetch.mock.calls[0]
+            const body = JSON.parse(callArgs[1].body)
+            expect(body.messages[0].content).toContain('英汉双语专家')
+            expect(body.messages[1].content).toContain('Word: "apple"')
+        })
+
+        it('batchGradeTranslations sends list and parses array', async () => {
+            const mockBatchData = [
+                { word: "apple", score: 90, feedback: "Good" },
+                { word: "banana", score: 85, feedback: "Fine" }
+            ]
+            const mockResponse = {
+                ok: true,
+                headers: { get: () => '1000' },
+                json: vi.fn().mockResolvedValue({
+                    choices: [{ message: { content: JSON.stringify(mockBatchData) } }]
+                })
+            }
+            mockFetch.mockResolvedValue(mockResponse)
+
+            const result = await llmService.batchGradeTranslations(
+                [
+                    { word: "apple", userInput: "苹果" },
+                    { word: "banana", userInput: "香蕉" }
+                ],
+                { apiKey: 'test' } as any
+            )
+
+            expect(result).toHaveLength(2)
+            expect(result[0].score).toBe(90)
+            expect(mockFetch).toHaveBeenCalledTimes(1)
+            const body = JSON.parse(mockFetch.mock.calls[0][1].body)
+            expect(body.messages[0].content).toContain('批量评估')
+        })
+    })
 })
