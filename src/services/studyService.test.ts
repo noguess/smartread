@@ -43,7 +43,8 @@ describe('studyService', () => {
                 status: 'Review',
                 nextReviewAt: 1000,
                 interval: 1,
-                repetitionCount: 1
+                repetitionCount: 1,
+                easinessFactor: 2.5
             })
             vi.mocked(settingsService.getSettings).mockResolvedValue({ difficultyLevel: 'L2' } as any)
             vi.mocked(settingsService.saveSettings).mockResolvedValue(1)
@@ -57,7 +58,6 @@ describe('studyService', () => {
                 50 // quizTimeSpent
             )
 
-            // Verify Score Calculation
             // Total 2 qs: Reading Correct (A==A), Vocab Correct (B==B) -> 100%
             expect(result.score).toBe(100)
 

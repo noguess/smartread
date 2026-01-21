@@ -69,7 +69,7 @@ export default function DashboardVerticalLayout({
     onManualMode,
     consecutiveDays,
     totalMinutes,
-    // Removed unused lastLearningDate
+    // lastLearningDate (unused in mobile layout)
     recommendedWord,
     totalWords,
     masteredCount,

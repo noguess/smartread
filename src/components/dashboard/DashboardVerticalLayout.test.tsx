@@ -61,7 +61,8 @@ describe('DashboardVerticalLayout', () => {
             lastSeenAt: 0,
             phonetic: '/test/'
         },
-        onOpenDetail: vi.fn()
+        onOpenDetail: vi.fn(),
+        onStartDrill: vi.fn()
     }
 
     const mockStatsProps = {

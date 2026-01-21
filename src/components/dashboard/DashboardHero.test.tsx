@@ -31,7 +31,8 @@ describe('DashboardHero Layout Adaptation', () => {
             repetitionCount: 0,
             lastSeenAt: 0
         } as any,
-        onOpenDetail: vi.fn()
+        onOpenDetail: vi.fn(),
+        onStartDrill: vi.fn()
     }
 
     const renderComponent = () => {

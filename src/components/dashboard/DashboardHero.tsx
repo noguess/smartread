@@ -92,6 +92,7 @@ export default function DashboardHero({
                 borderRadius: 4,
                 border: '1px solid',
                 borderColor: 'divider',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
             }}
         >
             <Grid container spacing={3} sx={{ alignItems: 'stretch' }}>
